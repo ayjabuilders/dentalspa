@@ -4,6 +4,7 @@ export * from './intake-follow-up';
 export * from './inquiry-worklist';
 export * from './inquiry-schedule';
 export * from './inquiry-schedule-history';
+export * from './inquiry-owner-search';
 export * from './team-roster';
 export * from './team-activity';
 export * from './patient-lookup';

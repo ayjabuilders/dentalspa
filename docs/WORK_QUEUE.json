@@ -182,10 +182,49 @@
     },
     {
       "id": "INQUIRY-SCHEDULE-HISTORY-INTEGRATE",
-      "state": "verification",
+      "state": "done",
       "owner": "coordinator",
       "depends_on": ["INQUIRY-SCHEDULE-HISTORY-API", "INQUIRY-SCHEDULE-HISTORY-UI"],
       "branch": "codex/m01-schedule-history-contract",
+      "acceptance": "Independent security/UI review, generated OpenAPI, focused local/PostgreSQL/browser checks, no-deployment merge and owner-visible evidence.",
+      "evidence": "PR #16 squash merged ff89a6c after exact-head CI40405552464 application/database success, including 15 schedule-history pgTAP assertions. Independent reviews and local combined checks passed; zero hooks/deployments before merge."
+    },
+    {
+      "id": "INQUIRY-OWNER-SEARCH-CONTRACT",
+      "state": "done",
+      "owner": "coordinator",
+      "depends_on": ["INQUIRY-SCHEDULE-HISTORY-INTEGRATE"],
+      "branch": "codex/m01-owner-search-contract",
+      "acceptance": "Freeze explicit literal-name search across only the current owner's inquiries, with minimal results and no patient identity or duplicate inference.",
+      "evidence": "Independent security and database reviews corrected Unicode/code-point canonicalization, wildcard/collation semantics, UUID uniqueness and non-locale ordering. Six focused contract tests and contracts typecheck passed.",
+      "development_gate": "passed"
+    },
+    {
+      "id": "INQUIRY-OWNER-SEARCH-API",
+      "state": "planned",
+      "owner": "pwa_verification",
+      "depends_on": ["INQUIRY-OWNER-SEARCH-CONTRACT"],
+      "branch": "codex/m01-owner-search-api",
+      "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/inquiry-owner-search-api",
+      "allowed_files": ["apps/dental-api/src/intake/**", "supabase/migrations/*owner_search*.sql", "supabase/tests/*owner_search*.sql", "tests/unit/inquiry-owner-search*", "tests/integration/inquiry-owner-search*"],
+      "acceptance": "Current-owner tenant-safe literal-name search with filter-before-limit, escaped wildcards, deterministic ordering, no-store and adversarial tests."
+    },
+    {
+      "id": "INQUIRY-OWNER-SEARCH-UI",
+      "state": "planned",
+      "owner": "connection_ui",
+      "depends_on": ["INQUIRY-OWNER-SEARCH-CONTRACT"],
+      "branch": "codex/m01-owner-search-ui",
+      "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/inquiry-owner-search-ui",
+      "allowed_files": ["apps/clinic-os/components/intake/**", "tests/e2e/inquiry-owner-search.spec.ts"],
+      "acceptance": "Polished explicit owner-search panel with fresh detail selection, truthful empty/partial copy, strict cleanup and responsive browser evidence."
+    },
+    {
+      "id": "INQUIRY-OWNER-SEARCH-INTEGRATE",
+      "state": "planned",
+      "owner": "coordinator",
+      "depends_on": ["INQUIRY-OWNER-SEARCH-API", "INQUIRY-OWNER-SEARCH-UI"],
+      "branch": "codex/m01-owner-search-contract",
       "acceptance": "Independent security/UI review, generated OpenAPI, focused local/PostgreSQL/browser checks, no-deployment merge and owner-visible evidence."
     },
     {
