@@ -1,0 +1,91 @@
+{
+  "template_id": "veneer-fit-bond",
+  "version": 1,
+  "scope": "visit_workflow",
+  "title": "Facettes — essayage et collage",
+  "publication_status": "draft",
+  "clinical_approved": false,
+  "source_references": [
+    "Tableaux_Checklists_Cliniques_Par_Acte copie.pdf",
+    "Ma_Journee_Taches_Separees_Cabinet_Dentaire.pdf"
+  ],
+  "source_confidence": "source_derived",
+  "notes": "Organizational checklists adapted from provided source; clinician validates indications/materials and all mandatory clinical gates.",
+  "phases": [
+    {
+      "id": "before",
+      "title": "Avant séance",
+      "patient_label": "Préparation de la séance",
+      "stage_kind": "visit",
+      "optional": false,
+      "steps": [
+        {
+          "id": "clinical-indication",
+          "title": "Confirmer indication, pièces, teintes et protocole adapté",
+          "owner_role": "dentist",
+          "completion_evidence": "clinician_signature",
+          "clinician_gate": true,
+          "delegable": false
+        },
+        {
+          "id": "verify-facets",
+          "title": "Contrôler réception, identification, dossier photo et plateau dédié",
+          "owner_role": "assistant",
+          "completion_evidence": "actor_confirmation",
+          "clinician_gate": false,
+          "delegable": true
+        }
+      ]
+    },
+    {
+      "id": "during",
+      "title": "Pendant séance",
+      "patient_label": "Séance en cours",
+      "stage_kind": "clinical",
+      "optional": false,
+      "steps": [
+        {
+          "id": "assess-fit",
+          "title": "Vérifier adaptation et résultat esthétique; réaliser acte selon protocole validé",
+          "owner_role": "dentist",
+          "completion_evidence": "clinician_signature",
+          "clinician_gate": true,
+          "delegable": false
+        },
+        {
+          "id": "trace-products",
+          "title": "Préparer produits dédiés et assurer traçabilité",
+          "owner_role": "assistant",
+          "completion_evidence": "actor_confirmation",
+          "clinician_gate": false,
+          "delegable": true
+        }
+      ]
+    },
+    {
+      "id": "after",
+      "title": "Après séance",
+      "patient_label": "Recommandations et suivi",
+      "stage_kind": "visit",
+      "optional": false,
+      "steps": [
+        {
+          "id": "clinical-result",
+          "title": "Vérifier résultat clinique et valider consignes",
+          "owner_role": "dentist",
+          "completion_evidence": "clinician_signature",
+          "clinician_gate": true,
+          "delegable": false
+        },
+        {
+          "id": "archive-photos",
+          "title": "Archiver photos utiles; signaler retouches laboratoire si nécessaire",
+          "owner_role": "assistant",
+          "completion_evidence": "actor_confirmation",
+          "clinician_gate": false,
+          "delegable": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,183 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.dentalos.example/workflow-template.v1.json",
+  "title": "Dental OS workflow template draft v1",
+  "description": "Design-time contract. Template must be clinically approved separately before clinical use.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "template_id",
+    "version",
+    "scope",
+    "title",
+    "publication_status",
+    "clinical_approved",
+    "source_references",
+    "phases"
+  ],
+  "properties": {
+    "template_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]+$"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "scope": {
+      "enum": [
+        "service_journey",
+        "visit_workflow"
+      ]
+    },
+    "title": {
+      "type": "string",
+      "minLength": 3
+    },
+    "publication_status": {
+      "enum": [
+        "draft",
+        "review",
+        "published",
+        "retired"
+      ]
+    },
+    "clinical_approved": {
+      "type": "boolean"
+    },
+    "source_references": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "source_confidence": {
+      "enum": [
+        "source_derived",
+        "composed_proposal",
+        "clinician_verified"
+      ]
+    },
+    "notes": {
+      "type": "string"
+    },
+    "phases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/phase"
+      }
+    }
+  },
+  "$defs": {
+    "phase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "patient_label",
+        "stage_kind",
+        "optional",
+        "steps"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "patient_label": {
+          "type": "string"
+        },
+        "stage_kind": {
+          "enum": [
+            "clinical",
+            "administrative",
+            "laboratory",
+            "visit"
+          ]
+        },
+        "optional": {
+          "type": "boolean"
+        },
+        "condition": {
+          "type": "string"
+        },
+        "repeatable": {
+          "type": "boolean"
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/step"
+          }
+        }
+      }
+    },
+    "step": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "owner_role",
+        "completion_evidence",
+        "clinician_gate"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "owner_role": {
+          "enum": [
+            "dentist",
+            "assistant",
+            "reception",
+            "lab_technician",
+            "lab_partner",
+            "coordinator"
+          ]
+        },
+        "delegable": {
+          "type": "boolean"
+        },
+        "completion_evidence": {
+          "enum": [
+            "actor_confirmation",
+            "clinician_signature",
+            "file_received",
+            "lab_qc",
+            "system_verified"
+          ]
+        },
+        "clinician_gate": {
+          "type": "boolean"
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "condition": {
+          "type": "string"
+        },
+        "patient_visible": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

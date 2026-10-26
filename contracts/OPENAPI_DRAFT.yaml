@@ -1,0 +1,108 @@
+openapi: 3.1.0
+info:
+  title: Dental Spa OS API (design draft)
+  version: 0.1.0
+  description: >-
+    Initial endpoint inventory and business errors only, not a complete implementation contract.
+    Every authenticated route requires backend clinic/patient resource scope checks.
+servers:
+  - url: /api/v1
+security:
+  - bearerAuth: []
+paths:
+  /me/workspace:
+    get:
+      summary: Role-aware workspace context
+      responses:
+        '200': {description: Authorized workspace projection}
+        '401': {description: Unauthenticated}
+  /me/next-actions:
+    get:
+      summary: Eligible actionable work for logged-in person
+      responses:
+        '200': {description: Authorized sorted actions with approved target commands}
+  /patients:
+    get:
+      summary: Search clinic-scoped patients; requires staff scope
+      responses:
+        '200': {description: Authorized patient search}
+        '403': {description: Scope denied}
+    post:
+      summary: Create patient with duplicate review; staff only
+      responses:
+        '201': {description: Created}
+        '409': {description: Suspected duplicate or conflict}
+  /availability:
+    get:
+      summary: Informational available booking times
+      responses:
+        '200': {description: Availability is not a reservation}
+  /public/bookings:
+    post:
+      security: []
+      summary: Request an appointment (must verify and reserve transactionally)
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          schema: {type: string}
+          required: true
+      responses:
+        '201': {description: Confirmed only when transaction committed}
+        '202': {description: Request received, pending confirmation}
+        '409': {description: Slot conflict}
+        '429': {description: Rate limited}
+  /appointments/{id}/check-in:
+    post:
+      summary: Reception confirms actual arrival
+      parameters:
+        - {$ref: '#/components/parameters/ResourceId'}
+      responses:
+        '200': {description: PatientCheckedIn committed}
+        '403': {description: Forbidden}
+  /appointments/{id}/call-patient:
+    post:
+      summary: Dentist calls patient; does not start clinical encounter
+      parameters:
+        - {$ref: '#/components/parameters/ResourceId'}
+      responses:
+        '200': {description: PatientCalled committed}
+  /appointments/{id}/start-consultation:
+    post:
+      summary: Authorized clinician begins actual clinical encounter
+      parameters:
+        - {$ref: '#/components/parameters/ResourceId'}
+      responses:
+        '200': {description: ConsultationStarted committed}
+        '409': {description: Required gates not satisfied}
+  /me/appointments:
+    get:
+      summary: Patient or staff scoped appointment projection
+      responses:
+        '200': {description: Caller-scoped appointments}
+  /me/documents:
+    get:
+      summary: Patient-released documents only
+      responses:
+        '200': {description: Released documents}
+  /tasks/{id}/complete:
+    post:
+      summary: Confirm assigned eligible task after required evidence
+      parameters:
+        - {$ref: '#/components/parameters/ResourceId'}
+      responses:
+        '200': {description: TaskCompleted committed}
+        '409': {description: Dependencies or clinical gate incomplete}
+  /workflow-templates:
+    get:
+      summary: Authorized templates; immutable published versions
+      responses:
+        '200': {description: Templates permitted for caller}
+components:
+  securitySchemes:
+    bearerAuth: {type: http, scheme: bearer, bearerFormat: JWT}
+  parameters:
+    ResourceId:
+      in: path
+      name: id
+      required: true
+      schema: {type: string, format: uuid}

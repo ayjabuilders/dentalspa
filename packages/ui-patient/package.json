@@ -1,0 +1,1 @@
+{"name":"@dental/ui-patient","version":"0.1.0","private":true,"main":"src/index.tsx","types":"src/index.tsx","scripts":{"typecheck":"tsc --noEmit"},"dependencies":{"@radix-ui/react-dialog":"^1.1.15","lucide-react":"^0.468.0","motion":"^12.23.0"},"peerDependencies":{"react":"^19.0.0","react-dom":"^19.0.0"}}

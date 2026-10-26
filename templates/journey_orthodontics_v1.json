@@ -1,0 +1,116 @@
+{
+  "template_id": "orthodontics-controls",
+  "version": 1,
+  "scope": "service_journey",
+  "title": "Orthodontie — parcours organisationnel",
+  "publication_status": "draft",
+  "clinical_approved": false,
+  "source_references": [
+    "Tableaux_Checklists_Cliniques_Par_Acte copie.pdf",
+    "les taches effectuées par le praticien, l assistante et la prothesiste.docx"
+  ],
+  "source_confidence": "composed_proposal",
+  "notes": "Three distinct clinical checklist types organized as a repeatable candidate journey, not a complete approved clinical orthodontic plan.",
+  "phases": [
+    {
+      "id": "bonding",
+      "title": "Collage brackets",
+      "patient_label": "Mise en place de votre appareil",
+      "stage_kind": "clinical",
+      "optional": false,
+      "steps": [
+        {
+          "id": "approve-ortho-plan",
+          "title": "Valider diagnostic, plan et dents concernées",
+          "owner_role": "dentist",
+          "completion_evidence": "clinician_signature",
+          "clinician_gate": true,
+          "delegable": false
+        },
+        {
+          "id": "prepare-ortho",
+          "title": "Vérifier dossier, consentement, matériel et plateau",
+          "owner_role": "assistant",
+          "completion_evidence": "actor_confirmation",
+          "clinician_gate": false,
+          "delegable": true
+        },
+        {
+          "id": "bond",
+          "title": "Réaliser acte et vérifier positionnement",
+          "owner_role": "dentist",
+          "completion_evidence": "clinician_signature",
+          "clinician_gate": true,
+          "delegable": false
+        }
+      ]
+    },
+    {
+      "id": "check",
+      "title": "Contrôles / changement arc",
+      "patient_label": "Suivi de votre traitement",
+      "stage_kind": "clinical",
+      "optional": false,
+      "steps": [
+        {
+          "id": "review-progress",
+          "title": "Examiner progression, tissus et objectifs de séance",
+          "owner_role": "dentist",
+          "completion_evidence": "clinician_signature",
+          "clinician_gate": true,
+          "delegable": false
+        },
+        {
+          "id": "prepare-arc",
+          "title": "Préparer plateau et éléments prescrits",
+          "owner_role": "assistant",
+          "completion_evidence": "actor_confirmation",
+          "clinician_gate": false,
+          "delegable": true
+        },
+        {
+          "id": "document-adjustment",
+          "title": "Documenter arc, ajustements et prochaines instructions",
+          "owner_role": "dentist",
+          "completion_evidence": "clinician_signature",
+          "clinician_gate": true,
+          "delegable": false
+        }
+      ],
+      "repeatable": true
+    },
+    {
+      "id": "retention",
+      "title": "Dépose / contention",
+      "patient_label": "Dernières étapes et stabilisation",
+      "stage_kind": "clinical",
+      "optional": false,
+      "steps": [
+        {
+          "id": "approve-debond",
+          "title": "Confirmer indication de dépose et stratégie de contention",
+          "owner_role": "dentist",
+          "completion_evidence": "clinician_signature",
+          "clinician_gate": true,
+          "delegable": false
+        },
+        {
+          "id": "assist-retention",
+          "title": "Assister et organiser empreinte/scan si prescrit",
+          "owner_role": "assistant",
+          "completion_evidence": "actor_confirmation",
+          "clinician_gate": false,
+          "delegable": true
+        },
+        {
+          "id": "followup",
+          "title": "Valider consignes de port et suivi",
+          "owner_role": "dentist",
+          "completion_evidence": "clinician_signature",
+          "clinician_gate": true,
+          "delegable": false
+        }
+      ]
+    }
+  ]
+}

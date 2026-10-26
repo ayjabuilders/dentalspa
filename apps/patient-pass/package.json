@@ -1,0 +1,27 @@
+{
+  "name": "@dental/patient-pass",
+  "private": true,
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "next build --webpack",
+    "start": "next start -p 4201",
+    "dev": "next dev --webpack -p 4201"
+  },
+  "dependencies": {
+    "react": "^19.2.0",
+    "@dental/ui-clinic": "workspace:*",
+    "@dental/ui-patient": "workspace:*",
+    "@dental/design-tokens": "workspace:*",
+    "react-dom": "^19.2.0",
+    "@supabase/supabase-js": "2.118.0",
+    "@dental/contracts": "workspace:*",
+    "next": "16.4.3",
+    "motion": "^12.23.0",
+    "lucide-react": "^0.468.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.3.3",
+    "tailwindcss": "4.3.3"
+  },
+  "version": "0.1.0"
+}
