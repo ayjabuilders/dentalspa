@@ -18,10 +18,11 @@ import { DocumentsModule } from './documents/documents.module';
 import { CommunicationsModule } from './communications/communications.module';
 import { AuditModule } from './audit/audit.module';
 import { IntakeModule } from './intake/intake.module';
+import { TeamModule } from './team/team.module';
 
 @Module({ providers: [{ provide: IDENTITY, useClass: SupabaseIdentity }], exports: [IDENTITY] })
 export class IdentityModule {}
 @Module({ controllers: [PatientsController], providers: [PatientsService, { provide: PATIENT_REPOSITORY, useClass: SupabasePatients }], exports: [PatientsService] })
 export class PatientsModule {}
-@Module({ imports: [IdentityModule, PatientsModule, ClinicsModule, SchedulingModule, WorkflowsModule, ClinicalModule, TreatmentCasesModule, DocumentsModule, CommunicationsModule, AuditModule, IntakeModule], controllers: [MeController, HealthController], providers: [{ provide: APP_GUARD, useClass: PolicyGuard }] })
+@Module({ imports: [IdentityModule, PatientsModule, ClinicsModule, SchedulingModule, WorkflowsModule, ClinicalModule, TreatmentCasesModule, DocumentsModule, CommunicationsModule, AuditModule, IntakeModule, TeamModule], controllers: [MeController, HealthController], providers: [{ provide: APP_GUARD, useClass: PolicyGuard }] })
 export class AppModule {}
