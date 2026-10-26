@@ -274,6 +274,42 @@
       "evidence": "PR #18 squash merged 0149833 after exact-head CI40415899333 application/database success, including 34 contact-preference pgTAP assertions and two independent-session contention/replay scenarios. Independent review and local UI/build checks passed; zero hooks/deployments before merge."
     },
     {
+      "id": "INQUIRY-COMMUNICATION-LANGUAGE-CONTRACT",
+      "state": "done",
+      "owner": "coordinator",
+      "depends_on": ["INQUIRY-OWNER-WORKLIST-INTEGRATE"],
+      "branch": "codex/m01-inquiry-language-contract",
+      "acceptance": "Freeze a separate current-owner projection and compare-and-set command for an explicitly stated administrative communication language, without locale, interpreter, clinical-comprehension, consent or messaging claims.",
+      "evidence": "Three independent security/domain, UX and API/database reviews cleared the contract after exact enum, activation-layer and language-specific receipt/RPC wording was frozen. Three focused contract tests and contracts typecheck passed.",
+      "development_gate": "passed"
+    },
+    {
+      "id": "INQUIRY-COMMUNICATION-LANGUAGE-API",
+      "state": "ready",
+      "owner": "pwa_verification",
+      "depends_on": ["INQUIRY-COMMUNICATION-LANGUAGE-CONTRACT"],
+      "branch": "codex/m01-inquiry-language-api",
+      "acceptance": "Private current-owner state, revisioned idempotent command, minimal audit/outbox and adversarial SQL/API evidence."
+    },
+    {
+      "id": "INQUIRY-COMMUNICATION-LANGUAGE-UI",
+      "state": "ready",
+      "owner": "connection_ui",
+      "depends_on": ["INQUIRY-COMMUNICATION-LANGUAGE-CONTRACT"],
+      "branch": "codex/m01-inquiry-language-ui",
+      "acceptance": "Polished Dental Spa qualification UI with explicit language selection, truthful limitations and complete connected recovery states."
+    },
+    {
+      "id": "INQUIRY-COMMUNICATION-LANGUAGE-INTEGRATE",
+      "state": "blocked",
+      "owner": "coordinator",
+      "depends_on": ["INQUIRY-COMMUNICATION-LANGUAGE-API", "INQUIRY-COMMUNICATION-LANGUAGE-UI"],
+      "branch": "codex/m01-inquiry-language-contract",
+      "acceptance": "Independent security/UI review, generated OpenAPI, focused local/PostgreSQL/browser checks, no-deployment merge and owner-visible evidence.",
+      "blocker": "API/database and UI implementations have not started.",
+      "unblocks_on": "Both implementation lanes are reviewed and integrated."
+    },
+    {
       "id": "INTAKE-CONTRACT",
       "state": "done",
       "owner": "coordinator",
