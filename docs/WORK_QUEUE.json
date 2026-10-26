@@ -266,11 +266,57 @@
     },
     {
       "id": "INQUIRY-CONTACT-PREFERENCE-INTEGRATE",
-      "state": "verification",
+      "state": "done",
       "owner": "coordinator",
       "depends_on": ["INQUIRY-CONTACT-PREFERENCE-API", "INQUIRY-CONTACT-PREFERENCE-UI"],
       "branch": "codex/m01-contact-preference-contract",
-      "acceptance": "Independent security/UI review, generated OpenAPI, focused local/PostgreSQL/browser checks, no-deployment merge and owner-visible evidence."
+      "acceptance": "Independent security/UI review, generated OpenAPI, focused local/PostgreSQL/browser checks, no-deployment merge and owner-visible evidence.",
+      "evidence": "PR #18 squash merged 0149833 after exact-head CI40415899333 application/database success, including 34 contact-preference pgTAP assertions and two independent-session contention/replay scenarios. Independent review and local UI/build checks passed; zero hooks/deployments before merge."
+    },
+    {
+      "id": "INQUIRY-COMMUNICATION-LANGUAGE-CONTRACT",
+      "state": "done",
+      "owner": "coordinator",
+      "depends_on": ["INQUIRY-OWNER-WORKLIST-INTEGRATE"],
+      "branch": "codex/m01-inquiry-language-contract",
+      "acceptance": "Freeze a separate current-owner projection and compare-and-set command for an explicitly stated administrative communication language, without locale, interpreter, clinical-comprehension, consent or messaging claims.",
+      "evidence": "Three independent security/domain, UX and API/database reviews cleared the contract after exact enum, activation-layer and language-specific receipt/RPC wording was frozen. Three focused contract tests and contracts typecheck passed.",
+      "development_gate": "passed"
+    },
+    {
+      "id": "INQUIRY-COMMUNICATION-LANGUAGE-API",
+      "state": "done",
+      "owner": "pwa_verification",
+      "depends_on": ["INQUIRY-COMMUNICATION-LANGUAGE-CONTRACT"],
+      "branch": "codex/m01-inquiry-language-api",
+      "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/inquiry-communication-language-api",
+      "base": "00d2d6e",
+      "allowed_files": ["apps/dental-api/src/intake/**", "supabase/migrations/*communication_language*.sql", "supabase/tests/*communication_language*.sql", "scripts/inquiry-communication-language-concurrency.mjs", "tests/unit/inquiry-communication-language-*", "tests/integration/inquiry-communication-language-*"],
+      "acceptance": "Private current-owner state, revisioned idempotent command, minimal audit/outbox and adversarial SQL/API evidence.",
+      "evidence": "Commit 0d3ae9a integrated after independent security review. Twenty-eight focused language tests and fifteen access/contact-preference regressions passed in the API lane; 47 pgTAP assertions and the independent-session contention harness await current-head CI.",
+      "development_gate": "passed"
+    },
+    {
+      "id": "INQUIRY-COMMUNICATION-LANGUAGE-UI",
+      "state": "done",
+      "owner": "connection_ui",
+      "depends_on": ["INQUIRY-COMMUNICATION-LANGUAGE-CONTRACT"],
+      "branch": "codex/m01-inquiry-language-ui",
+      "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/inquiry-communication-language-ui",
+      "base": "00d2d6e",
+      "allowed_files": ["apps/clinic-os/components/intake/**", "tests/e2e/inquiry-communication-language.spec.ts", "tests/e2e/inquiry-contact-preference.spec.ts"],
+      "acceptance": "Polished Dental Spa qualification UI with explicit language selection, truthful limitations and complete connected recovery states.",
+      "evidence": "Commit f970fd5 integrated. Production build, typecheck, scoped lint and 28 configured browser cases passed; pearl/navy layouts were inspected at 1536, 1280, 768 and 390 pixels.",
+      "development_gate": "passed"
+    },
+    {
+      "id": "INQUIRY-COMMUNICATION-LANGUAGE-INTEGRATE",
+      "state": "verification",
+      "owner": "coordinator",
+      "depends_on": ["INQUIRY-COMMUNICATION-LANGUAGE-API", "INQUIRY-COMMUNICATION-LANGUAGE-UI"],
+      "branch": "codex/m01-inquiry-language-contract",
+      "acceptance": "Independent security/UI review, generated OpenAPI, focused local/PostgreSQL/browser checks, no-deployment merge and owner-visible evidence.",
+      "next_action": "Generate the OpenAPI/types, run combined checks and exact-head PostgreSQL CI, then merge only with zero hooks/deployments."
     },
     {
       "id": "INTAKE-CONTRACT",
@@ -651,8 +697,8 @@
       "state": "blocked",
       "owner": "coordinator",
       "depends_on": [],
-      "blocker": "Supabase MCP actions unavailable; no hosted migrations performed.",
-      "unblocks_on": "Authorized development-project access becomes available.",
+      "blocker": "The connected Supabase development project is empty: no public/private tables and no migration history. No hosted migration, identity fixture, Storage/revocation check or staging restore has been authorized or performed.",
+      "unblocks_on": "A bounded hosted-foundation activation plan is explicitly authorized, then migrations, synthetic identity/Storage/revocation evidence and staging restore are verified without production data.",
       "acceptance": "Hosted identity/Storage/revocation and staging restore evidence; release gate, not a global development block."
     }
   ]
