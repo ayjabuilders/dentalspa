@@ -13,18 +13,18 @@
     },
     {
       "id": "INTAKE-CONTRACT",
-      "state": "verification",
+      "state": "done",
       "owner": "coordinator",
       "depends_on": [
         "FOUNDATION-REVIEW"
       ],
       "acceptance": "Freeze minimal manual-intake v1 schemas and errors; no clinical notes or automatic patient merge.",
-      "evidence": "Frozen reviewed contract dd53154 with packaging and DB-gate clarification 741963e; stable shared base for parallel work, not yet merged to main.",
+      "evidence": "Frozen contract and implementation squash merged in PR #2 as c3cd0ff after current-head application and database CI passed.",
       "development_gate": "passed"
     },
     {
       "id": "INTAKE-API",
-      "state": "verification",
+      "state": "done",
       "owner": "pwa_verification",
       "depends_on": [
         "INTAKE-CONTRACT"
@@ -45,7 +45,7 @@
     },
     {
       "id": "INTAKE-UI",
-      "state": "verification",
+      "state": "done",
       "owner": "connection_ui",
       "depends_on": [
         "INTAKE-CONTRACT"
@@ -64,24 +64,68 @@
     },
     {
       "id": "INTAKE-INTEGRATE",
-      "state": "verification",
+      "state": "done",
       "owner": "coordinator",
       "depends_on": [
         "INTAKE-API",
         "INTAKE-UI"
       ],
       "acceptance": "Contract/API/browser tests and independent review before bounded PR merge.",
-      "evidence": "PR#2 b0464ff; independent review passed,55unit52integration20browser plus5post-CSS browser tests passed; CI40346382279 application success, database pending."
+      "evidence": "PR #2 squash merged c3cd0ff. Independent review passed; 55 unit, 52 integration, 20 browser plus 5 post-CSS browser tests passed; CI40346382279 application and database succeeded."
+    },
+    {
+      "id": "PATIENT-LOOKUP-CONTRACT",
+      "state": "done",
+      "owner": "coordinator",
+      "depends_on": [
+        "INTAKE-INTEGRATE"
+      ],
+      "branch": "codex/m02-patient-lookup-contract",
+      "acceptance": "Freeze a read-only tenant-scoped exact-reference/name lookup with explicit truncation, deterministic ordering and privacy-safe transport; no selection, create, merge or booking command.",
+      "evidence": "Frozen after independent API, UI and privacy review. Shared strict schemas and four focused contract tests pass; lookup remains read-only and selection/create policy is deferred.",
+      "development_gate": "passed"
+    },
+    {
+      "id": "PATIENT-LOOKUP-API",
+      "state": "ready",
+      "owner": "pwa_verification",
+      "depends_on": [
+        "PATIENT-LOOKUP-CONTRACT"
+      ],
+      "branch": "codex/patient-lookup-api",
+      "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/patient-lookup-api",
+      "acceptance": "JSON-body POST API and RPC enforce active role/tenant scope, literal bounded matching, full-register ordering/truncation and minimal no-store response."
+    },
+    {
+      "id": "PATIENT-LOOKUP-UI",
+      "state": "ready",
+      "owner": "connection_ui",
+      "depends_on": [
+        "PATIENT-LOOKUP-CONTRACT"
+      ],
+      "branch": "codex/patient-lookup-ui",
+      "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/patient-lookup-ui",
+      "acceptance": "Verified-session-only lookup with explicit search, read-only details, complete safe states and no browser persistence or stale response restoration."
+    },
+    {
+      "id": "PATIENT-LOOKUP-INTEGRATE",
+      "state": "backlog",
+      "owner": "coordinator",
+      "depends_on": [
+        "PATIENT-LOOKUP-API",
+        "PATIENT-LOOKUP-UI"
+      ],
+      "acceptance": "Independent review, relevant contract/API/SQL/browser tests and current-head CI before bounded merge."
     },
     {
       "id": "BOOKING-CONTRACT",
       "state": "backlog",
       "owner": null,
       "depends_on": [
-        "INTAKE-INTEGRATE"
+        "PATIENT-LOOKUP-INTEGRATE"
       ],
       "acceptance": "Resource-safe request/confirmation and patient matching decisions frozen from PRD before parallel implementation.",
-      "next_action": "Review patient lookup proposal from pwa_verification; freeze read-only lookup before selection/create/booking policies."
+      "next_action": "After the lookup slice is verified, freeze explicit patient-selection policy and transactional booking independently."
     },
     {
       "id": "HOSTED-FOUNDATION",

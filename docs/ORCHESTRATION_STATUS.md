@@ -5,14 +5,14 @@ This chat coordinates integration in `C:/Users/platf/Documents/Dental Spa`. ADR-
 ## Current evidence — 26 October 2026
 
 - Foundation PR #1 merged as 88c9af5 after independent review and CI40342606919: application and full Supabase database both passed. No active repository hooks or deployments found.
-- `codex/m02-intake` rebased onto merged main. Backend1291ce6 and UI25bbf53 integrated. Shared schemas and generated OpenAPI included.
+- Intake PR #2 squash merged as c3cd0ff after current-head CI40346382279 application and full database success. No repository hooks or deployments appeared before merge.
 - Integrated lint, typecheck, 55 unit tests, 52 integration tests and all application builds passed. All20 browser regressions passed; after the CSS-only correction, Clinic build and5focused intake tests also passed. Added23pgTAP assertions await full Supabase CI; local Docker absent.
 - Independent final review found no blocker, including UTC replay, Unicode validation, activation switches, tenant scope, atomic audit/outbox and memory-only UI. Development approval only.
 - Parent inspected1280px light list/detail and dark creation dialog. Source-select clipping corrected in0024789 and verified in the integrated preview. Parent also visually inspected390px dark/light layouts. Evidence:qa/screenshots/intake-desktop-light.png. Broader visual/installed-device approval remains pending.
 
 ## Next action
 
-PR #2 https://github.com/ayjabuilders/dentalspa/pull/2 is open at b0464ff; CI40346382279 is running. Check results, fix actionable failures and merge only after current-code/base checks pass. Read-only lookup proposal reviewed and cherry-picked locally as27f67e0 in docs/PATIENT_MATCHING_NEXT_SLICE.md. Freeze its request/privacy/search semantics next; selection/creation policy remains explicit. Local evidence/proposal commits are not yet pushed and do not change the PR code under CI. No automatic merge or booking implementation.
+The active branch is `codex/m02-patient-lookup-contract` on merged main. The read-only lookup contract is frozen after independent API, UI and adversarial privacy review; four focused schema tests pass. Next, commit this base and dispatch separate API/SQL and verified-session UI lanes from that exact revision. Selection, patient creation, merge and booking remain out of scope until their own policies are frozen.
 
 ## Activation gates
 

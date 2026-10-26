@@ -1,6 +1,6 @@
-# Patient matching — next-slice proposal
+# M02.2 patient lookup — frozen development contract
 
-Status: **proposal for coordinator review, not a frozen contract or implementation authorization**. No patient-selection, creation, merge, account-link or booking command is defined by this document.
+Status: **frozen development contract for M02.2 read-only lookup**. No patient-selection, creation, merge, account-link or booking command is defined or authorized by this document.
 
 ## Recommended first slice: read-only clinic-scoped lookup
 
@@ -15,21 +15,33 @@ type PatientLookup = {
     clinic_id: string;
     reference: string;
     display_name: string;
-    match_basis: 'reference_exact' | 'name_search';
+    match_basis: 'reference_exact' | 'name_prefix';
   }>;
   truncated: boolean;
 };
 ```
 
-The coordinator must freeze the endpoint, request shape, maximum page size, ordering, search semantics and error codes before parallel implementation. Do not silently change the current `/patients` array response into this object. A separate versioned lookup route is an option; updating existing consumers together is another.
+Shared schemas in `packages/contracts/src/patient-lookup.ts` are authoritative. Add `POST /api/v1/patients/lookup` with strict JSON `{mode, query}` and reject query-string parameters and unknown body fields. `reference_exact` accepts 1–256 Unicode code points; `name_prefix` accepts 2–120. Trim surrounding input whitespace only. Matching is literal and case-sensitive, preserving accents, punctuation, whitespace and script. Do not add wildcards, regular expressions, transliteration, accent folding, token rearrangement, fuzzy ranking or confidence scores.
 
-The selected clinic comes from verified server-side membership context, not arbitrary query/body authority. A proposed initial role set is reception, manager and dentist, matching manual intake; it requires coordinator confirmation. Existing broader staff patient reads do not automatically authorize future selection or creation commands.
+Both transport hops use JSON-body POST: browser to Nest and Nest to a narrowly granted PostgreSQL RPC. Do not translate the lookup into Supabase REST filters, because those place identifiers in provider URLs. Do not log request bodies, query values or raw provider/database errors. Responses use `Cache-Control: no-store` and must never enter the service-worker cache.
 
-The lookup must not expose contact, clinical, financial or account-link data. A name result is a search suggestion, not an identity determination. An empty result means only that the specified lookup returned no rows; a truncated result explicitly requires refinement. No automatic selection, conversion, deduplication or merge follows the lookup.
+Apply mode matching, clinic filtering, ordering and truncation inside PostgreSQL over the full clinic register. Fetch 21 rows, return at most 20, and set `truncated` when a twenty-first match exists. Order by `reference COLLATE "C" ASC, id ASC`. Return no total count and do not echo the query. Preserve the existing `/patients` array response and `GET /patients/:id` unchanged.
+
+The selected clinic comes from verified server-side membership context, not arbitrary query/body authority. Active reception, manager and dentist memberships may use the lookup. The RPC independently repeats actor, active membership, role and clinic checks under fixed search-path rules and existing RLS. Anonymous, patient-only, assistant-only, inactive and foreign-clinic requests are denied. This endpoint boundary does not revoke assistants' existing minimal reads through foundation `/patients` and RLS; changing that policy requires a separate decision.
+
+The lookup returns only id, clinic id, reference, display name and server-derived match basis. It must not expose contact, clinical, financial or account-link data. A name result is a search suggestion, not an identity determination. An empty result means only that the specified lookup returned no rows; a truncated result explicitly requires refinement. No automatic selection, conversion, deduplication or merge follows the lookup. Return 200 for success including empty results, 400 invalid input, 401 invalid identity, 403 forbidden scope and sanitized 503 for provider or malformed-result failure.
+
+The RPC is read-only and writes no audit or outbox event. It accepts a clinic id from the trusted API adapter only to select the requested active membership; browser callers cannot establish authority by sending it. References are unconstrained in the existing database, so response validation leaves them unbounded. The 256-code-point reference query bound is an operational request limit, not a patient-identity rule; representative legacy-reference compatibility remains an activation check.
+
+## Frontend acceptance
+
+Embed a separate lookup component only inside the verified connection view. Keep `/patients` as the explicit synthetic preview. Require an explicit mode and submit; do not fetch the register on mount. Clear prior results and details when query or mode changes, abort superseded work and ignore late responses. Keep credentials, queries, results and details out of routes, browser storage, service-worker cache, telemetry and error text. Dispose and clear them on logout or expiry.
+
+Support initial, loading, empty, truncated, denied, offline, unavailable and explicit retry states. Empty copy must not claim that no patient exists; truncated copy requires refinement. Label name results as unverified search suggestions. Opening a result is read-only preview only: no select, create, merge, account-link or booking action, and no automatic first-result selection. Use initials rather than generated portraits for connected records.
 
 ## Requirement traceability
 
-Line references identify the source passages in this repository at proposal time. Quoted statements are requirements; the proposed response and implementation boundaries above are recommendations.
+Line references identify the source passages in this repository at contract-freeze time. Quoted statements are source requirements; the bounded lookup decisions above are the approved development contract.
 
 | Requirement | Source passage |
 | --- | --- |
@@ -66,18 +78,15 @@ After duplicate-review and override policies are defined, consider a separate pa
 
 Scheduling follows its own frozen contract and resource-locking dependencies. A lookup or selection result is not an appointment request, reservation or confirmed booking.
 
-## Decisions before contract freeze
+## Decisions deferred beyond lookup
 
-1. **Lookup permission and limits:** confirm roles, minimum/maximum query length, maximum returned rows, deterministic ordering, and whether pagination or refinement is sufficient.
-2. **Search semantics:** define exact-reference case handling and name matching. Accents, Arabic, punctuation and transliteration must not silently become identity equivalence. No confidence score is proposed.
-3. **Search transport/privacy:** choose a request shape that does not place names/contact information in logs, telemetry or persistent browser storage. Preserve no-store responses and clear connected results on logout/session expiry.
-4. **Identity evidence for later selection:** the clinic must define what staff actually check and how a mistaken selection can be corrected. Do not invent an approved verification procedure from the documents.
-5. **Duplicate override for later creation:** decide who can create despite possible matches, required structured reason codes, review freshness and concurrency behavior. No free-form medical-note field is proposed.
-6. **Patient reference and legacy data:** define reference generation and Orthalis export/import rules separately. No verified integration or migration process is established.
-7. **Contact data:** decide whether later creation captures contacts, their verification state and permitted uses. Inquiry contact values must not silently overwrite a selected patient's record or authorize Patient Pass access.
+1. **Identity evidence for later selection:** the clinic must define what staff actually check and how a mistaken selection can be corrected. Do not invent an approved verification procedure from the documents.
+2. **Duplicate override for later creation:** decide who can create despite possible matches, required structured reason codes, review freshness and concurrency behavior. No free-form medical-note field is proposed.
+3. **Patient reference and legacy data:** define reference generation and Orthalis export/import rules separately. No verified integration or migration process is established. Audit representative legacy reference lengths before activation.
+4. **Contact data:** decide whether later creation captures contacts, their verification state and permitted uses. Inquiry contact values must not silently overwrite a selected patient's record or authorize Patient Pass access.
 
 ## Verification and release boundaries
 
 For the read-only slice, test role and tenant negatives, direct database policy enforcement, foreign IDs, query bounds/escaping, deterministic order, exact truncation behavior, empty results, revoked sessions and no unintended data fields. UI tests should distinguish no results from incomplete results and should not offer a misleading “no duplicate” conclusion.
 
-Selection/creation later require replay/conflict tests, composite tenant constraints, atomic rollback, stale-review handling and real multi-connection creation tests. PGlite's queued transactions do not establish hosted contention guarantees. Operational gates in ADR-003 remain open until independently satisfied; use synthetic data only and do not deploy or activate real patient workflows through this proposal.
+Selection/creation later require replay/conflict tests, composite tenant constraints, atomic rollback, stale-review handling and real multi-connection creation tests. PGlite's queued transactions do not establish hosted contention guarantees. Operational gates in ADR-003 remain open until independently satisfied; use synthetic data only and do not deploy or activate real patient workflows through this contract.
