@@ -1,6 +1,6 @@
 # Inquiry owner worklist v1 — synthetic read-only contract
 
-Status: coordinator draft for a bounded M02 Growth/Intake development slice. This is not a clinic-approved urgency, triage, staffing, or contact policy. Freeze and review this contract before API/UI work begins. It can be developed after the manual-intake foundation; it does not require patient selection or appointment confirmation.
+Status: frozen and independently reviewed for a bounded M02 Growth/Intake synthetic development slice. This is not a clinic-approved urgency, triage, staffing, or contact policy. It can be developed after the manual-intake foundation; it does not require patient selection or appointment confirmation.
 
 ## Meaning and source boundary
 
