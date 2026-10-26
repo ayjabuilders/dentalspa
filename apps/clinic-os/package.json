@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "build": "next build --webpack",
+    "build": "node ../../scripts/build-clinic.mjs",
     "start": "next start -p 4200",
     "dev": "next dev --webpack -p 4200"
   },

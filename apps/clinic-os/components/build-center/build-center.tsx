@@ -4,12 +4,14 @@ import { ArrowRight, Check, Flag, GitPullRequest, LockKeyhole, ShieldCheck } fro
 import type { BuildStatusData, BuildTaskState } from './types';
 import { ProductScope } from './product-scope';
 import { TestLinks } from './test-links';
+import { useBuildStatus } from './use-build-status';
 import './build-center.css';
 
 const stateCopy: Record<BuildTaskState, string> = { done: 'Slice livrée', active: 'En cours / vérification', blocked: 'Bloqué', queued: 'En file' };
 type View = 'product' | 'infrastructure' | 'phases' | 'gates' | 'deliveries';
 
-export function BuildCenter({ status }: { status: BuildStatusData }) {
+export function BuildCenter({ status: initialStatus }: { status: BuildStatusData }) {
+  const { status, unavailable } = useBuildStatus(initialStatus);
   const [view, setView] = useState<View>('product');
   const partial = status.productModules.filter(module => module.state === 'partial').length;
   const previews = status.productModules.filter(module => module.state === 'preview').length;
@@ -31,6 +33,7 @@ export function BuildCenter({ status }: { status: BuildStatusData }) {
     </div>
     <p className="scope-explanation">Les {status.counts.done} tâches terminées appartiennent à une petite file de travail technique. Elles ne mesurent pas l’achèvement des {status.productModules.length} modules. Une page dessinée ne signifie pas que son fonctionnement métier est livré.</p>
     <div className="build-views" role="group" aria-label="Explorer la construction">{views.map(item => <button key={item.id} aria-pressed={view === item.id} onClick={() => setView(item.id)}>{item.label}<span>{item.count}</span></button>)}</div>
+    <p className={`build-sync ${unavailable ? 'unavailable' : ''}`} role="status">{unavailable ? 'Actualisation indisponible · dernier état conservé. ' : 'Actualisation automatique · '}{status.successfulAt ? <>Dernier build réussi : <time dateTime={status.successfulAt}>{new Intl.DateTimeFormat('fr-FR', { dateStyle: 'short', timeStyle: 'medium', timeZone: 'Africa/Casablanca' }).format(new Date(status.successfulAt))}</time> (Casablanca).</> : 'En attente de la confirmation du build réussi.'}</p>
     <div className="build-view" id="build-view">
       {view === 'product' && <ProductScope status={status}/>}
       {view === 'infrastructure' && <section aria-labelledby="infrastructure-title"><div className="build-section-heading"><div><p className="eyebrow muted">LE SOCLE TRANSVERSAL</p><h2 id="infrastructure-title">Infrastructure & exploitation</h2></div></div><p className="scope-explanation">Travail partagé par les modules. Chaque chantier conserve ses éléments construits et ses validations restantes.</p><div className="scope-grid">{status.infrastructure.map(item => <article className="scope-card" key={item.title}><h3>{item.title}</h3><div className="scope-built"><strong>Construit / documenté</strong><p>{item.built}</p></div><div className="scope-remaining"><strong>Reste à faire</strong><p>{item.remaining}</p></div><small className="scope-source">Source : {item.source}</small></article>)}</div></section>}
@@ -38,7 +41,7 @@ export function BuildCenter({ status }: { status: BuildStatusData }) {
       {view === 'gates' && <section aria-labelledby="gates-title"><div className="build-section-heading"><div><p className="eyebrow muted">CE QUI AUTORISE L’ÉTAPE SUIVANTE</p><h2 id="gates-title">Développement & activation</h2></div></div><p className="scope-explanation">Une dépendance technique vérifiée permet de poursuivre les slices indépendantes. L’usage réel exige en plus les validations opérationnelles, cliniques et de confidentialité prévues par le projet.</p><div className="scope-grid">{status.releaseGates.map(gate => <article className="scope-card" key={gate.title}><header><LockKeyhole size={19}/><span className="scope-status planned">{gate.state}</span></header><h3>{gate.title}</h3><p>{gate.remaining}</p></article>)}</div><p className="program-source">Sources : qa/RELEASE_GATES.md · docs/11_TEST_PILOT_PLAN.md · ADR-003. Les tests d’une slice ne ferment pas automatiquement la gate de son module.</p><Decision/></section>}
       {view === 'deliveries' && <DeliveryQueue status={status}/>}
     </div>
-    <footer className="build-snapshot"><span>État du périmètre revu le 26 octobre 2026.</span><span>File v{status.sourceVersion} · instantané généré le {status.snapshotAt.slice(0, 10)} à {status.snapshotAt.slice(11, 16)} UTC. Actualisé au prochain build.</span></footer>
+    <footer className="build-snapshot"><span>Critères revus le {status.progressReviewedAt} · file v{status.sourceVersion}.</span><span>Build réussi → instantané publié → actualisation toutes les 20 s lorsque cette page est visible. Les preuves déterminent les pourcentages.</span></footer>
   </section>;
 }
 

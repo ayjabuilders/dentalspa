@@ -1,0 +1,1027 @@
+{
+  "version": 1,
+  "reviewedAt": "2026-10-26",
+  "method": "Six capacités PRD de poids égal par module. Livré=1, partiel=0.5, prévu=0. Une preuve et ses tâches liées terminées sont requises pour créditer des points. Mesure de couverture fonctionnelle, pas de temps écoulé ni d’acceptation pour usage réel.",
+  "modules": [
+    {
+      "id": "M01",
+      "source": "Guide maître p. 21 · docs/04_MODULE_PRD.md",
+      "criteria": [
+        {
+          "id": "M01-1",
+          "label": "Centraliser les demandes des canaux autorisés",
+          "state": "partial",
+          "taskIds": [
+            "INTAKE-INTEGRATE"
+          ],
+          "evidence": "PR #2 : saisie manuelle et provenance livrées; formulaires et connecteurs de canaux restent à construire."
+        },
+        {
+          "id": "M01-2",
+          "label": "Dédoublonner avec une identité et des contacts vérifiés",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M01-3",
+          "label": "Capturer service, provenance, urgence et préférence de rappel",
+          "state": "partial",
+          "taskIds": [
+            "INTAKE-INTEGRATE"
+          ],
+          "evidence": "PR #2 : canal d’origine livré; service demandé, urgence et préférence de rappel restent à couvrir."
+        },
+        {
+          "id": "M01-4",
+          "label": "Faire avancer qualification, consultation et conversion",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M01-5",
+          "label": "Gérer responsable, échéance, relances et résultat",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M01-6",
+          "label": "Séparer prospects, patients confirmés et données de santé",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        }
+      ]
+    },
+    {
+      "id": "M02",
+      "source": "Guide maître p. 22 · docs/04_MODULE_PRD.md",
+      "criteria": [
+        {
+          "id": "M02-1",
+          "label": "Réservation publique par service, durée et praticien",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M02-2",
+          "label": "Contraintes de salles, fauteuils, équipe et équipement",
+          "state": "partial",
+          "taskIds": [
+            "SCHEDULING-HOLD-INTEGRATE"
+          ],
+          "evidence": "PR #4 : contraintes praticien/fauteuil; pas encore toutes les salles, équipes et équipements."
+        },
+        {
+          "id": "M02-3",
+          "label": "Horaires, marges, jours fermés et urgences",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M02-4",
+          "label": "Confirmation, annulation, déplacement et attente",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M02-5",
+          "label": "Rappels et préparation avant visite",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M02-6",
+          "label": "Réservation transactionnelle et prévention des conflits",
+          "state": "partial",
+          "taskIds": [
+            "SCHEDULING-CONCURRENCY-EVIDENCE"
+          ],
+          "evidence": "PR #4–5 : options et concurrence vérifiées; confirmation de rendez-vous absente."
+        }
+      ]
+    },
+    {
+      "id": "M03",
+      "source": "Guide maître p. 23 · docs/04_MODULE_PRD.md",
+      "criteria": [
+        {
+          "id": "M03-1",
+          "label": "Onboarding mobile accessible étape par étape",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M03-2",
+          "label": "Formulaires administratifs et consentements minimaux",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M03-3",
+          "label": "Rendez-vous, préparation, documents et prochaine action",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M03-4",
+          "label": "Accès sécurisé aux plans approuvés et factures",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M03-5",
+          "label": "Photos guidées lorsque le parcours les autorise",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M03-6",
+          "label": "Messagerie administrative accessible et multilingue",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        }
+      ]
+    },
+    {
+      "id": "M04",
+      "source": "Guide maître p. 24 · docs/04_MODULE_PRD.md",
+      "criteria": [
+        {
+          "id": "M04-1",
+          "label": "Consultations, constatations et contexte clinique",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M04-2",
+          "label": "Références aux images, photos et scans indiqués",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M04-3",
+          "label": "Consentements et discussions de traitement",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M04-4",
+          "label": "Modèles cliniques configurables et revue",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M04-5",
+          "label": "Auteur, signature, dates et amendements",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M04-6",
+          "label": "Lien aux rendez-vous et cas de traitement",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        }
+      ]
+    },
+    {
+      "id": "M05",
+      "source": "Guide maître p. 25 · docs/04_MODULE_PRD.md",
+      "criteria": [
+        {
+          "id": "M05-1",
+          "label": "Plusieurs cas et cycles de vie par patient",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M05-2",
+          "label": "Plans approuvés et étapes cliniques",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M05-3",
+          "label": "Tâches, dépendances, blocages et échéances",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M05-4",
+          "label": "Liens aux médias, CAD, laboratoire et factures",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M05-5",
+          "label": "Versions de plan et décisions d’approbation",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M05-6",
+          "label": "Reprise, nouveau scan, nouvelle fabrication et pause",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        }
+      ]
+    },
+    {
+      "id": "M06",
+      "source": "Guide maître p. 26 · docs/04_MODULE_PRD.md",
+      "criteria": [
+        {
+          "id": "M06-1",
+          "label": "Capture guidée sur matériel adapté",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M06-2",
+          "label": "Listes photo selon le service",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M06-3",
+          "label": "Contrôle technique de netteté, cadrage et vues",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M06-4",
+          "label": "Consentement et droits à l’image par usage",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M06-5",
+          "label": "Archive avant/après et traçabilité des modifications",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M06-6",
+          "label": "Présentation revue et publiée par le praticien",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        }
+      ]
+    },
+    {
+      "id": "M07",
+      "source": "Guide maître p. 27 · docs/04_MODULE_PRD.md",
+      "criteria": [
+        {
+          "id": "M07-1",
+          "label": "Import sécurisé des formats validés",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M07-2",
+          "label": "Appareil source, version logicielle et cas",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M07-3",
+          "label": "Gestion des formats de scan pris en charge",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M07-4",
+          "label": "Versions, rejets et nouvelles acquisitions",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M07-5",
+          "label": "Métadonnées, dates et propriété vérifiée",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M07-6",
+          "label": "Partage contrôlé avec les laboratoires approuvés",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        }
+      ]
+    },
+    {
+      "id": "M08",
+      "source": "Guide maître p. 28 · docs/04_MODULE_PRD.md",
+      "criteria": [
+        {
+          "id": "M08-1",
+          "label": "Demande CAD issue d’exigences cliniques approuvées",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M08-2",
+          "label": "Fichiers projet CAD liés au cas",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M08-3",
+          "label": "Designer, version et délai de livraison",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M08-4",
+          "label": "Commentaires de revue et révisions rejetées",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M08-5",
+          "label": "Version approuvée verrouillée pour production",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M08-6",
+          "label": "Distinction simulation esthétique et géométrie utilisable",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        }
+      ]
+    },
+    {
+      "id": "M09",
+      "source": "Guide maître p. 29 · docs/04_MODULE_PRD.md",
+      "criteria": [
+        {
+          "id": "M09-1",
+          "label": "File impression, fraisage et laboratoire externe",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M09-2",
+          "label": "Matériaux, machines et procédés validés",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M09-3",
+          "label": "Opérateur, états, temps et preuves de production",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M09-4",
+          "label": "Post-traitement et contrôles par type de pièce",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M09-5",
+          "label": "Échecs, reprises, attentes et coûts associés",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M09-6",
+          "label": "Transfert pour essayage et libération clinique",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        }
+      ]
+    },
+    {
+      "id": "M10",
+      "source": "Guide maître p. 30 · docs/04_MODULE_PRD.md",
+      "criteria": [
+        {
+          "id": "M10-1",
+          "label": "Catalogue, unités, emplacements et lots utilisables",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M10-2",
+          "label": "Mouvements transactionnels et ajustements",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M10-3",
+          "label": "Recettes de consommation validées",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M10-4",
+          "label": "Prévisions distinctes selon le niveau de demande",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M10-5",
+          "label": "Péremptions, rappels, seuils et réservations",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M10-6",
+          "label": "Comparaison disponibilité et besoins cliniques/labo",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        }
+      ]
+    },
+    {
+      "id": "M11",
+      "source": "Guide maître p. 31 · docs/04_MODULE_PRD.md",
+      "criteria": [
+        {
+          "id": "M11-1",
+          "label": "Catalogue de fournisseurs approuvés",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M11-2",
+          "label": "Demandes de prix et disponibilité",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M11-3",
+          "label": "Comparaison prix, délai, conditionnement et alternatives",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M11-4",
+          "label": "Demande d’achat, approbation et commande",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M11-5",
+          "label": "Réception partielle, reliquat, retour et rapprochement",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M11-6",
+          "label": "Performance fournisseur et coût d’approvisionnement",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        }
+      ]
+    },
+    {
+      "id": "M12",
+      "source": "Guide maître p. 32 · docs/04_MODULE_PRD.md",
+      "criteria": [
+        {
+          "id": "M12-1",
+          "label": "Checklists de préparation par traitement",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M12-2",
+          "label": "Affectation salle, fauteuil, équipe et équipement",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M12-3",
+          "label": "Vérification kits et réservation matériaux",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M12-4",
+          "label": "États de préparation et signatures humaines",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M12-5",
+          "label": "Conflits de ressources et tâches manquantes",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M12-6",
+          "label": "Début, retard motivé et heure de fin",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        }
+      ]
+    },
+    {
+      "id": "M13",
+      "source": "Guide maître p. 33 · docs/04_MODULE_PRD.md",
+      "criteria": [
+        {
+          "id": "M13-1",
+          "label": "Registre instruments et plateaux",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M13-2",
+          "label": "Cycles de stérilisation et contrôles requis",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M13-3",
+          "label": "État et localisation des instruments",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M13-4",
+          "label": "Entretien, calibration et maintenance",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M13-5",
+          "label": "Incidents, pannes et indisponibilités",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M13-6",
+          "label": "Rapports techniques et actions correctives",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        }
+      ]
+    },
+    {
+      "id": "M14",
+      "source": "Guide maître p. 34 · docs/04_MODULE_PRD.md",
+      "criteria": [
+        {
+          "id": "M14-1",
+          "label": "Catalogue tarifaire du cabinet",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M14-2",
+          "label": "Devis sur services cliniquement approuvés",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M14-3",
+          "label": "Prix négociés et approbation autorisée",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M14-4",
+          "label": "Paiements vérifiés, allocations et reçus",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M14-5",
+          "label": "Soldes, remboursements et corrections",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M14-6",
+          "label": "Rapprochement caisse et analyses financières restreintes",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        }
+      ]
+    },
+    {
+      "id": "M15",
+      "source": "Guide maître p. 35 · docs/04_MODULE_PRD.md",
+      "criteria": [
+        {
+          "id": "M15-1",
+          "label": "Modèles de suivi approuvés par le praticien",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M15-2",
+          "label": "Suivi programmé et rappels de maintenance",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M15-3",
+          "label": "Messages sécurisés et pièces autorisées",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M15-4",
+          "label": "Retours patient et problèmes de service",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M15-5",
+          "label": "Résolution administrative et escalade professionnelle",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M15-6",
+          "label": "Suivi de complétion, absences de réponse et satisfaction",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        }
+      ]
+    },
+    {
+      "id": "M16",
+      "source": "Guide maître p. 36 · docs/04_MODULE_PRD.md",
+      "criteria": [
+        {
+          "id": "M16-1",
+          "label": "Permissions fines par module et action",
+          "state": "partial",
+          "taskIds": [
+            "FOUNDATION-REVIEW"
+          ],
+          "evidence": "PR #1 : gardes cabinet/rôle; pas encore les permissions de tous les modules."
+        },
+        {
+          "id": "M16-2",
+          "label": "Affectation selon rôle, cabinet, cas et contexte",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M16-3",
+          "label": "Boîte d’approbations avec responsable et délai",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M16-4",
+          "label": "Délégation et suppléance contrôlées",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M16-5",
+          "label": "Horaires, tâches et commentaires internes",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M16-6",
+          "label": "Audit des accès, modifications, approbations et exports",
+          "state": "partial",
+          "taskIds": [
+            "INTAKE-INTEGRATE"
+          ],
+          "evidence": "Audit des mutations livrées; couverture complète des lectures, approbations et exports à construire."
+        }
+      ]
+    },
+    {
+      "id": "M17",
+      "source": "Guide maître p. 37 · docs/04_MODULE_PRD.md",
+      "criteria": [
+        {
+          "id": "M17-1",
+          "label": "Briefing quotidien adapté au rôle",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M17-2",
+          "label": "File d’attention et actions prioritaires",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M17-3",
+          "label": "Exceptions, dépendances et urgence expliquées",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M17-4",
+          "label": "Recherche vocale/chat dans le contexte autorisé",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M17-5",
+          "label": "Propositions avec coût, risque et destinataire",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M17-6",
+          "label": "Historique des décisions et préférences de notification",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        }
+      ]
+    },
+    {
+      "id": "M18",
+      "source": "Guide maître p. 38 · docs/04_MODULE_PRD.md",
+      "criteria": [
+        {
+          "id": "M18-1",
+          "label": "Workflows déclenchés par événement ou manuellement",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M18-2",
+          "label": "Registre d’outils et validation des politiques",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M18-3",
+          "label": "Passerelle d’approbation et propositions immuables",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M18-4",
+          "label": "Reprises, délais, idempotence et récupération",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M18-5",
+          "label": "Mode observation, évaluations, budgets et traces",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M18-6",
+          "label": "Contexte autorisé et résumés sûrs",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        }
+      ]
+    },
+    {
+      "id": "M19",
+      "source": "Guide maître p. 39 · docs/04_MODULE_PRD.md",
+      "criteria": [
+        {
+          "id": "M19-1",
+          "label": "Mesures du parcours demande, consultation et traitement",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M19-2",
+          "label": "Occupation, absences et préparation",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M19-3",
+          "label": "Délais labo, reprises et coût par cas",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M19-4",
+          "label": "Exactitude stock, pertes et ruptures",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M19-5",
+          "label": "Rapprochement financier et capacité",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M19-6",
+          "label": "Incidents qualité, résolution et satisfaction",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        }
+      ]
+    },
+    {
+      "id": "M20",
+      "source": "Guide maître p. 40 · docs/04_MODULE_PRD.md",
+      "criteria": [
+        {
+          "id": "M20-1",
+          "label": "Procédures patient, fauteuil, labo et administration versionnées",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M20-2",
+          "label": "Templates de service avec portes obligatoires",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M20-3",
+          "label": "Rôles, transmissions, durées et formulaires configurables",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M20-4",
+          "label": "Formation et confirmation des compétences",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M20-5",
+          "label": "Approbation de déploiement et retour arrière multi-cabinet",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M20-6",
+          "label": "Amélioration fondée sur les résultats observés",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        }
+      ]
+    },
+    {
+      "id": "M21",
+      "source": "Guide maître p. 41 · docs/04_MODULE_PRD.md",
+      "criteria": [
+        {
+          "id": "M21-1",
+          "label": "Catalogue de cours et portail professionnel distinct",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M21-2",
+          "label": "Parcours par profession",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M21-3",
+          "label": "Ateliers issus de workflows et revues validés",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M21-4",
+          "label": "Onboarding, diagnostic, formation et support cabinet",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M21-5",
+          "label": "Mesure des résultats pédagogiques et de l’adoption",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        },
+        {
+          "id": "M21-6",
+          "label": "Accès Dental OS configurable pour les partenaires",
+          "state": "planned",
+          "taskIds": [],
+          "evidence": ""
+        }
+      ]
+    }
+  ]
+}

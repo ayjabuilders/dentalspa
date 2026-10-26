@@ -1,7 +1,8 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { productModules, infrastructure, releaseGates, intakeTest, schedulingTest, connectionTest, type TestLink } from './product-roadmap';
 import type { BuildMilestone, BuildStatusData, BuildTask, BuildTaskState } from '../components/build-center/types';
+import { calculateProgress, type ProgressLedger } from './module-progress';
 
 type QueueTask = {
   id: string;
@@ -88,7 +89,10 @@ function queuePath() {
 }
 
 export function getBuildStatus(): BuildStatusData {
-  const queue = JSON.parse(readFileSync(queuePath(), 'utf8')) as Queue;
+  const sourcePath = queuePath();
+  const queue = JSON.parse(readFileSync(sourcePath, 'utf8')) as Queue;
+  const ledger = JSON.parse(readFileSync(path.join(path.dirname(sourcePath), 'MODULE_PROGRESS.json'), 'utf8')) as ProgressLedger;
+  const progress = calculateProgress(ledger, queue.tasks, productModules.map(module => module.id));
   const tasks: BuildTask[] = queue.tasks.map(task => {
     const source = `${task.evidence ?? ''} ${task.acceptance ?? ''}`;
     const numbers = [...source.matchAll(/PR\s*#(\d+)/gi)].map(match => match[1]).filter((value): value is string => Boolean(value));
@@ -110,5 +114,7 @@ export function getBuildStatus(): BuildStatusData {
     result[task.state] += 1;
     return result;
   }, { done: 0, active: 0, blocked: 0, queued: 0 });
-  return { sourceVersion: queue.version, tasks, counts, milestones, productModules, infrastructure, releaseGates, snapshotAt: new Date().toISOString() };
+  const status: BuildStatusData = { sourceVersion: queue.version, tasks, counts, milestones, productModules: productModules.map(module => ({ ...module, progress: progress[module.id]! })), infrastructure, releaseGates, snapshotAt: new Date().toISOString(), snapshotId: process.env.DENTAL_BUILD_SNAPSHOT_ID ?? 'development', successfulAt: null, progressReviewedAt: ledger.reviewedAt };
+  if (process.env.DENTAL_BUILD_CANDIDATE) writeFileSync(process.env.DENTAL_BUILD_CANDIDATE, JSON.stringify(status));
+  return status;
 }

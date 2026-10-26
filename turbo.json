@@ -1,5 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": ["docs/WORK_QUEUE.json", "docs/MODULE_PROGRESS.json", "scripts/build-clinic.mjs", "scripts/build-snapshot.mjs"],
   "tasks": {
     "build": {
       "dependsOn": [
@@ -7,6 +8,7 @@
       ],
       "outputs": [
         ".next/**",
+        ".build-status/latest.json",
         "!.next/cache/**",
         "dist/**"
       ],

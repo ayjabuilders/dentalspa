@@ -1,5 +1,24 @@
 .build-center { --build-link:var(--primary); display:grid; gap:24px; padding-bottom:32px; font-size:14px; line-height:1.6; }
 .build-center * { min-width:0; }
+.build-sync { font-size:12px; color:var(--muted); padding:10px 14px; border-left:3px solid var(--positive); background:var(--raised); border-radius:5px; }
+.build-sync.unavailable { border-color:var(--gold); }
+.progress-method { padding:14px 18px; margin-bottom:18px; background:var(--raised); border:1px solid var(--line); border-radius:10px; }
+.progress-method summary { cursor:pointer; min-height:32px; color:var(--build-link); font-weight:650; }
+.progress-method p { margin:12px 0 0; color:var(--muted); }
+.module-progress { padding:15px; border-radius:10px; background:var(--raised); border:1px solid var(--line); }
+.module-progress>div:first-child { display:flex; justify-content:space-between; gap:12px; align-items:center; }
+.module-progress>div>span { font-size:12px; color:var(--muted); }
+.module-progress strong { font:800 26px var(--heading); color:var(--build-link); }
+.module-progress-track { height:7px; border-radius:8px; background:var(--soft); margin:12px 0 8px; overflow:hidden; }
+.module-progress-track>span { display:block; height:100%; background:var(--build-link); border-radius:inherit; transition:width 220ms var(--ease); }
+.module-progress>p { font-size:12px; }
+.progress-checklist ul { list-style:none; padding:0; }
+.progress-checklist li { padding:12px 0; border-bottom:1px solid var(--line); }
+.progress-checklist li>div { display:flex; justify-content:space-between; gap:12px; font-size:13px; }
+.progress-checklist li strong { flex:0 0 auto; color:var(--muted); font-size:12px; }
+.progress-checklist li strong[data-state=partial] { color:var(--gold); }
+.progress-checklist li strong[data-state=done] { color:var(--positive); }
+.progress-checklist li>p { font-size:12px; }
 .build-hero { position:relative; overflow:hidden; border-radius:20px; padding:32px; display:flex; align-items:center; gap:32px; color:#f4f8fd; background:radial-gradient(circle at 83% 15%,#68a6cc35,transparent 28%),linear-gradient(120deg,#0b1a2a,#123247 67%,#1a4250); box-shadow:0 16px 40px #0b1b2e20; }
 .build-hero::after { content:''; position:absolute; inset:-35% -10%; pointer-events:none; background:linear-gradient(105deg,transparent 38%,#ffffff0b 49%,transparent 61%); animation:build-sheen 9s linear infinite; }
 .build-hero-copy { position:relative; z-index:1; flex:1; }

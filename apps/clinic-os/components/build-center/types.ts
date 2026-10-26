@@ -1,4 +1,5 @@
 import type { InfrastructureItem, ProductModule, TestLink } from '../../lib/product-roadmap';
+import type { ModuleProgress } from '../../lib/module-progress';
 export type BuildTaskState = 'done' | 'active' | 'blocked' | 'queued';
 
 export type BuildTask = {
@@ -29,8 +30,11 @@ export type BuildStatusData = {
   tasks: BuildTask[];
   counts: Record<BuildTaskState, number>;
   milestones: BuildMilestone[];
-  productModules: ProductModule[];
+  productModules: (ProductModule & { progress: ModuleProgress })[];
   infrastructure: InfrastructureItem[];
   releaseGates: { title: string; state: string; remaining: string }[];
   snapshotAt: string;
+  snapshotId: string;
+  successfulAt: string | null;
+  progressReviewedAt: string;
 };
