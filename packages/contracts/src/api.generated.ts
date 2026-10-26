@@ -133,6 +133,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/scheduling/resources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["SchedulingController_resources"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scheduling/availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["SchedulingController_availability"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scheduling/holds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["SchedulingController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scheduling/holds/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["SchedulingController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scheduling/holds/{id}/release": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["SchedulingController_release"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/inquiries": {
         parameters: {
             query?: never;
@@ -392,6 +472,538 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["PatientDto"];
                 };
+            };
+        };
+    };
+    SchedulingController_resources: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            /** @enum {string} */
+                            kind: "provider" | "chair";
+                            display_name: string;
+                        }[];
+                        /** Format: date-time */
+                        observed_at: string;
+                        truncated: boolean;
+                    };
+                };
+            };
+            /** @description invalid_request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description resource_not_found or hold_not_found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description resource_conflict, idempotency_conflict or hold_expired */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description internal_error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description scheduling_disabled */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SchedulingController_availability: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    provider_resource_id: string;
+                    /** Format: uuid */
+                    chair_resource_id: string;
+                    /** Format: date-time */
+                    window_starts_at: string;
+                    /** Format: date-time */
+                    window_ends_at: string;
+                    display_timezone: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        provider_resource_id: string;
+                        /** Format: uuid */
+                        chair_resource_id: string;
+                        /** Format: date-time */
+                        window_starts_at: string;
+                        /** Format: date-time */
+                        window_ends_at: string;
+                        display_timezone: string;
+                        /** Format: date-time */
+                        observed_at: string;
+                        /** @enum {boolean} */
+                        informational: true;
+                        intervals: {
+                            /** Format: date-time */
+                            starts_at: string;
+                            /** Format: date-time */
+                            ends_at: string;
+                        }[];
+                        truncated: boolean;
+                    };
+                };
+            };
+            /** @description invalid_request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description resource_not_found or hold_not_found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description resource_conflict, idempotency_conflict or hold_expired */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description internal_error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description scheduling_disabled */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SchedulingController_create: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    provider_resource_id: string;
+                    /** Format: uuid */
+                    chair_resource_id: string;
+                    /** Format: date-time */
+                    starts_at: string;
+                    /** Format: date-time */
+                    ends_at: string;
+                    display_timezone: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        item: {
+                            /** Format: uuid */
+                            provider_resource_id: string;
+                            /** Format: uuid */
+                            chair_resource_id: string;
+                            /** Format: date-time */
+                            starts_at: string;
+                            /** Format: date-time */
+                            ends_at: string;
+                            display_timezone: string;
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            clinic_id: string;
+                            /** @enum {string} */
+                            status: "held" | "released" | "expired";
+                            /** Format: date-time */
+                            expires_at: string;
+                            /** Format: date-time */
+                            created_at: string;
+                            version: number;
+                        };
+                        replayed: boolean;
+                        /** Format: date-time */
+                        observed_at: string;
+                    };
+                };
+            };
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        item: {
+                            /** Format: uuid */
+                            provider_resource_id: string;
+                            /** Format: uuid */
+                            chair_resource_id: string;
+                            /** Format: date-time */
+                            starts_at: string;
+                            /** Format: date-time */
+                            ends_at: string;
+                            display_timezone: string;
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            clinic_id: string;
+                            /** @enum {string} */
+                            status: "held" | "released" | "expired";
+                            /** Format: date-time */
+                            expires_at: string;
+                            /** Format: date-time */
+                            created_at: string;
+                            version: number;
+                        };
+                        replayed: boolean;
+                        /** Format: date-time */
+                        observed_at: string;
+                    };
+                };
+            };
+            /** @description invalid_request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description resource_not_found or hold_not_found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description resource_conflict, idempotency_conflict or hold_expired */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description internal_error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description scheduling_disabled */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SchedulingController_get: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        item: {
+                            /** Format: uuid */
+                            provider_resource_id: string;
+                            /** Format: uuid */
+                            chair_resource_id: string;
+                            /** Format: date-time */
+                            starts_at: string;
+                            /** Format: date-time */
+                            ends_at: string;
+                            display_timezone: string;
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            clinic_id: string;
+                            /** @enum {string} */
+                            status: "held" | "released" | "expired";
+                            /** Format: date-time */
+                            expires_at: string;
+                            /** Format: date-time */
+                            created_at: string;
+                            version: number;
+                        };
+                        /** Format: date-time */
+                        observed_at: string;
+                    };
+                };
+            };
+            /** @description invalid_request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description resource_not_found or hold_not_found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description resource_conflict, idempotency_conflict or hold_expired */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description internal_error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description scheduling_disabled */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SchedulingController_release: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": Record<string, never>;
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        item: {
+                            /** Format: uuid */
+                            provider_resource_id: string;
+                            /** Format: uuid */
+                            chair_resource_id: string;
+                            /** Format: date-time */
+                            starts_at: string;
+                            /** Format: date-time */
+                            ends_at: string;
+                            display_timezone: string;
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            clinic_id: string;
+                            /** @enum {string} */
+                            status: "held" | "released" | "expired";
+                            /** Format: date-time */
+                            expires_at: string;
+                            /** Format: date-time */
+                            created_at: string;
+                            version: number;
+                        };
+                        replayed: boolean;
+                        transitioned: boolean;
+                        /** Format: date-time */
+                        observed_at: string;
+                    };
+                };
+            };
+            /** @description invalid_request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description resource_not_found or hold_not_found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description resource_conflict, idempotency_conflict or hold_expired */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description internal_error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description scheduling_disabled */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
