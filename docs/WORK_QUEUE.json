@@ -285,18 +285,24 @@
     },
     {
       "id": "INQUIRY-COMMUNICATION-LANGUAGE-API",
-      "state": "ready",
+      "state": "active",
       "owner": "pwa_verification",
       "depends_on": ["INQUIRY-COMMUNICATION-LANGUAGE-CONTRACT"],
       "branch": "codex/m01-inquiry-language-api",
+      "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/inquiry-communication-language-api",
+      "base": "00d2d6e",
+      "allowed_files": ["apps/dental-api/src/intake/**", "supabase/migrations/*communication_language*.sql", "supabase/tests/*communication_language*.sql", "scripts/inquiry-communication-language-concurrency.mjs", "tests/unit/inquiry-communication-language-*", "tests/integration/inquiry-communication-language-*"],
       "acceptance": "Private current-owner state, revisioned idempotent command, minimal audit/outbox and adversarial SQL/API evidence."
     },
     {
       "id": "INQUIRY-COMMUNICATION-LANGUAGE-UI",
-      "state": "ready",
+      "state": "active",
       "owner": "connection_ui",
       "depends_on": ["INQUIRY-COMMUNICATION-LANGUAGE-CONTRACT"],
       "branch": "codex/m01-inquiry-language-ui",
+      "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/inquiry-communication-language-ui",
+      "base": "00d2d6e",
+      "allowed_files": ["apps/clinic-os/components/intake/**", "tests/e2e/inquiry-communication-language.spec.ts", "tests/e2e/inquiry-contact-preference.spec.ts"],
       "acceptance": "Polished Dental Spa qualification UI with explicit language selection, truthful limitations and complete connected recovery states."
     },
     {
