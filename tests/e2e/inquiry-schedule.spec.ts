@@ -1,6 +1,6 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
 import { createDemoIntakeTransport, createHttpIntakeTransport } from '../../apps/clinic-os/components/intake/transport';
-const base = process.env.SCHEDULE_UI_URL ?? 'http://localhost:4296';
+const base = process.env.SCHEDULE_UI_URL ?? 'http://localhost:4200';
 const clinic = '10000000-0000-4000-8000-000000000001'; const user = '10000000-0000-4000-8000-000000000002'; const id = '10000000-0000-4000-8000-000000000011';
 const original = { id, clinic_id: clinic, owner_user_id: user, display_name: 'Lina Synthétique', contact_phone: null, contact_email: null, source: 'phone', status: 'new', created_at: '2026-10-26T09:30:00Z', follow_up_at: '2026-11-12T11:12:13.123456+01:00' };
 const headers = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*', 'Cache-Control': 'no-store' };
