@@ -231,6 +231,42 @@
       "evidence": "PR #17 squash merged 2529260 after exact-head CI40410311718 application/database success, including 20 owner-search pgTAP assertions. Independent reviews and combined local checks passed; zero hooks/deployments before merge."
     },
     {
+      "id": "INQUIRY-CONTACT-PREFERENCE-CONTRACT",
+      "state": "done",
+      "owner": "coordinator",
+      "depends_on": ["INQUIRY-OWNER-WORKLIST-INTEGRATE"],
+      "branch": "codex/m01-contact-preference-contract",
+      "acceptance": "Freeze a separate current-owner projection and compare-and-set command for an explicitly stated contact preference, with no consent, reachability, source inference or messaging semantics.",
+      "evidence": "Three independent security/domain, UX and API/database reviews reconciled revision-zero receipt invariants, neutral conflict copy and HTTP/RPC transport semantics. Three focused contract tests and contracts typecheck passed.",
+      "development_gate": "passed"
+    },
+    {
+      "id": "INQUIRY-CONTACT-PREFERENCE-API",
+      "state": "ready",
+      "owner": "pwa_verification",
+      "depends_on": ["INQUIRY-CONTACT-PREFERENCE-CONTRACT"],
+      "branch": "codex/m01-contact-preference-api",
+      "acceptance": "Private current-owner state, idempotent revisioned command, minimal audit/outbox and adversarial SQL/API evidence."
+    },
+    {
+      "id": "INQUIRY-CONTACT-PREFERENCE-UI",
+      "state": "ready",
+      "owner": "connection_ui",
+      "depends_on": ["INQUIRY-CONTACT-PREFERENCE-CONTRACT"],
+      "branch": "codex/m01-contact-preference-ui",
+      "acceptance": "Polished Dental Spa preference block/dialog with explicit choice, truthful consent boundary and complete connected recovery states."
+    },
+    {
+      "id": "INQUIRY-CONTACT-PREFERENCE-INTEGRATE",
+      "state": "blocked",
+      "owner": "coordinator",
+      "depends_on": ["INQUIRY-CONTACT-PREFERENCE-API", "INQUIRY-CONTACT-PREFERENCE-UI"],
+      "branch": "codex/m01-contact-preference-contract",
+      "acceptance": "Independent security/UI review, generated OpenAPI, focused local/PostgreSQL/browser checks, no-deployment merge and owner-visible evidence.",
+      "blocker": "API/database and UI implementations have not started.",
+      "unblocks_on": "Both implementation lanes are reviewed and integrated."
+    },
+    {
       "id": "INTAKE-CONTRACT",
       "state": "done",
       "owner": "coordinator",
