@@ -248,7 +248,7 @@
       "branch": "codex/m01-contact-preference-api",
       "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/inquiry-contact-preference-api",
       "base": "3742f6d",
-      "allowed_files": ["apps/dental-api/src/intake/**", "supabase/migrations/*contact_preference*.sql", "supabase/tests/*contact_preference*.sql", "tests/unit/inquiry-contact-preference-*", "tests/integration/inquiry-contact-preference-*"],
+      "allowed_files": ["apps/dental-api/src/intake/**", "supabase/migrations/*contact_preference*.sql", "supabase/tests/*contact_preference*.sql", "scripts/inquiry-contact-preference-concurrency.mjs", "tests/unit/inquiry-contact-preference-*", "tests/integration/inquiry-contact-preference-*"],
       "acceptance": "Private current-owner state, idempotent revisioned command, minimal audit/outbox and adversarial SQL/API evidence."
     },
     {
