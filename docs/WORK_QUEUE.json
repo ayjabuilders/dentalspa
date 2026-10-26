@@ -209,14 +209,22 @@
     },
     {
       "id": "SCHEDULING-CONCURRENCY-EVIDENCE",
-      "state": "ready",
-      "owner": "coordinator",
+      "state": "running",
+      "owner": "pwa_verification",
       "depends_on": [
         "SCHEDULING-HOLD-INTEGRATE"
       ],
-      "branch": "codex/m02-scheduling-concurrency",
+      "branch": "codex/scheduling-concurrency-harness",
+      "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/scheduling-concurrency",
+      "base": "f384035",
       "acceptance": "Exercise the scheduling RPC transaction through two genuinely independent PostgreSQL connections for shared-provider, shared-chair, adjacency, lock-wait expiry and rollback behavior in the local Supabase CI environment, without hosted access or production activation.",
-      "next_action": "Choose the smallest reliable CI harness using the existing local Supabase stack; do not treat sequential pgTAP or PGlite transactions as contention proof."
+      "next_action": "Implement a fail-closed Node 24 harness with explicit pg.Client sessions, observable pg_blocking_pids barriers and unique synthetic fixtures; run it only after local Supabase reset in database CI.",
+      "allowed_files": [
+        "scripts/scheduling-concurrency.mjs",
+        "package.json",
+        "pnpm-lock.yaml",
+        ".github/workflows/ci.yml"
+      ]
     },
     {
       "id": "APPOINTMENT-CONFIRMATION-CONTRACT",
