@@ -1,0 +1,105 @@
+import { CreateInquirySchema, InquiryCreatedSchema, InquiryListSchema, type CreateInquiry, type InquiryCreated, type InquiryList } from '@dental/contracts';
+
+export type IntakeFailure = 'offline' | 'denied' | 'expired' | 'disabled' | 'conflict' | 'invalid' | 'unavailable';
+export class IntakeError extends Error {
+  constructor(public readonly kind: IntakeFailure) { super(kind); this.name = 'IntakeError'; }
+}
+export interface IntakeTransport {
+  mode: 'demo' | 'connected';
+  currentUserId: string;
+  list(signal?: AbortSignal): Promise<InquiryList>;
+  create(body: CreateInquiry, key: string, signal?: AbortSignal): Promise<InquiryCreated>;
+  dispose?(): void;
+}
+export type IntakeAttempt = { fingerprint: string; key: string };
+export function inquiryAttempt(previous: IntakeAttempt | null, input: CreateInquiry): IntakeAttempt {
+  const body = CreateInquirySchema.parse(input);
+  const fingerprint = JSON.stringify(body);
+  return previous?.fingerprint === fingerprint ? previous : { fingerprint, key: crypto.randomUUID() };
+}
+const demoClinic = '10000000-0000-4000-8000-000000000001';
+const demoOwner = '10000000-0000-4000-8000-000000000002';
+
+/** One isolated synthetic store per mounted preview. Never writes browser storage. */
+export function createDemoIntakeTransport(): IntakeTransport {
+  let items: InquiryList['items'] = [
+    { id: '10000000-0000-4000-8000-000000000011', clinic_id: demoClinic, owner_user_id: demoOwner, display_name: 'Lina Exemple', contact_email: 'lina@example.invalid', contact_phone: null, source: 'phone', follow_up_at: null, status: 'new', created_at: '2026-10-26T09:30:00Z' },
+    { id: '10000000-0000-4000-8000-000000000012', clinic_id: demoClinic, owner_user_id: demoOwner, display_name: 'Adam Exemple', contact_email: null, contact_phone: null, source: 'website', follow_up_at: null, status: 'new', created_at: '2026-10-26T08:45:00Z' },
+    { id: '10000000-0000-4000-8000-000000000013', clinic_id: demoClinic, owner_user_id: demoOwner, display_name: 'Nora Exemple', contact_email: 'nora@example.invalid', contact_phone: null, source: 'walk_in', follow_up_at: null, status: 'new', created_at: '2026-10-25T15:00:00Z' },
+  ];
+  const saved = new Map<string, { fingerprint: string; result: InquiryCreated }>();
+  return {
+    mode: 'demo', currentUserId: demoOwner,
+    async list(signal) {
+      signal?.throwIfAborted();
+      return InquiryListSchema.parse({ items: items.slice(0, 100), truncated: items.length > 100 });
+    },
+    async create(input, key, signal) {
+      signal?.throwIfAborted();
+      const body = CreateInquirySchema.parse(input);
+      const fingerprint = JSON.stringify(body);
+      const previous = saved.get(key);
+      if (previous) {
+        if (previous.fingerprint !== fingerprint) throw new IntakeError('conflict');
+        return InquiryCreatedSchema.parse({ ...previous.result, replayed: true });
+      }
+      const result = InquiryCreatedSchema.parse({ item: { ...body, id: crypto.randomUUID(), clinic_id: demoClinic, owner_user_id: demoOwner, status: 'new', created_at: new Date().toISOString() }, replayed: false });
+      saved.set(key, { fingerprint, result });
+      items = [result.item, ...items].sort((a, b) => b.created_at.localeCompare(a.created_at) || b.id.localeCompare(a.id));
+      return result;
+    },
+  };
+}
+
+/** Credentials are closed over in memory and revoked when the session view closes. */
+export function createHttpIntakeTransport(options: { api: string; token: string; clinicId: string; userId: string; fetcher?: typeof fetch }): IntakeTransport {
+  let token: string | null = options.token;
+  const { api, clinicId, userId } = options;
+  const controllers = new Set<AbortController>();
+  const fetcher = options.fetcher ?? fetch;
+  async function send(method: 'GET' | 'POST', body?: CreateInquiry, key?: string, callerSignal?: AbortSignal) {
+    if (!token) throw new IntakeError('expired');
+    const controller = new AbortController();
+    controllers.add(controller);
+    try {
+      const response = await fetcher(`${api.replace(/\/$/, '')}/api/v1/inquiries`, {
+        method, cache: 'no-store', credentials: 'omit',
+        headers: { Authorization: `Bearer ${token}`, 'X-Clinic-Id': clinicId, ...(body ? { 'Content-Type': 'application/json', 'Idempotency-Key': key! } : {}) },
+        body: body ? JSON.stringify(body) : undefined,
+        signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15000), ...(callerSignal ? [callerSignal] : [])]),
+      });
+      if (!response.ok) {
+        let disabled = false;
+        if (response.status === 503) {
+          const problem: unknown = await response.json().catch(() => null);
+          disabled = typeof problem === 'object' && problem !== null && 'code' in problem && problem.code === 'intake_disabled';
+        }
+        const kind: IntakeFailure = response.status === 401 ? 'expired' : response.status === 403 ? 'denied' : disabled ? 'disabled' : response.status === 409 ? 'conflict' : response.status === 400 ? 'invalid' : 'unavailable';
+        throw new IntakeError(kind);
+      }
+      if (!token) throw new IntakeError('expired');
+      return await response.json() as unknown;
+    } catch (error) {
+      if (error instanceof IntakeError) throw error;
+      if (callerSignal?.aborted || controller.signal.aborted) throw error;
+      throw new IntakeError(typeof navigator !== 'undefined' && !navigator.onLine ? 'offline' : 'unavailable');
+    } finally { controllers.delete(controller); }
+  }
+  return {
+    mode: 'connected', currentUserId: userId,
+    async list(signal) {
+      const parsed = InquiryListSchema.safeParse(await send('GET', undefined, undefined, signal));
+      if (!token) throw new IntakeError('expired');
+      if (!parsed.success || parsed.data.items.some(item => item.clinic_id !== clinicId)) throw new IntakeError('unavailable');
+      return parsed.data;
+    },
+    async create(input, key, signal) {
+      const body = CreateInquirySchema.parse(input);
+      const parsed = InquiryCreatedSchema.safeParse(await send('POST', body, key, signal));
+      if (!token) throw new IntakeError('expired');
+      if (!parsed.success || parsed.data.item.clinic_id !== clinicId || parsed.data.item.owner_user_id !== userId) throw new IntakeError('unavailable');
+      return parsed.data;
+    },
+    dispose() { token = null; controllers.forEach(controller => controller.abort()); controllers.clear(); },
+  };
+}
