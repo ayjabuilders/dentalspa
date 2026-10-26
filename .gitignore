@@ -1,0 +1,16 @@
+node_modules/
+.next/
+dist/
+.turbo/
+.env
+.env.*
+!.env.example
+*.tsbuildinfo
+playwright-report/
+test-results/
+.local/
+supabase/.temp/
+supabase/.branches/
+# Original clinic source documents stay local; executable requirements are in docs/.
+sources/*.pdf
+sources/*.docx
