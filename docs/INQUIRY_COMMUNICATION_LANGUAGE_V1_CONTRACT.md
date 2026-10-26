@@ -1,6 +1,6 @@
 # Inquiry communication language v1 — explicitly stated administrative record
 
-Status: draft for independent review before bounded synthetic M01 development. This resource records only the language preference a person explicitly states for administrative communication about one inquiry. It is not the application locale, proof of comprehension, interpreter availability, consent, a clinical-language assessment, or authorization to send a message.
+Status: frozen for bounded synthetic M01 development after independent security/domain, UX and API/database review. This resource records only the language preference a person explicitly states for administrative communication about one inquiry. It is not the application locale, proof of comprehension, interpreter availability, consent, a clinical-language assessment, or authorization to send a message.
 
 ## Meaning and vocabulary
 
