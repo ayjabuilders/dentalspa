@@ -7,14 +7,14 @@ export type ProductModule = {
   state: 'partial' | 'preview' | 'planned';
   built: string; remaining: string[]; gate: string; links: TestLink[]; sourcePage: number;
 };
-export const intakeTest: TestLink = { href: '/intake', label: 'Tester les demandes et échéances', kind: 'demo', instruction: 'Créer une demande fictive, voir Mes échéances, ouvrir un détail, replanifier puis consulter son historique personnel et consigner un suivi manuel. Démonstration en mémoire.' };
+export const intakeTest: TestLink = { href: '/intake', label: 'Tester les demandes et échéances', kind: 'demo', instruction: 'Créer une demande fictive, rechercher aussi dans ses anciennes demandes, ouvrir un détail, replanifier puis consulter son historique personnel et consigner un suivi manuel. Démonstration en mémoire.' };
 export const schedulingTest: TestLink = { href: '/planning', label: 'Tester les options de créneau', kind: 'demo', instruction: 'Rechercher des ressources, proposer un créneau, poser puis libérer une option temporaire. Aucun rendez-vous confirmé.' };
 export const connectionTest: TestLink = { href: '/connection', label: 'Ouvrir les fonctions connectées', kind: 'session', instruction: 'Une session vérifiée et un environnement configuré sont nécessaires. Après connexion : recherche patient, demandes et options de ressources selon les droits.' };
 const preview = (href: string, label: string): TestLink => ({ href, label, kind: 'preview', instruction: 'Aperçu de l’interface uniquement. Les règles métier de ce module restent à construire.' });
 
 export const productModules: ProductModule[] = [
   { id: 'M01', title: 'Growth & Acquisition CRM', tier: 'P0', state: 'partial', sourcePage: 21,
-    built: 'Saisie manuelle, API cloisonnée, recherche patient en lecture seule, suivi manuel, échéances du propriétaire, replanification compare-and-set et journal personnel de ces commandes, sans envoi.',
+    built: 'Saisie manuelle, API cloisonnée, recherche patient en lecture seule, recherche serveur des demandes du responsable, suivi manuel, échéances, replanification compare-and-set et journal personnel, sans envoi.',
     remaining: ['Qualification, réattribution du responsable et cycle complet des résultats', 'Rapprochement, sélection et conversion patient sans doublon', 'Parcours jusqu’au rendez-vous et connecteurs validés'],
     gate: 'Politique d’identité D1–D8 puis règles de conversion et de communication.', links: [intakeTest, connectionTest] },
   { id: 'M02', title: 'Smart Booking & Capacity', tier: 'P0', state: 'partial', sourcePage: 22,

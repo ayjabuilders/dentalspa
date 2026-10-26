@@ -78,7 +78,7 @@ export function createDemoIntakeTransport(): IntakeTransport {
     async ownerSearch(input, signal) {
       signal?.throwIfAborted(); if (disposed) throw new IntakeError('expired');
       const body = InquiryOwnerSearchRequestSchema.parse(input);
-      const rows = items.filter(item => item.owner_user_id === demoOwner && item.display_name.toLowerCase().includes(body.name.toLowerCase())).sort((a,b) => Date.parse(b.created_at)-Date.parse(a.created_at) || b.id.localeCompare(a.id));
+      const rows = items.filter(item => item.owner_user_id === demoOwner && item.display_name.toLowerCase().includes(body.name.toLowerCase())).sort((a,b) => Date.parse(b.created_at)-Date.parse(a.created_at) || (a.id === b.id ? 0 : a.id < b.id ? 1 : -1));
       return InquiryOwnerSearchResultSchema.parse({ clinic_id: demoClinic, owner_user_id: demoOwner, truncated: rows.length > 50, items: rows.slice(0,50).map(({id,display_name,source,status,follow_up_at,created_at}) => ({id,display_name,source,status,follow_up_at,created_at})) });
     },
     async scheduleHistory(id, signal) {

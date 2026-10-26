@@ -4,7 +4,11 @@ import { IntakeSourceSchema } from './intake';
 export const InquiryOwnerSearchRequestSchema = z.object({
   name: z.string().refine(value => {
     const length = Array.from(value).length;
-    return value === value.replace(/^ +| +$/gu, '') && length >= 2 && length <= 80 && !/[\u0000-\u001f\u007f]/u.test(value);
+    const hasControl = Array.from(value).some(character => {
+      const codePoint = character.codePointAt(0)!;
+      return codePoint <= 31 || codePoint === 127;
+    });
+    return value === value.replace(/^ +| +$/gu, '') && length >= 2 && length <= 80 && !hasControl;
   }, 'Name search must be canonical U+0020-trimmed text of 2–80 Unicode code points without controls'),
 }).strict();
 export type InquiryOwnerSearchRequest = z.infer<typeof InquiryOwnerSearchRequestSchema>;
