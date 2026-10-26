@@ -45,6 +45,8 @@ jobs:
       - run: pnpm db:start
       - run: pnpm db:reset
       - run: pnpm db:test
+      - run: pnpm db:concurrency
+        timeout-minutes: 5
       - run: pnpm exec supabase db lint --local --level error
       - if: always()
         run: pnpm exec supabase stop
