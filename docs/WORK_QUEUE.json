@@ -119,27 +119,29 @@
     },
     {
       "id": "INQUIRY-SCHEDULE-API",
-      "state": "active",
+      "state": "done",
       "owner": "pwa_verification",
       "depends_on": ["INQUIRY-SCHEDULE-CONTRACT"],
       "branch": "codex/m01-inquiry-schedule-api",
       "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/inquiry-schedule-api",
       "allowed_files": ["apps/dental-api/src/intake/**", "supabase/migrations/*inquiry_schedule*.sql", "supabase/tests/*inquiry_schedule*.sql", "tests/unit/inquiry-schedule*", "tests/integration/inquiry-schedule*"],
-      "acceptance": "Current-owner tenant-safe compare-and-set update with atomic audit/outbox, exact idempotency, no-op semantics and adversarial SQL/API tests."
+      "acceptance": "Current-owner tenant-safe compare-and-set update with atomic audit/outbox, exact idempotency, no-op semantics and adversarial SQL/API tests.",
+      "evidence": "Integrated 8b22177 after 23 focused API/adapter/PGlite tests, 12 intake regressions, build/typecheck/lint and independent security review. Added 22 pgTAP assertions; distinct-session harness aebe6ef awaits current-head database CI."
     },
     {
       "id": "INQUIRY-SCHEDULE-UI",
-      "state": "active",
+      "state": "done",
       "owner": "connection_ui",
       "depends_on": ["INQUIRY-SCHEDULE-CONTRACT"],
       "branch": "codex/m01-inquiry-schedule-ui",
       "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/inquiry-schedule-ui",
       "allowed_files": ["apps/clinic-os/components/intake/**", "tests/e2e/inquiry-schedule.spec.ts"],
-      "acceptance": "Dental Spa follow-up scheduling dialog with demo/connected recovery, fresh worklist/detail reconciliation and complete safe states."
+      "acceptance": "Dental Spa follow-up scheduling dialog with demo/connected recovery, fresh worklist/detail reconciliation and complete safe states.",
+      "evidence": "Integrated 77cb381 after independent lifecycle review. Ten new plus five unchanged browser tests, production build, scoped lint/typechecks and both-theme screenshots at 1536/1280/768/390 passed."
     },
     {
       "id": "INQUIRY-SCHEDULE-INTEGRATE",
-      "state": "planned",
+      "state": "verification",
       "owner": "coordinator",
       "depends_on": ["INQUIRY-SCHEDULE-API", "INQUIRY-SCHEDULE-UI"],
       "branch": "codex/m01-inquiry-schedule-contract",

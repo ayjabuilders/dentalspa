@@ -32,6 +32,10 @@ const labels: Record<string, string> = {
   'INQUIRY-OWNER-WORKLIST-API': 'Échéances sécurisées du responsable',
   'INQUIRY-OWNER-WORKLIST-UI': 'Interface des échéances',
   'INQUIRY-OWNER-WORKLIST-INTEGRATE': 'Intégration des échéances',
+  'INQUIRY-SCHEDULE-CONTRACT': 'Contrat de replanification du suivi',
+  'INQUIRY-SCHEDULE-API': 'Replanification sécurisée du suivi',
+  'INQUIRY-SCHEDULE-UI': 'Interface de replanification',
+  'INQUIRY-SCHEDULE-INTEGRATE': 'Intégration de la replanification',
   'TEAM-ROSTER-CONTRACT': 'Contrat de l’annuaire Équipe',
   'TEAM-ROSTER-API': 'Annuaire sécurisé du cabinet',
   'TEAM-ROSTER-UI': 'Interface Équipe',
@@ -69,7 +73,7 @@ const milestones: BuildMilestone[] = [
 
 function phase(id: string) {
   if (id.startsWith('FOUNDATION') || id === 'HOSTED-FOUNDATION') return 'M01 · Fondation';
-  if (id.startsWith('INTAKE') || id.startsWith('INQUIRY-FOLLOW-UP') || id.startsWith('INQUIRY-OWNER-WORKLIST')) return 'M02 · Demandes';
+  if (id.startsWith('INTAKE') || id.startsWith('INQUIRY-FOLLOW-UP') || id.startsWith('INQUIRY-OWNER-WORKLIST') || id.startsWith('INQUIRY-SCHEDULE')) return 'M02 · Demandes';
   if (id.startsWith('PATIENT-LOOKUP')) return 'M02 · Recherche patient';
   if (id.startsWith('PATIENT-SELECTION')) return 'M02 · Sélection patient';
   if (id.startsWith('TEAM-ROSTER') || id.startsWith('TEAM-ACTIVITY')) return 'M16 · Équipe et accès';
@@ -90,7 +94,7 @@ function titleFromId(id: string) {
 }
 
 function testLinks(id: string): TestLink[] {
-  if (id.startsWith('INTAKE') || id.startsWith('INQUIRY-FOLLOW-UP') || id.startsWith('INQUIRY-OWNER-WORKLIST')) return [intakeTest];
+  if (id.startsWith('INTAKE') || id.startsWith('INQUIRY-FOLLOW-UP') || id.startsWith('INQUIRY-OWNER-WORKLIST') || id.startsWith('INQUIRY-SCHEDULE')) return [intakeTest];
   if (id.startsWith('PATIENT-LOOKUP')) return [connectionTest];
   if (id.startsWith('TEAM-ROSTER')) return [{ href: '/team', label: 'Tester l’annuaire Équipe', kind: 'demo', instruction: 'Annuaire fictif en lecture seule; les rôles d’accès ne prouvent ni qualification ni présence.' }, connectionTest];
   if (id.startsWith('TEAM-ACTIVITY')) return [{ href: '/team', label: 'Tester l’activité Équipe', kind: 'demo', instruction: 'Journal synthétique borné à quatre actions déjà auditées; ni présence, ni performance, ni audit exhaustif.' }, connectionTest];
