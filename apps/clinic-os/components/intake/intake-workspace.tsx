@@ -8,6 +8,7 @@ import { InquiryFollowUp } from './inquiry-follow-up';
 import { OwnerWorklist } from './owner-worklist';
 import './intake.css';
 import { InquirySchedule } from './inquiry-schedule';
+import { InquiryScheduleHistory } from './inquiry-schedule-history';
 
 const sources: Record<CreateInquiry['source'], string> = { phone: 'Téléphone', website: 'Site web', whatsapp: 'WhatsApp', instagram: 'Instagram', email: 'E-mail', google_business: 'Google Business', walk_in: 'Sur place', other: 'Autre' };
 const failures: Record<IntakeFailure, string> = {
@@ -31,6 +32,7 @@ export function DemoIntakeWorkspace() {
 
 export function IntakeWorkspace({ transport, onSessionExpired }: { transport: IntakeTransport; onSessionExpired?: () => void }) {
   const [freshWorklist, setFreshWorklist] = useState<InquiryOwnerWorklist | null>(null);
+  const [historyRevision, setHistoryRevision] = useState(0);
   const [privacyRevision, setPrivacyRevision] = useState(0);
   const [list, setList] = useState<InquiryList | null>(null);
   const [loading, setLoading] = useState(true);
@@ -144,7 +146,7 @@ export function IntakeWorkspace({ transport, onSessionExpired }: { transport: In
         {list?.truncated && <p className="intake-truncated" role="status">Seules les 100 demandes les plus récentes sont affichées. La recherche et les filtres s’appliquent à cette liste.</p>}
         {!loading && !loadError && <p className="intake-list-footer">{visible.length} demande{visible.length > 1 ? 's' : ''} affichée{visible.length > 1 ? 's' : ''} · attribution manuelle des sources</p>}
       </section>
-      <aside ref={detailFocus} tabIndex={-1} className="work-panel intake-detail" aria-label="Demande sélectionnée">{selected && (ownerSelection || (!loading && !loadError)) ? <InquiryDetail inquiry={selected} transport={transport}/> : <div className="intake-empty"><ClipboardList/><h3>Chaque demande, son attention.</h3><p>Sélectionnez un premier contact pour retrouver ses coordonnées et son suivi.</p></div>}<InquirySchedule inquiry={ownerSelection || (!loading && !loadError) ? selected : null} transport={transport} onFresh={(item, freshList, worklist) => { setList(freshList); setOwnerDetail(item); setOwnerSelection(true); setFreshWorklist(worklist); }}/><InquiryFollowUp key={privacyRevision} inquiry={ownerSelection || (!loading && !loadError) ? selected : null} transport={transport} onSessionExpired={() => { setList(null); expiredCallback.current?.(); }}/></aside>
+      <aside ref={detailFocus} tabIndex={-1} className="work-panel intake-detail" aria-label="Demande sélectionnée">{selected && (ownerSelection || (!loading && !loadError)) ? <InquiryDetail inquiry={selected} transport={transport}/> : <div className="intake-empty"><ClipboardList/><h3>Chaque demande, son attention.</h3><p>Sélectionnez un premier contact pour retrouver ses coordonnées et son suivi.</p></div>}<InquirySchedule inquiry={ownerSelection || (!loading && !loadError) ? selected : null} transport={transport} onFresh={(item, freshList, worklist) => { setHistoryRevision(value => value + 1); setList(freshList); setOwnerDetail(item); setOwnerSelection(true); setFreshWorklist(worklist); }}/><InquiryScheduleHistory inquiry={ownerSelection || (!loading && !loadError) ? selected : null} transport={transport} revision={historyRevision}/><InquiryFollowUp key={privacyRevision} inquiry={ownerSelection || (!loading && !loadError) ? selected : null} transport={transport} onSessionExpired={() => { setList(null); expiredCallback.current?.(); }}/></aside>
     </div>
     <Modal open={open} onOpenChange={closeDialog} title="Un nouveau premier contact" description={transport.mode === 'demo' ? 'Démonstration locale : utilisez uniquement des informations fictives.' : 'Saisie manuelle dans le cabinet vérifié. Données synthétiques uniquement.'} wide>
       <form className="intake-form" onSubmit={submit} noValidate aria-busy={saving}>
