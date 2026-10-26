@@ -213,6 +213,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/inquiries/{id}/follow-up-schedule/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Current owner own schedule receipts; newest first, maximum 50; no write activation required */
+        get: operations["ScheduleHistoryController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/inquiries/{id}/follow-up-schedule": {
         parameters: {
             query?: never;
@@ -1102,6 +1119,79 @@ export interface operations {
                 content?: never;
             };
             /** @description scheduling_disabled */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ScheduleHistoryController_list: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        inquiry_id: string;
+                        items: {
+                            /** Format: date-time */
+                            previous_follow_up_at: string | null;
+                            /** Format: date-time */
+                            follow_up_at: string | null;
+                            changed: boolean;
+                            /** Format: date-time */
+                            recorded_at: string;
+                            /** @enum {number} */
+                            event_version: 1;
+                        }[];
+                        truncated: boolean;
+                    };
+                };
+            };
+            /** @description Invalid path or unsupported query */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Active intake role required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Absent, foreign or not currently owned */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unavailable or malformed trusted result */
             503: {
                 headers: {
                     [name: string]: unknown;
