@@ -57,6 +57,15 @@ describe('synthetic scheduling SQL transactions',()=>{
   const releaseKey=randomUUID();expect((await release(first.item.id,releaseKey)).transitioned).toBe(false);
   await expect(release(randomUUID(),releaseKey)).rejects.toMatchObject({code:'SH410'});
  });
+ it('rechecks activation and current actor authorization before returning a stored replay',async()=>{
+  const body=base(),key=randomUUID(),first=await create(body,key);
+  await db.exec("update public.clinic_memberships set active=false where clinic_id='71000000-0000-4000-8000-000000000001'");
+  await expect(create(body,key)).rejects.toMatchObject({code:'42501'});
+  await db.exec("update public.clinic_memberships set active=true where clinic_id='71000000-0000-4000-8000-000000000001';update private.scheduling_settings set enabled=false where clinic_id='71000000-0000-4000-8000-000000000001'");
+  await expect(create(body,key)).rejects.toMatchObject({code:'PT503'});
+  await db.exec("update private.scheduling_settings set enabled=true where clinic_id='71000000-0000-4000-8000-000000000001'");
+  expect(await create(body,key)).toEqual({...first,replayed:true});
+ });
  it('returns original release transition on replay but no duplicate event on a fresh key',async()=>{
   const first=await create(),key=randomUUID(),released=await release(first.item.id,key);
   expect(released.transitioned).toBe(true);expect(await release(first.item.id,key)).toEqual({...released,replayed:true});
