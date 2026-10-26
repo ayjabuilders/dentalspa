@@ -8,6 +8,8 @@ The previous no-push and unexecuted-CI statements describe the initial state. Fo
 
 Subsequent disabled outbox-worker code and its additive private migration passed local lint, full typechecking, API build, **31 unit tests and 34 integration tests**. Worker SQL tests cover atomic rollback, retry exhaustion, expired leases, fencing and per-consumer consumption. Full multi-connection contention, runtime adapter/role provisioning and process-crash tests remain required before activation. It is unwired and performs no external delivery. No UI changes were made in this follow-up, so the already passing 15-browser-test evidence remains applicable.
 
+Worker commit `261ef7d7ee13b1591162bc9810cb473f5031ca24` subsequently passed application and full Supabase database CI in [run 40338269757](https://github.com/ayjabuilders/dentalspa/actions/runs/40338269757), including migration reset, pgTAP and database lint. [Draft PR #1](https://github.com/ayjabuilders/dentalspa/pull/1) is open and unmerged. The following workflow-only change avoids duplicate push/PR runs and skips documentation-only changes; it does not add application functionality.
+
 A same-thread follow-up is active every 30 minutes; it resumes authorized unblocked work and suppresses unchanged-blocker noise. See `ORCHESTRATION_STATUS.md` for the current task ownership and next step.
 
 ## Parallel follow-up — 26 October 2026

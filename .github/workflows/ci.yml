@@ -1,5 +1,13 @@
 name: Foundation
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['**/*.md', 'qa/screenshots/**', 'MANIFEST.sha256']
+  pull_request:
+    paths-ignore: ['**/*.md', 'qa/screenshots/**', 'MANIFEST.sha256']
+concurrency:
+  group: foundation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
