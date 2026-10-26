@@ -35,33 +35,36 @@
     },
     {
       "id": "TEAM-ROSTER-API",
-      "state": "in_progress",
+      "state": "done",
       "owner": "pwa_verification",
       "depends_on": ["TEAM-ROSTER-CONTRACT"],
       "branch": "codex/m16-team-roster-api",
       "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/team-roster-api",
       "base": "cca0345",
       "allowed_files": ["apps/dental-api/src/team/**", "apps/dental-api/src/app.module.ts", "supabase/migrations/*team_roster*.sql", "supabase/tests/*team_roster*.sql", "tests/unit/team-roster*", "tests/integration/team-roster*"],
-      "acceptance": "Privileged SQL and API enforce active manager/dentist same-clinic roster, 100/101 truncation, profile completeness, no-store and adversarial tests."
+      "acceptance": "Privileged SQL and API enforce active manager/dentist same-clinic roster, 100/101 truncation, profile completeness, no-store and adversarial tests.",
+      "evidence": "Integrated daa339a after 20 focused tests, seven HTTP regressions, API build/typecheck/lint and independent security review. Added 21 pgTAP assertions; real PostgreSQL CI pending."
     },
     {
       "id": "TEAM-ROSTER-UI",
-      "state": "in_progress",
+      "state": "done",
       "owner": "connection_ui",
       "depends_on": ["TEAM-ROSTER-CONTRACT"],
       "branch": "codex/m16-team-roster-ui",
       "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/team-roster-ui",
       "base": "cca0345",
       "allowed_files": ["apps/clinic-os/components/team/**", "apps/clinic-os/app/connection/page.tsx", "apps/clinic-os/components/workspace.tsx", "tests/e2e/team-roster.spec.ts"],
-      "acceptance": "Dental Spa synthetic Team page and connected in-memory roster with truthful access-role language, session cleanup, complete safe states and responsive keyboard evidence."
+      "acceptance": "Dental Spa synthetic Team page and connected in-memory roster with truthful access-role language, session cleanup, complete safe states and responsive keyboard evidence.",
+      "evidence": "Integrated c845fa1. Seven lane browser/transport tests passed including configured synthetic session; root inspected pearl/navy desktop/mobile and connected partial-list screenshots."
     },
     {
       "id": "TEAM-ROSTER-INTEGRATE",
-      "state": "pending",
+      "state": "verification",
       "owner": "coordinator",
       "depends_on": ["TEAM-ROSTER-API", "TEAM-ROSTER-UI"],
       "branch": "codex/m16-team-roster-contract",
-      "acceptance": "Independent security/UI review, generated OpenAPI, combined checks, PostgreSQL pgTAP/current-head CI, no-deployment merge and Build Center evidence."
+      "acceptance": "Independent security/UI review, generated OpenAPI, combined checks, PostgreSQL pgTAP/current-head CI, no-deployment merge and Build Center evidence.",
+      "evidence": "Combined lint/typechecks, 20 focused unit/integration tests and full production build passed; four combined demo/transport browser cases passed and three configured-session cases passed in isolated UI lane. OpenAPI and schema hardening integrated. PostgreSQL CI and development merge pending."
     },
     {
       "id": "INTAKE-CONTRACT",
