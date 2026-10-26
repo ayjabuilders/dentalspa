@@ -1,6 +1,6 @@
 # Next module: inquiry, booking and reception
 
-Status: implementation sequence prepared on 26 October 2026. M02 execution remains gated by M01 acceptance (`codex/00_START_HERE.md`, `codex/M02_PATIENT_BOOKING_PROMPT.md`). The current parallel work closes foundation gaps; it does not declare the security or operational gates passed.
+Status: implementation sequence prepared on 26 October 2026. ADR-003 now permits bounded synthetic M02 development after reviewed technical dependencies pass, while M01 hosted identity, restore and operational acceptance remain activation/release gates. The parallel work does not declare those gates passed, and each M02 command retains its own contract and policy dependencies.
 
 ## Product outcome
 

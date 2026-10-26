@@ -4,10 +4,12 @@ import { AlertCircle, ArrowRight, Check, ChevronRight, ClipboardList, Clock3, In
 import { Button, Modal } from '@dental/ui-clinic';
 import { CreateInquirySchema, IntakeSourceSchema, type CreateInquiry, type Inquiry, type InquiryList } from '@dental/contracts';
 import { createDemoIntakeTransport, inquiryAttempt, IntakeError, type IntakeAttempt, type IntakeFailure, type IntakeTransport } from './transport';
+import { InquiryFollowUp } from './inquiry-follow-up';
 import './intake.css';
 
 const sources: Record<CreateInquiry['source'], string> = { phone: 'Téléphone', website: 'Site web', whatsapp: 'WhatsApp', instagram: 'Instagram', email: 'E-mail', google_business: 'Google Business', walk_in: 'Sur place', other: 'Autre' };
 const failures: Record<IntakeFailure, string> = {
+  missing: 'Cette demande n’est pas accessible.',
   offline: 'Vous êtes hors connexion. Retrouvez le réseau puis réessayez. Aucune demande n’est envoyée en arrière-plan.',
   denied: 'Votre compte ne dispose pas de l’accès aux demandes de ce cabinet.',
   expired: 'Votre session a expiré. Connectez-vous à nouveau.',
@@ -131,7 +133,7 @@ export function IntakeWorkspace({ transport, onSessionExpired }: { transport: In
         {list?.truncated && <p className="intake-truncated" role="status">Seules les 100 demandes les plus récentes sont affichées. La recherche et les filtres s’appliquent à cette liste.</p>}
         {!loading && !loadError && <p className="intake-list-footer">{visible.length} demande{visible.length > 1 ? 's' : ''} affichée{visible.length > 1 ? 's' : ''} · attribution manuelle des sources</p>}
       </section>
-      <aside className="work-panel intake-detail" aria-label="Demande sélectionnée">{!loading && !loadError && selected ? <InquiryDetail inquiry={selected} transport={transport}/> : <div className="intake-empty"><ClipboardList/><h3>Chaque demande, son attention.</h3><p>Sélectionnez un premier contact pour retrouver ses coordonnées et son suivi.</p></div>}</aside>
+      <aside className="work-panel intake-detail" aria-label="Demande sélectionnée">{!loading && !loadError && selected ? <InquiryDetail inquiry={selected} transport={transport}/> : <div className="intake-empty"><ClipboardList/><h3>Chaque demande, son attention.</h3><p>Sélectionnez un premier contact pour retrouver ses coordonnées et son suivi.</p></div>}<InquiryFollowUp inquiry={!loading && !loadError ? selected : null} transport={transport} onSessionExpired={() => { setList(null); expiredCallback.current?.(); }}/></aside>
     </div>
     <Modal open={open} onOpenChange={closeDialog} title="Un nouveau premier contact" description={transport.mode === 'demo' ? 'Démonstration locale : utilisez uniquement des informations fictives.' : 'Saisie manuelle dans le cabinet vérifié. Données synthétiques uniquement.'} wide>
       <form className="intake-form" onSubmit={submit} noValidate aria-busy={saving}>

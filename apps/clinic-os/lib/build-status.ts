@@ -24,6 +24,10 @@ const labels: Record<string, string> = {
   'INTAKE-API': 'API des demandes entrantes',
   'INTAKE-UI': 'Interface des demandes',
   'INTAKE-INTEGRATE': 'Intégration des demandes',
+  'INQUIRY-FOLLOW-UP-CONTRACT': 'Contrat de suivi des demandes',
+  'INQUIRY-FOLLOW-UP-API': 'Historique de suivi sécurisé',
+  'INQUIRY-FOLLOW-UP-UI': 'Interface de suivi des demandes',
+  'INQUIRY-FOLLOW-UP-INTEGRATE': 'Intégration du suivi des demandes',
   'PATIENT-LOOKUP-CONTRACT': 'Contrat de recherche patient',
   'PATIENT-LOOKUP-API': 'Recherche patient sécurisée',
   'PATIENT-LOOKUP-UI': 'Interface de recherche patient',
@@ -53,7 +57,7 @@ const milestones: BuildMilestone[] = [
 
 function phase(id: string) {
   if (id.startsWith('FOUNDATION') || id === 'HOSTED-FOUNDATION') return 'M01 · Fondation';
-  if (id.startsWith('INTAKE')) return 'M02 · Demandes';
+  if (id.startsWith('INTAKE') || id.startsWith('INQUIRY-FOLLOW-UP')) return 'M02 · Demandes';
   if (id.startsWith('PATIENT-LOOKUP')) return 'M02 · Recherche patient';
   if (id.startsWith('PATIENT-SELECTION')) return 'M02 · Sélection patient';
   if (id.startsWith('SCHEDULING') || id.startsWith('RESOURCE-RULES') || id.startsWith('APPOINTMENT')) return 'M02 · Planification';
@@ -73,7 +77,7 @@ function titleFromId(id: string) {
 }
 
 function testLinks(id: string): TestLink[] {
-  if (id.startsWith('INTAKE')) return [intakeTest];
+  if (id.startsWith('INTAKE') || id.startsWith('INQUIRY-FOLLOW-UP')) return [intakeTest];
   if (id.startsWith('PATIENT-LOOKUP')) return [connectionTest];
   if (id.startsWith('SCHEDULING')) return [schedulingTest];
   if (id === 'PWA-LOCAL-RUNTIME' || id === 'FOUNDATION-REVIEW') return [{ href: '/', label: 'Explorer Clinic OS', kind: 'demo', instruction: 'Tester la navigation, les thèmes, les notifications fictives et le guide d’installation.' }];

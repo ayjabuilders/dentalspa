@@ -1,14 +1,20 @@
+import { FollowUpListSchema, FollowUpRecordedSchema, RecordFollowUpSchema, type FollowUpList, type FollowUpRecorded, type RecordFollowUp } from '@dental/contracts';
 import { CreateInquirySchema, InquiryCreatedSchema, InquiryListSchema, type CreateInquiry, type InquiryCreated, type InquiryList } from '@dental/contracts';
 
-export type IntakeFailure = 'offline' | 'denied' | 'expired' | 'disabled' | 'conflict' | 'invalid' | 'unavailable';
+export type IntakeFailure = 'offline' | 'denied' | 'expired' | 'disabled' | 'conflict' | 'invalid' | 'unavailable' | 'missing';
 export class IntakeError extends Error {
   constructor(public readonly kind: IntakeFailure) { super(kind); this.name = 'IntakeError'; }
 }
+export type FollowUpAttempt = { inquiry: InquiryList['items'][number]; body: RecordFollowUp; key: string };
 export interface IntakeTransport {
+  /** Unresolved receipt stays in this session transport across closing/reopening the tool. */
+  pendingFollowUp: { current: FollowUpAttempt | null };
   mode: 'demo' | 'connected';
   currentUserId: string;
   list(signal?: AbortSignal): Promise<InquiryList>;
   create(body: CreateInquiry, key: string, signal?: AbortSignal): Promise<InquiryCreated>;
+  followUps(inquiryId: string, signal?: AbortSignal): Promise<FollowUpList>;
+  recordFollowUp(inquiryId: string, body: RecordFollowUp, key: string, signal?: AbortSignal): Promise<FollowUpRecorded>;
   dispose?(): void;
 }
 export type IntakeAttempt = { fingerprint: string; key: string };
@@ -22,14 +28,41 @@ const demoOwner = '10000000-0000-4000-8000-000000000002';
 
 /** One isolated synthetic store per mounted preview. Never writes browser storage. */
 export function createDemoIntakeTransport(): IntakeTransport {
+  const pendingFollowUp: { current: FollowUpAttempt | null } = { current: null };
   let items: InquiryList['items'] = [
     { id: '10000000-0000-4000-8000-000000000011', clinic_id: demoClinic, owner_user_id: demoOwner, display_name: 'Lina Exemple', contact_email: 'lina@example.invalid', contact_phone: null, source: 'phone', follow_up_at: null, status: 'new', created_at: '2026-10-26T09:30:00Z' },
     { id: '10000000-0000-4000-8000-000000000012', clinic_id: demoClinic, owner_user_id: demoOwner, display_name: 'Adam Exemple', contact_email: null, contact_phone: null, source: 'website', follow_up_at: null, status: 'new', created_at: '2026-10-26T08:45:00Z' },
     { id: '10000000-0000-4000-8000-000000000013', clinic_id: demoClinic, owner_user_id: demoOwner, display_name: 'Nora Exemple', contact_email: 'nora@example.invalid', contact_phone: null, source: 'walk_in', follow_up_at: null, status: 'new', created_at: '2026-10-25T15:00:00Z' },
   ];
+  const followUps = new Map<string, FollowUpList['items']>();
+  const followUpReceipts = new Map<string, { fingerprint: string; result: FollowUpRecorded }>();
+  let disposed = false;
+  function authorize(inquiryId: string, signal?: AbortSignal) {
+    signal?.throwIfAborted();
+    if (disposed) throw new IntakeError('expired');
+    const inquiry = items.find(item => item.id === inquiryId);
+    if (!inquiry) throw new IntakeError('missing');
+    if (inquiry.owner_user_id !== demoOwner) throw new IntakeError('denied');
+  }
   const saved = new Map<string, { fingerprint: string; result: InquiryCreated }>();
   return {
-    mode: 'demo', currentUserId: demoOwner,
+    mode: 'demo', currentUserId: demoOwner, pendingFollowUp,
+    async followUps(id, signal) {
+      authorize(id, signal);
+      const records = followUps.get(id) ?? [];
+      return FollowUpListSchema.parse({ items: records.slice(0, 50), truncated: records.length > 50 });
+    },
+    async recordFollowUp(id, input, key, signal) {
+      authorize(id, signal);
+      const body = RecordFollowUpSchema.parse(input); const fingerprint = JSON.stringify(body);
+      const saved = followUpReceipts.get(id + ':' + key);
+      if (saved) { if (saved.fingerprint !== fingerprint) throw new IntakeError('conflict'); return { ...saved.result, replayed: true }; }
+      const result = FollowUpRecordedSchema.parse({ item: { ...body, id: crypto.randomUUID(), clinic_id: demoClinic, inquiry_id: id, actor_user_id: demoOwner, recorded_at: new Date().toISOString(), event_version: 1 }, replayed: false });
+      followUpReceipts.set(id + ':' + key, { fingerprint, result });
+      followUps.set(id, [result.item, ...(followUps.get(id) ?? [])].sort((a, b) => b.recorded_at.localeCompare(a.recorded_at) || b.id.localeCompare(a.id)));
+      return result;
+    },
+    dispose() { pendingFollowUp.current = null; disposed = true; items = []; saved.clear(); followUps.clear(); followUpReceipts.clear(); },
     async list(signal) {
       signal?.throwIfAborted();
       return InquiryListSchema.parse({ items: items.slice(0, 100), truncated: items.length > 100 });
@@ -53,16 +86,17 @@ export function createDemoIntakeTransport(): IntakeTransport {
 
 /** Credentials are closed over in memory and revoked when the session view closes. */
 export function createHttpIntakeTransport(options: { api: string; token: string; clinicId: string; userId: string; fetcher?: typeof fetch }): IntakeTransport {
+  const pendingFollowUp: { current: FollowUpAttempt | null } = { current: null };
   let token: string | null = options.token;
   const { api, clinicId, userId } = options;
   const controllers = new Set<AbortController>();
   const fetcher = options.fetcher ?? fetch;
-  async function send(method: 'GET' | 'POST', body?: CreateInquiry, key?: string, callerSignal?: AbortSignal) {
+  async function send(method: 'GET' | 'POST', body?: CreateInquiry | RecordFollowUp, key?: string, callerSignal?: AbortSignal, suffix = '') {
     if (!token) throw new IntakeError('expired');
     const controller = new AbortController();
     controllers.add(controller);
     try {
-      const response = await fetcher(`${api.replace(/\/$/, '')}/api/v1/inquiries`, {
+      const response = await fetcher(`${api.replace(/\/$/, '')}/api/v1/inquiries${suffix}`, {
         method, cache: 'no-store', credentials: 'omit',
         headers: { Authorization: `Bearer ${token}`, 'X-Clinic-Id': clinicId, ...(body ? { 'Content-Type': 'application/json', 'Idempotency-Key': key! } : {}) },
         body: body ? JSON.stringify(body) : undefined,
@@ -74,11 +108,13 @@ export function createHttpIntakeTransport(options: { api: string; token: string;
           const problem: unknown = await response.json().catch(() => null);
           disabled = typeof problem === 'object' && problem !== null && 'code' in problem && problem.code === 'intake_disabled';
         }
-        const kind: IntakeFailure = response.status === 401 ? 'expired' : response.status === 403 ? 'denied' : disabled ? 'disabled' : response.status === 409 ? 'conflict' : response.status === 400 ? 'invalid' : 'unavailable';
+        const kind: IntakeFailure = response.status === 401 ? 'expired' : response.status === 403 ? 'denied' : response.status === 404 ? 'missing' : disabled ? 'disabled' : response.status === 409 ? 'conflict' : response.status === 400 ? 'invalid' : 'unavailable';
         throw new IntakeError(kind);
       }
       if (!token) throw new IntakeError('expired');
-      return await response.json() as unknown;
+      const result: unknown = await response.json();
+      if (!token) throw new IntakeError('expired');
+      return result;
     } catch (error) {
       if (error instanceof IntakeError) throw error;
       if (callerSignal?.aborted || controller.signal.aborted) throw error;
@@ -86,7 +122,20 @@ export function createHttpIntakeTransport(options: { api: string; token: string;
     } finally { controllers.delete(controller); }
   }
   return {
-    mode: 'connected', currentUserId: userId,
+    mode: 'connected', currentUserId: userId, pendingFollowUp,
+    async followUps(id, signal) {
+      const parsed = FollowUpListSchema.safeParse(await send('GET', undefined, undefined, signal, '/' + encodeURIComponent(id) + '/follow-ups'));
+      if (!token) throw new IntakeError('expired');
+      if (!parsed.success || parsed.data.items.some(item => item.clinic_id !== clinicId || item.inquiry_id !== id)) throw new IntakeError('unavailable');
+      return parsed.data;
+    },
+    async recordFollowUp(id, input, key, signal) {
+      const body = RecordFollowUpSchema.parse(input);
+      const parsed = FollowUpRecordedSchema.safeParse(await send('POST', body, key, signal, '/' + encodeURIComponent(id) + '/follow-ups'));
+      if (!token) throw new IntakeError('expired');
+      if (!parsed.success || parsed.data.item.clinic_id !== clinicId || parsed.data.item.inquiry_id !== id || parsed.data.item.actor_user_id !== userId || parsed.data.item.kind !== body.kind || parsed.data.item.channel !== body.channel) throw new IntakeError('unavailable');
+      return parsed.data;
+    },
     async list(signal) {
       const parsed = InquiryListSchema.safeParse(await send('GET', undefined, undefined, signal));
       if (!token) throw new IntakeError('expired');
@@ -100,6 +149,6 @@ export function createHttpIntakeTransport(options: { api: string; token: string;
       if (!parsed.success || parsed.data.item.clinic_id !== clinicId || parsed.data.item.owner_user_id !== userId) throw new IntakeError('unavailable');
       return parsed.data;
     },
-    dispose() { token = null; controllers.forEach(controller => controller.abort()); controllers.clear(); },
+    dispose() { pendingFollowUp.current = null; token = null; controllers.forEach(controller => controller.abort()); controllers.clear(); },
   };
 }

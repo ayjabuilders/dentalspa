@@ -9,7 +9,7 @@ describe('module progress evidence', () => {
   it('covers all PRD modules and gives no functional points to UI-only previews', () => {
     const result = calculateProgress(ledger, queue.tasks, ids);
     expect(Object.keys(result)).toHaveLength(21);
-    expect(result.M01?.percent).toBe(17);
+    expect(result.M01?.percent).toBe(25);
     expect(result.M02?.percent).toBe(17);
     expect(result.M16?.percent).toBe(17);
     for (const id of ['M03', 'M04', 'M06', 'M09', 'M14', 'M17', 'M21']) expect(result[id]?.percent).toBe(0);
@@ -34,8 +34,8 @@ describe('module progress evidence', () => {
     const updated = structuredClone(ledger);
     updated.modules[0]!.criteria[0]!.state = 'done';
     const result = calculateProgress(updated, queue.tasks, ids);
-    expect(result.M01?.points).toBe(1.5);
-    expect(result.M01?.percent).toBe(25);
-    expect(calculateProgress(ledger, queue.tasks, ids).M01?.percent).toBe(17);
+    expect(result.M01?.points).toBe(2);
+    expect(result.M01?.percent).toBe(33);
+    expect(calculateProgress(ledger, queue.tasks, ids).M01?.percent).toBe(25);
   });
 });
