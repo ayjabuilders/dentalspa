@@ -231,6 +231,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/inquiries/{id}/follow-ups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Current owner follow-up history; newest first, maximum50 */
+        get: operations["FollowUpController_list"];
+        put?: never;
+        /** Attest a completed external/manual action; sends no message */
+        post: operations["FollowUpController_record"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1196,6 +1214,207 @@ export interface operations {
                 content?: never;
             };
             /** @description Commands disabled or provider unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FollowUpController_list: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            /** @enum {string} */
+                            kind: "contact_attempt" | "two_way_exchange";
+                            /** @enum {string} */
+                            channel: "phone" | "email" | "in_person" | "other_manual";
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            clinic_id: string;
+                            /** Format: uuid */
+                            inquiry_id: string;
+                            /** Format: uuid */
+                            actor_user_id: string;
+                            /** Format: date-time */
+                            recorded_at: string;
+                            /** @enum {number} */
+                            event_version: 1;
+                        }[];
+                        truncated: boolean;
+                    };
+                };
+            };
+            /** @description Invalid request, query, identifier or key */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Current active inquiry owner with permitted role required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Absent or foreign inquiry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description intake_disabled for disabled commands; generic unavailable for provider failures */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FollowUpController_record: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    kind: "contact_attempt" | "two_way_exchange";
+                    /** @enum {string} */
+                    channel: "phone" | "email" | "in_person" | "other_manual";
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        item: {
+                            /** @enum {string} */
+                            kind: "contact_attempt" | "two_way_exchange";
+                            /** @enum {string} */
+                            channel: "phone" | "email" | "in_person" | "other_manual";
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            clinic_id: string;
+                            /** Format: uuid */
+                            inquiry_id: string;
+                            /** Format: uuid */
+                            actor_user_id: string;
+                            /** Format: date-time */
+                            recorded_at: string;
+                            /** @enum {number} */
+                            event_version: 1;
+                        };
+                        replayed: boolean;
+                    };
+                };
+            };
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        item: {
+                            /** @enum {string} */
+                            kind: "contact_attempt" | "two_way_exchange";
+                            /** @enum {string} */
+                            channel: "phone" | "email" | "in_person" | "other_manual";
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            clinic_id: string;
+                            /** Format: uuid */
+                            inquiry_id: string;
+                            /** Format: uuid */
+                            actor_user_id: string;
+                            /** Format: date-time */
+                            recorded_at: string;
+                            /** @enum {number} */
+                            event_version: 1;
+                        };
+                        replayed: boolean;
+                    };
+                };
+            };
+            /** @description Invalid request, query, identifier or key */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Current active inquiry owner with permitted role required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Absent or foreign inquiry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Same scoped key with different payload */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description intake_disabled for disabled commands; generic unavailable for provider failures */
             503: {
                 headers: {
                     [name: string]: unknown;
