@@ -15,6 +15,7 @@ const failures: Record<TeamFailure, { title: string; detail: string }> = {
 };
 export function DemoTeamRoster() { const [transport] = useState(createDemoTeamTransport); return <TeamRosterView transport={transport}/>; }
 export function TeamRosterView({ transport, onSessionExpired }: { transport: TeamTransport; onSessionExpired?: () => void }) {
+  const [rosterAuthorityDenied, setRosterAuthorityDenied] = useState(false);
   const [roster, setRoster] = useState<TeamRoster | null>(null); const [loading, setLoading] = useState(true);
   const [error, setError] = useState<TeamFailure | null>(null); const [query, setQuery] = useState(''); const [role, setRole] = useState('all');
   const [online, setOnline] = useState(true); const [zone, setZone] = useState('heure de cet appareil');
@@ -28,15 +29,16 @@ export function TeamRosterView({ transport, onSessionExpired }: { transport: Tea
     const controller = new AbortController(); request.current = controller; setLoading(true);
     try {
       const result = await transport.roster(controller.signal);
-      if (active.current && !controller.signal.aborted && !disposed.current) setRoster(result);
+      if (active.current && !controller.signal.aborted && !disposed.current) { setRoster(result); setRosterAuthorityDenied(false); }
     } catch (error) {
       if (!active.current || controller.signal.aborted || disposed.current) return;
       const kind = error instanceof TeamError ? error.kind : 'unavailable'; clear(); setError(kind);
+      if (kind === 'denied') setRosterAuthorityDenied(true);
       if (kind === 'expired') expires.current?.();
     } finally { if (active.current && !controller.signal.aborted) setLoading(false); }
   }
   useEffect(() => {
-    active.current = true; disposed.current = false;
+    active.current = true; disposed.current = false; setRosterAuthorityDenied(false);
     const offDispose = transport.onDispose(() => { disposed.current = true; request.current?.abort(); if (active.current) { clear(); setLoading(false); setError('expired'); } });
     const network = () => { setOnline(navigator.onLine); if (!navigator.onLine) { request.current?.abort(); clear(); setLoading(false); setError('offline'); } };
     network(); setZone(Intl.DateTimeFormat().resolvedOptions().timeZone); void load();
@@ -58,6 +60,6 @@ export function TeamRosterView({ transport, onSessionExpired }: { transport: Tea
         {!roster.members.length ? <div className="team-roster-empty" role="status"><Users size={28}/><h3>Aucun membre retourné</h3><p>Aucun membre ne figure dans cette observation autorisée.</p></div> : !visible.length ? <div className="team-roster-empty" role="status"><Search size={28}/><h3>Aucun résultat dans la liste chargée</h3><p>Ce filtre ne permet pas de conclure à l’absence d’un membre dans le cabinet.</p><Button onClick={() => { setQuery(''); setRole('all'); }}>Réinitialiser les filtres</Button></div> : <div className="team-roster-list-region" role="region" aria-label="Membres et rôles d’accès" tabIndex={0}><ul className="team-roster-list">{visible.map(member => <li key={member.user_id}><span className="team-roster-avatar" aria-hidden="true">{member.display_name.split(/\s+/).filter(Boolean).slice(0, 2).map(part => [...part][0]).join('').toLocaleUpperCase('fr')}</span><div className="team-roster-name"><strong>{member.display_name}</strong><small>Membre du cabinet</small></div><div className="team-roster-roles"><span>Rôles d’accès</span><ul aria-label={`Rôles d’accès de ${member.display_name}`}>{member.roles.map(value => <li key={value}>{roles[value]}</li>)}</ul></div></li>)}</ul></div>}
         <p className="team-roster-observation">{visible.length} affiché(s) parmi {roster.members.length} chargé(s) · Observé le <time dateTime={roster.observed_at}>{observed}</time> · {zone}</p>
       </>}
-    </section><TeamActivityPanel transport={transport} onSessionExpired={onSessionExpired}/></div>
+    </section><TeamActivityPanel transport={transport} onSessionExpired={onSessionExpired} rosterAuthorityDenied={rosterAuthorityDenied}/></div>
   </section>;
 }

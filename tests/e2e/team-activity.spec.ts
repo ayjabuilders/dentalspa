@@ -6,7 +6,7 @@ const user = '10000000-0000-4000-8000-000000000002';
 const item = { kind: 'inquiry_created', actor_display_name: 'Acteur synthétique', occurred_at: '2026-10-27T09:00:00Z' };
 const activity = { observed_at: '2026-10-27T09:10:00Z', items: [item], truncated: false };
 const headers = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*', 'Cache-Control': 'no-store' };
-async function verified(page: Page, handler: (route: Route) => Promise<void>) {
+async function verified(page: Page, handler: (route: Route) => Promise<void>, rosterHandler?: (route: Route) => Promise<void>) {
   let count = 0;
   await page.route('https://team-auth.example.invalid/**', async route => {
     if (route.request().method() === 'OPTIONS' || route.request().url().includes('/logout')) return route.fulfill({ status: 204, headers });
@@ -16,6 +16,7 @@ async function verified(page: Page, handler: (route: Route) => Promise<void>) {
     if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers });
     const url = route.request().url();
     if (url.endsWith('/me/workspace')) return route.fulfill({ status: 200, headers, json: { user_id: user, clinic_id: clinic, roles: ['manager'], mode: 'connected' } });
+    if (url.endsWith('/team/roster') && rosterHandler) return rosterHandler(route);
     if (url.endsWith('/team/roster')) return route.fulfill({ status: 200, headers, json: { observed_at: activity.observed_at, members: [], truncated: false } });
     expect(url).toMatch(/\/api\/v1\/team\/activity$/); expect(route.request().method()).toBe('GET'); expect(route.request().headers()['x-clinic-id']).toBe(clinic); count++; return handler(route);
   });
@@ -81,6 +82,25 @@ test.describe('verified activity', () => {
     await page.getByRole('button', { name: 'Afficher l’activité récente' }).click(); await expect(page.locator('.team-activity-timeline>li')).toHaveCount(1);
     expect(await page.evaluate(() => JSON.stringify({ ...localStorage, ...sessionStorage, url: location.href }))).not.toMatch(/Acteur|synthetic-token|inquiry_created/);
     await page.clock.fastForward(3601000); await expect(page.locator('.team-activity')).toHaveCount(0); await expect(page.getByRole('button', { name: 'Se connecter', exact: true })).toBeVisible();
+  });
+  test('roster authority denial clears journal and blocks late activity; activity-only denial preserves roster', async ({ page }) => {
+    let rosterDenied = false; let activityDenied = false; let delayed = false; let release!: () => void;
+    await verified(page, async route => {
+      if (delayed) await new Promise<void>(resolve => { release = resolve; });
+      await route.fulfill({ status: activityDenied ? 403 : 200, headers, json: activityDenied ? {} : activity }).catch(() => undefined);
+    }, route => route.fulfill({ status: rosterDenied ? 403 : 200, headers, json: rosterDenied ? {} : { observed_at: activity.observed_at, members: [{ user_id: user, clinic_id: clinic, display_name: 'Dentiste synthétique', roles: ['dentist'] }], truncated: false } }));
+    await expect(page.getByText(item.actor_display_name, { exact: true })).toBeVisible();
+    rosterDenied = true; await page.getByRole('button', { name: 'Actualiser les membres' }).click();
+    await expect(page.getByRole('heading', { name: 'Annuaire non autorisé' })).toBeVisible();
+    await expect(page.locator('.team-activity-timeline>li')).toHaveCount(0); await expect(page.getByText(item.actor_display_name, { exact: true })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Réessayer l’activité' })).toBeDisabled();
+    rosterDenied = false; await page.getByRole('button', { name: 'Réessayer l’annuaire' }).click(); await page.getByRole('button', { name: 'Afficher l’activité récente' }).click();
+    await expect(page.getByText(item.actor_display_name, { exact: true })).toBeVisible();
+    activityDenied = true; await page.getByRole('button', { name: 'Actualiser l’activité', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Activité non autorisée' })).toBeVisible(); await expect(page.getByText('Dentiste synthétique', { exact: true })).toBeVisible();
+    activityDenied = false; delayed = true; await page.getByRole('button', { name: 'Réessayer l’activité' }).click(); await expect.poll(() => Boolean(release)).toBe(true);
+    rosterDenied = true; await page.getByRole('button', { name: 'Actualiser les membres' }).click(); await expect(page.getByRole('heading', { name: 'Annuaire non autorisé' })).toBeVisible(); release();
+    await expect(page.locator('.team-activity-timeline>li')).toHaveCount(0); await expect(page.getByText(item.actor_display_name, { exact: true })).toHaveCount(0);
   });
   test('401 activity response clears entire verified tool', async ({ page }) => {
     await verified(page, route => route.fulfill({ status: 401, headers, json: {} })); await expect(page.locator('.team-activity')).toHaveCount(0); await expect(page.getByRole('button', { name: 'Se connecter', exact: true })).toBeVisible();
