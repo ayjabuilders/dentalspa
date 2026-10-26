@@ -30,7 +30,11 @@ describe('identity and tenant policy', () => {
     expect(canReadPatient(actor,syntheticRecords[2]!)).toBe(false);
   });
   it('defends against a privileged adapter bypassing RLS', async () => {
-    const service = new PatientsService({ list: async () => syntheticRecords, find: async (_, id) => syntheticRecords.find(p => p.id === id) ?? null });
+    const service = new PatientsService({
+      list: async () => syntheticRecords,
+      find: async (_, id) => syntheticRecords.find(p => p.id === id) ?? null,
+      lookup: async () => ({ items: [], truncated: false }),
+    });
     const actor: Actor = { userId: STAFF, token:'token', clinicId:A, roles:['reception'] };
     expect((await service.list(actor)).map(p => p.id)).toEqual([P1,P3]);
     await expect(service.find(actor,P2)).rejects.toThrow('Record unavailable');
