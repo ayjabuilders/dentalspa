@@ -1,0 +1,91 @@
+{
+  "template_id": "consultation-diagnostic",
+  "version": 1,
+  "scope": "visit_workflow",
+  "title": "Consultation et diagnostic — modèle organisationnel",
+  "publication_status": "draft",
+  "clinical_approved": false,
+  "source_references": [
+    "Tableaux_Checklists_Cliniques_Par_Acte copie.pdf",
+    "Ma_Journee_Taches_Separees_Cabinet_Dentaire.pdf"
+  ],
+  "source_confidence": "source_derived",
+  "notes": "Avant / pendant / après séance, organisation only; Dr Amina must validate exact clinical SOP and staffing.",
+  "phases": [
+    {
+      "id": "before",
+      "title": "Avant séance",
+      "patient_label": "Votre équipe prépare votre consultation",
+      "stage_kind": "visit",
+      "optional": false,
+      "steps": [
+        {
+          "id": "prepare-chart",
+          "title": "Préparer dossier, imagerie et plateau",
+          "owner_role": "assistant",
+          "completion_evidence": "actor_confirmation",
+          "clinician_gate": false,
+          "delegable": true
+        },
+        {
+          "id": "review-history",
+          "title": "Revoir motif, antécédents et informations disponibles",
+          "owner_role": "dentist",
+          "completion_evidence": "clinician_signature",
+          "clinician_gate": true,
+          "delegable": false
+        }
+      ]
+    },
+    {
+      "id": "during",
+      "title": "Pendant séance",
+      "patient_label": "Votre consultation est en cours",
+      "stage_kind": "clinical",
+      "optional": false,
+      "steps": [
+        {
+          "id": "exam",
+          "title": "Effectuer examen et documenter les constatations",
+          "owner_role": "dentist",
+          "completion_evidence": "clinician_signature",
+          "clinician_gate": true,
+          "delegable": false
+        },
+        {
+          "id": "support-admin",
+          "title": "Recueillir pièces administratives utiles",
+          "owner_role": "assistant",
+          "completion_evidence": "actor_confirmation",
+          "clinician_gate": false,
+          "delegable": true
+        }
+      ]
+    },
+    {
+      "id": "after",
+      "title": "Après séance",
+      "patient_label": "Votre consultation est terminée",
+      "stage_kind": "visit",
+      "optional": false,
+      "steps": [
+        {
+          "id": "review-diagnosis",
+          "title": "Valider diagnostic, examens complémentaires et options",
+          "owner_role": "dentist",
+          "completion_evidence": "clinician_signature",
+          "clinician_gate": true,
+          "delegable": false
+        },
+        {
+          "id": "plan-next",
+          "title": "Préparer devis sur plan validé et fixer suite",
+          "owner_role": "reception",
+          "completion_evidence": "actor_confirmation",
+          "clinician_gate": false,
+          "delegable": true
+        }
+      ]
+    }
+  ]
+}

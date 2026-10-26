@@ -1,0 +1,45 @@
+{
+  "name": "dental-spa-platform",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "dev": "turbo run dev --parallel",
+    "build": "node scripts/pwa.mjs && turbo run build",
+    "lint": "eslint apps packages tests scripts --max-warnings=0",
+    "typecheck": "turbo run typecheck && tsc -p tsconfig.json",
+    "unit": "vitest run tests/unit",
+    "integration": "vitest run tests/integration",
+    "e2e": "playwright test",
+    "test": "pnpm unit && pnpm integration",
+    "db:start": "supabase start",
+    "db:reset": "supabase db reset --local",
+    "db:test": "supabase test db",
+    "contracts:generate": "pnpm --filter @dental/dental-api build && node scripts/openapi.mjs && openapi-typescript contracts/foundation.openapi.json -o packages/contracts/src/api.generated.ts"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.11",
+    "@eslint/js": "^9.39.0",
+    "@nestjs/common": "12.2.0",
+    "@nestjs/core": "12.2.0",
+    "@nestjs/testing": "12.2.0",
+    "@playwright/test": "^1.58.0",
+    "@types/express": "^5.0.0",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@types/supertest": "^6.0.0",
+    "eslint": "^9.39.0",
+    "openapi-typescript": "^7.10.0",
+    "reflect-metadata": "0.2.2",
+    "supabase": "2.122.0",
+    "supertest": "^7.0.0",
+    "turbo": "2.11.10",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.46.0",
+    "vitest": "^3.2.4"
+  }
+}

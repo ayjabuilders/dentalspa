@@ -1,0 +1,171 @@
+{
+  "template_id": "hollywood-smile-proposal",
+  "version": 1,
+  "scope": "service_journey",
+  "title": "Hollywood Smile — parcours candidat, jamais activation clinique automatique",
+  "publication_status": "draft",
+  "clinical_approved": false,
+  "source_references": [
+    "Tableaux_Checklists_Cliniques_Par_Acte copie.pdf",
+    "Ma_Journee_Taches_Separees_Cabinet_Dentaire.pdf",
+    "les taches effectuées par le praticien, l assistante et la prothesiste.docx",
+    "Dental_Spa_Dental_OS_Master_Project_Guide_2026.pdf"
+  ],
+  "source_confidence": "composed_proposal",
+  "notes": "Not found as a complete clinic-approved SOP. Interest selection does not activate clinical treatment. Clinician determines indication, actual plan, applicable branches and template approval.",
+  "phases": [
+    {
+      "id": "consult",
+      "title": "Consultation et diagnostic",
+      "patient_label": "Première consultation",
+      "stage_kind": "clinical",
+      "optional": false,
+      "steps": [
+        {
+          "id": "clinician-assess",
+          "title": "Évaluer indications, contraintes et alternatives",
+          "owner_role": "dentist",
+          "completion_evidence": "clinician_signature",
+          "clinician_gate": true,
+          "delegable": false
+        }
+      ]
+    },
+    {
+      "id": "design",
+      "title": "Étude et planification",
+      "patient_label": "Étude de votre projet",
+      "stage_kind": "clinical",
+      "optional": false,
+      "steps": [
+        {
+          "id": "approve-plan",
+          "title": "Valider plan et options, conditions de consentement",
+          "owner_role": "dentist",
+          "completion_evidence": "clinician_signature",
+          "clinician_gate": true,
+          "delegable": false
+        },
+        {
+          "id": "quote",
+          "title": "Préparer devis sur plan approuvé",
+          "owner_role": "reception",
+          "completion_evidence": "actor_confirmation",
+          "clinician_gate": false,
+          "delegable": true
+        }
+      ]
+    },
+    {
+      "id": "scan",
+      "title": "Acquisition/scan si indiqué",
+      "patient_label": "Préparation clinique",
+      "stage_kind": "clinical",
+      "optional": true,
+      "steps": [
+        {
+          "id": "prepare-scanner",
+          "title": "Préparer scanner et dossier numérique",
+          "owner_role": "assistant",
+          "completion_evidence": "actor_confirmation",
+          "clinician_gate": false,
+          "delegable": true
+        },
+        {
+          "id": "confirm-capture",
+          "title": "Valider qualité et indication de l’acquisition",
+          "owner_role": "dentist",
+          "completion_evidence": "clinician_signature",
+          "clinician_gate": true,
+          "delegable": false
+        }
+      ],
+      "condition": "clinician_plan_requires_scan"
+    },
+    {
+      "id": "lab",
+      "title": "Laboratoire si prescrit",
+      "patient_label": "Préparation de votre restauration",
+      "stage_kind": "laboratory",
+      "optional": true,
+      "steps": [
+        {
+          "id": "prescription",
+          "title": "Valider prescription, matériau et teinte",
+          "owner_role": "dentist",
+          "completion_evidence": "clinician_signature",
+          "clinician_gate": true,
+          "delegable": false
+        },
+        {
+          "id": "prepare-workorder",
+          "title": "Réception fichiers et planification fabrication",
+          "owner_role": "lab_technician",
+          "completion_evidence": "actor_confirmation",
+          "clinician_gate": false,
+          "delegable": false
+        },
+        {
+          "id": "qc",
+          "title": "Contrôle technique et livraison identifiée",
+          "owner_role": "lab_technician",
+          "completion_evidence": "lab_qc",
+          "clinician_gate": false,
+          "delegable": false
+        }
+      ],
+      "condition": "clinician_plan_requires_lab"
+    },
+    {
+      "id": "fit",
+      "title": "Essayage/collage si prescrit",
+      "patient_label": "Votre séance de restauration",
+      "stage_kind": "clinical",
+      "optional": true,
+      "steps": [
+        {
+          "id": "check-restoration",
+          "title": "Valider indication, adaptation, teinte et protocole",
+          "owner_role": "dentist",
+          "completion_evidence": "clinician_signature",
+          "clinician_gate": true,
+          "delegable": false
+        },
+        {
+          "id": "prepare-tray",
+          "title": "Vérifier facettes livrées et plateau dédié",
+          "owner_role": "assistant",
+          "completion_evidence": "actor_confirmation",
+          "clinician_gate": false,
+          "delegable": true
+        },
+        {
+          "id": "clinical-delivery",
+          "title": "Réaliser séance et valider contrôle clinique",
+          "owner_role": "dentist",
+          "completion_evidence": "clinician_signature",
+          "clinician_gate": true,
+          "delegable": false
+        }
+      ],
+      "condition": "clinician_plan_requires_facettes"
+    },
+    {
+      "id": "follow",
+      "title": "Contrôle et suivi",
+      "patient_label": "Votre suivi",
+      "stage_kind": "clinical",
+      "optional": false,
+      "steps": [
+        {
+          "id": "approve-aftercare",
+          "title": "Valider consignes, suivi et documents patient",
+          "owner_role": "dentist",
+          "completion_evidence": "clinician_signature",
+          "clinician_gate": true,
+          "delegable": false
+        }
+      ]
+    }
+  ]
+}

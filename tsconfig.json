@@ -1,0 +1,1 @@
+{"extends":"./tsconfig.base.json","compilerOptions":{"module":"ESNext","moduleResolution":"Bundler","noEmit":true,"experimentalDecorators":true,"emitDecoratorMetadata":true,"jsx":"react-jsx"},"include":["tests/**/*.ts"]}

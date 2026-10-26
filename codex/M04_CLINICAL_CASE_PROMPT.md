@@ -1,0 +1,2 @@
+# Codex Prompt — Milestone 04 (run after M03 acceptance and clinical sign-off)
+Implement encounter model, clinical note signing/versioning, treatment cases, clinician-approved plan revisions, journey phase instances (with branch/rework/loop), and patient-safe timeline projection. Do not auto-create facettes plan from Hollywood Smile marketing selection. Must have explicit clinician approval and a valid template version. Use fake patients. Include signed amendment tests, phase gate negative cases and Patient A/B release isolation.

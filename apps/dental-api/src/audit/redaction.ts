@@ -1,0 +1,8 @@
+import { randomUUID } from 'node:crypto';
+export function safeCorrelation(value: unknown): string {
+  return typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value) ? value : randomUUID();
+}
+// Whitelist, never redact arbitrary request objects after serialization.
+export function accessLog(correlationId: string, method: string, status: number, durationMs: number) {
+  return { event: 'http.completed', correlation_id: correlationId, method, status, duration_ms: durationMs };
+}
