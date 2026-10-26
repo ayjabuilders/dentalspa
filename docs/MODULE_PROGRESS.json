@@ -785,9 +785,11 @@
           "label": "Audit des accès, modifications, approbations et exports",
           "state": "partial",
           "taskIds": [
-            "INTAKE-INTEGRATE"
+            "INTAKE-INTEGRATE",
+            "TEAM-ACTIVITY-API",
+            "TEAM-ACTIVITY-UI"
           ],
-          "evidence": "Audit des mutations livrées; couverture complète des lectures, approbations et exports à construire."
+          "evidence": "Audit des mutations livrées et journal opérationnel récent en lecture seule pour Gestionnaire (quatre actions, borné et non exhaustif); audit complet des lectures, approbations, exports, rétention et validation hébergée restent à construire."
         }
       ]
     },

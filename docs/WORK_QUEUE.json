@@ -78,27 +78,29 @@
     },
     {
       "id": "TEAM-ACTIVITY-API",
-      "state": "active",
+      "state": "done",
       "owner": "pwa_verification",
       "depends_on": ["TEAM-ACTIVITY-CONTRACT"],
       "branch": "codex/m16-team-activity-api",
       "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/team-activity-api",
       "allowed_files": ["apps/dental-api/src/team/**", "supabase/migrations/*team_activity*.sql", "supabase/tests/*team_activity*.sql", "tests/unit/team-activity*", "tests/integration/team-activity*"],
-      "acceptance": "Manager-only SQL/API projection with same-clinic isolation, allowlist mapping, 50/51 truncation, missing-profile privacy, no-store and adversarial tests."
+      "acceptance": "Manager-only SQL/API projection with same-clinic isolation, allowlist mapping, 50/51 truncation, missing-profile privacy, no-store and adversarial tests.",
+      "evidence": "Integrated ba00719 after independent security review, 19 activity API/adapter/PGlite tests, six roster HTTP regressions, API build, root typecheck and scoped lint. Additive restricted RPC and 19 pgTAP assertions await current-head database CI."
     },
     {
       "id": "TEAM-ACTIVITY-UI",
-      "state": "active",
+      "state": "done",
       "owner": "connection_ui",
       "depends_on": ["TEAM-ACTIVITY-CONTRACT"],
       "branch": "codex/m16-team-activity-ui",
       "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/team-activity-ui",
       "allowed_files": ["apps/clinic-os/components/team/**", "apps/clinic-os/app/connection/page.tsx", "tests/e2e/team-activity.spec.ts"],
-      "acceptance": "Polished pearl/navy Team activity panel with synthetic and connected states, strict memory cleanup, truthful limits, keyboard/reduced-motion and responsive browser evidence."
+      "acceptance": "Polished pearl/navy Team activity panel with synthetic and connected states, strict memory cleanup, truthful limits, keyboard/reduced-motion and responsive browser evidence.",
+      "evidence": "Integrated ac1e1ec and denial-lifecycle fix c178cf8 after independent review. Sixteen focused activity/roster tests, production build, scoped lint and typechecks passed; pearl/navy screenshots at 1536/1280/768/390 and connected partial state were inspected."
     },
     {
       "id": "TEAM-ACTIVITY-INTEGRATE",
-      "state": "planned",
+      "state": "verification",
       "owner": "coordinator",
       "depends_on": ["TEAM-ACTIVITY-API", "TEAM-ACTIVITY-UI"],
       "branch": "codex/m16-activity-journal-contract",
