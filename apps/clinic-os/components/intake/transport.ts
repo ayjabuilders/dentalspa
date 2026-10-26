@@ -1,3 +1,4 @@
+import { InquiryCommunicationTimeZoneStateSchema, InquiryCommunicationTimeZoneResultSchema, SetInquiryCommunicationTimeZoneSchema, type InquiryCommunicationTimeZoneState, type InquiryCommunicationTimeZoneResult, type SetInquiryCommunicationTimeZone } from '@dental/contracts';
 import { InquiryCommunicationLanguageStateSchema, InquiryCommunicationLanguageResultSchema, SetInquiryCommunicationLanguageSchema, type InquiryCommunicationLanguageState, type InquiryCommunicationLanguageResult, type SetInquiryCommunicationLanguage } from '@dental/contracts';
 import { InquiryContactPreferenceStateSchema, InquiryContactPreferenceResultSchema, SetInquiryContactPreferenceSchema, type InquiryContactPreferenceState, type InquiryContactPreferenceResult, type SetInquiryContactPreference } from '@dental/contracts';
 import { InquiryOwnerSearchRequestSchema, InquiryOwnerSearchResultSchema, type InquiryOwnerSearchRequest, type InquiryOwnerSearchResult } from '@dental/contracts';
@@ -13,16 +14,18 @@ export class IntakeError extends Error {
 }
 export type FollowUpAttempt = { inquiry: InquiryList['items'][number]; body: RecordFollowUp; key: string };
 export type ScheduleAttempt = { id: string; displayName?: string; body: SetInquirySchedule; key: string };
+export type TimeZoneAttempt = { id: string; displayName?: string; body: SetInquiryCommunicationTimeZone; key: string };
 export type LanguageAttempt = { id: string; displayName?: string; body: SetInquiryCommunicationLanguage; key: string };
 export type PreferenceAttempt = { id: string; displayName?: string; body: SetInquiryContactPreference; key: string };
 function privacyState() {
+  const pendingTimeZone: { current: TimeZoneAttempt | null } = { current: null };
   const pendingLanguage: { current: LanguageAttempt | null } = { current: null };
   const pendingPreference: { current: PreferenceAttempt | null } = { current: null };
   const pendingSchedule: { current: ScheduleAttempt | null } = { current: null };
   const scheduleActive = { current: false };
   let clearing = false;
   const listeners = new Set<(kind: IntakeFailure) => void>();
-  return { pendingLanguage, pendingPreference, pendingSchedule, scheduleActive, onPrivateClear(listener: (kind: IntakeFailure) => void) { listeners.add(listener); return () => { listeners.delete(listener); }; }, clearPrivate(kind: IntakeFailure) { pendingLanguage.current = null; pendingPreference.current = null; pendingSchedule.current = null; scheduleActive.current = false; if (clearing) return; clearing = true; try { listeners.forEach(listener => listener(kind)); } finally { clearing = false; } } };
+  return { pendingTimeZone, pendingLanguage, pendingPreference, pendingSchedule, scheduleActive, onPrivateClear(listener: (kind: IntakeFailure) => void) { listeners.add(listener); return () => { listeners.delete(listener); }; }, clearPrivate(kind: IntakeFailure) { pendingTimeZone.current = null; pendingLanguage.current = null; pendingPreference.current = null; pendingSchedule.current = null; scheduleActive.current = false; if (clearing) return; clearing = true; try { listeners.forEach(listener => listener(kind)); } finally { clearing = false; } } };
 }
 function instant(value: string | null): string | null {
   if (value === null) return null;
@@ -30,6 +33,9 @@ function instant(value: string | null): string | null {
   return new Date(value).toISOString().slice(0,19) + '.' + fraction.padEnd(6,'0');
 }
 export interface IntakeTransport {
+  pendingTimeZone: { current: TimeZoneAttempt | null };
+  communicationTimeZone(id: string, signal?: AbortSignal): Promise<InquiryCommunicationTimeZoneState>;
+  setCommunicationTimeZone(id: string, body: SetInquiryCommunicationTimeZone, key: string, signal?: AbortSignal): Promise<InquiryCommunicationTimeZoneResult>;
   pendingLanguage: { current: LanguageAttempt | null };
   communicationLanguage(id: string, signal?: AbortSignal): Promise<InquiryCommunicationLanguageState>;
   setCommunicationLanguage(id: string, body: SetInquiryCommunicationLanguage, key: string, signal?: AbortSignal): Promise<InquiryCommunicationLanguageResult>;
@@ -75,6 +81,9 @@ export function createDemoIntakeTransport(): IntakeTransport {
   ];
   const followUps = new Map<string, FollowUpList['items']>();
   const followUpReceipts = new Map<string, { fingerprint: string; result: FollowUpRecorded }>();
+  const timeZoneStates = new Map<string, InquiryCommunicationTimeZoneState>();
+  const timeZoneReceipts = new Map<string, { fingerprint: string; result: InquiryCommunicationTimeZoneResult }>();
+  function timeZoneState(id: string) { return timeZoneStates.get(id) ?? { schema_version: 1 as const, catalogue_version: 1 as const, inquiry_id: id, clinic_id: demoClinic, owner_user_id: demoOwner, time_zone: null, revision: 0, updated_at: null }; }
   const languageStates = new Map<string, InquiryCommunicationLanguageState>();
   const languageReceipts = new Map<string, { fingerprint: string; result: InquiryCommunicationLanguageResult }>();
   function languageState(id: string) { return languageStates.get(id) ?? { schema_version: 1 as const, inquiry_id: id, clinic_id: demoClinic, owner_user_id: demoOwner, language: null, revision: 0, updated_at: null }; }
@@ -93,6 +102,18 @@ export function createDemoIntakeTransport(): IntakeTransport {
   const saved = new Map<string, { fingerprint: string; result: InquiryCreated }>();
   return {
     mode: 'demo', currentUserId: demoOwner, pendingFollowUp, ...privacy, clearPrivate(kind) { pendingFollowUp.current = null; privacy.clearPrivate(kind); },
+    async communicationTimeZone(id, signal) { authorize(id, signal); return InquiryCommunicationTimeZoneStateSchema.parse(timeZoneState(id)); },
+    async setCommunicationTimeZone(id, input, key, signal) {
+      authorize(id, signal); const body = SetInquiryCommunicationTimeZoneSchema.parse(input); const fingerprint = JSON.stringify(body);
+      const saved = timeZoneReceipts.get(id + ':' + key);
+      if (saved) { if (saved.fingerprint !== fingerprint) throw new IntakeError('conflict'); return { ...saved.result, replayed: true }; }
+      const state = timeZoneState(id); if (state.revision !== body.expected_revision) throw new IntakeError('conflict');
+      const changed = state.time_zone !== body.time_zone; if (changed && state.revision === 2147483647) throw new IntakeError('conflict');
+      const stamp = new Date().toISOString(); const revision = state.revision + (changed ? 1 : 0);
+      const result = InquiryCommunicationTimeZoneResultSchema.parse({ receipt: { catalogue_version: 1, inquiry_id: id, clinic_id: demoClinic, owner_user_id: demoOwner, previous_time_zone: state.time_zone, time_zone: body.time_zone, previous_revision: state.revision, revision, changed, recorded_at: stamp, event_version: 1 }, replayed: false });
+      if (changed) timeZoneStates.set(id, { ...state, time_zone: body.time_zone, revision, updated_at: stamp });
+      timeZoneReceipts.set(id + ':' + key, { fingerprint, result }); return result;
+    },
     async communicationLanguage(id, signal) { authorize(id, signal); return InquiryCommunicationLanguageStateSchema.parse(languageState(id)); },
     async setCommunicationLanguage(id, input, key, signal) {
       authorize(id, signal); const body = SetInquiryCommunicationLanguageSchema.parse(input); const fingerprint = JSON.stringify(body);
@@ -171,7 +192,7 @@ export function createDemoIntakeTransport(): IntakeTransport {
       followUps.set(id, [result.item, ...(followUps.get(id) ?? [])].sort((a, b) => b.recorded_at.localeCompare(a.recorded_at) || b.id.localeCompare(a.id)));
       return result;
     },
-    dispose() { languageStates.clear(); languageReceipts.clear(); preferenceStates.clear(); preferenceReceipts.clear(); privacy.clearPrivate('expired'); scheduleReceipts.clear(); pendingFollowUp.current = null; disposed = true; items = []; saved.clear(); followUps.clear(); followUpReceipts.clear(); },
+    dispose() { timeZoneStates.clear(); timeZoneReceipts.clear(); languageStates.clear(); languageReceipts.clear(); preferenceStates.clear(); preferenceReceipts.clear(); privacy.clearPrivate('expired'); scheduleReceipts.clear(); pendingFollowUp.current = null; disposed = true; items = []; saved.clear(); followUps.clear(); followUpReceipts.clear(); },
     async list(signal) {
       signal?.throwIfAborted();
       return InquiryListSchema.parse({ items: items.slice(0, 100), truncated: items.length > 100 });
@@ -202,7 +223,7 @@ export function createHttpIntakeTransport(options: { api: string; token: string;
   let privacyRevision = 0;
   const controllers = new Set<AbortController>();
   const fetcher = options.fetcher ?? fetch;
-  async function send(method: 'GET' | 'POST', body?: CreateInquiry | RecordFollowUp | SetInquirySchedule | InquiryOwnerSearchRequest | SetInquiryContactPreference | SetInquiryCommunicationLanguage, key?: string, callerSignal?: AbortSignal, suffix = '') {
+  async function send(method: 'GET' | 'POST', body?: CreateInquiry | RecordFollowUp | SetInquirySchedule | InquiryOwnerSearchRequest | SetInquiryContactPreference | SetInquiryCommunicationLanguage | SetInquiryCommunicationTimeZone, key?: string, callerSignal?: AbortSignal, suffix = '') {
     if (!token) throw new IntakeError('expired');
     const revision = privacyRevision;
     const controller = new AbortController();
@@ -221,7 +242,7 @@ export function createHttpIntakeTransport(options: { api: string; token: string;
           disabled = typeof problem === 'object' && problem !== null && 'code' in problem && problem.code === 'intake_disabled';
         }
         const kind: IntakeFailure = response.status === 401 ? 'expired' : response.status === 403 ? 'denied' : response.status === 404 ? 'missing' : disabled ? 'disabled' : response.status === 409 ? 'conflict' : response.status === 400 ? 'invalid' : 'unavailable';
-        if ((privacy.pendingLanguage.current !== null || privacy.pendingPreference.current !== null || privacy.scheduleActive.current || suffix.endsWith('/follow-up-schedule') || suffix.endsWith('/follow-up-schedule/history') || suffix === '/owner-search' || suffix.endsWith('/contact-preference') || suffix.endsWith('/communication-language')) && (kind === 'expired' || kind === 'denied' || kind === 'missing')) clearPrivate(kind);
+        if ((privacy.pendingTimeZone.current !== null || privacy.pendingLanguage.current !== null || privacy.pendingPreference.current !== null || privacy.scheduleActive.current || suffix.endsWith('/follow-up-schedule') || suffix.endsWith('/follow-up-schedule/history') || suffix === '/owner-search' || suffix.endsWith('/contact-preference') || suffix.endsWith('/communication-language') || suffix.endsWith('/communication-time-zone')) && (kind === 'expired' || kind === 'denied' || kind === 'missing')) clearPrivate(kind);
         throw new IntakeError(kind);
       }
       if (!token || revision !== privacyRevision) throw new IntakeError('expired');
@@ -238,6 +259,20 @@ export function createHttpIntakeTransport(options: { api: string; token: string;
   return {
     ...privacy, clearPrivate,
     mode: 'connected', currentUserId: userId, pendingFollowUp,
+    async communicationTimeZone(id, signal) {
+      const parsed = InquiryCommunicationTimeZoneStateSchema.safeParse(await send('GET', undefined, undefined, signal, '/' + encodeURIComponent(id) + '/communication-time-zone'));
+      if (!token) throw new IntakeError('expired');
+      if (!parsed.success || parsed.data.inquiry_id !== id || parsed.data.clinic_id !== clinicId || parsed.data.owner_user_id !== userId) throw new IntakeError('unavailable');
+      return parsed.data;
+    },
+    async setCommunicationTimeZone(id, input, key, signal) {
+      const body = SetInquiryCommunicationTimeZoneSchema.parse(input);
+      const parsed = InquiryCommunicationTimeZoneResultSchema.safeParse(await send('POST', body, key, signal, '/' + encodeURIComponent(id) + '/communication-time-zone'));
+      if (!token) throw new IntakeError('expired');
+      if (!parsed.success) throw new IntakeError('unavailable'); const receipt = parsed.data.receipt;
+      if (receipt.inquiry_id !== id || receipt.clinic_id !== clinicId || receipt.owner_user_id !== userId || receipt.previous_revision !== body.expected_revision || receipt.time_zone !== body.time_zone) throw new IntakeError('unavailable');
+      return parsed.data;
+    },
     async communicationLanguage(id, signal) {
       const parsed = InquiryCommunicationLanguageStateSchema.safeParse(await send('GET', undefined, undefined, signal, '/' + encodeURIComponent(id) + '/communication-language'));
       if (!token) throw new IntakeError('expired');
