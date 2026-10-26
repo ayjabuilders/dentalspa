@@ -1,3 +1,4 @@
+import { InquiryOwnerSearchRequestSchema, InquiryOwnerSearchResultSchema, type InquiryOwnerSearchRequest, type InquiryOwnerSearchResult } from '@dental/contracts';
 import { InquiryScheduleHistorySchema, type InquiryScheduleHistory } from '@dental/contracts';
 import { SetInquiryScheduleSchema, InquiryScheduleResultSchema, type SetInquirySchedule, type InquiryScheduleResult } from '@dental/contracts';
 import { InquiryOwnerWorklistSchema, InquirySchema, type InquiryOwnerWorklist, type Inquiry } from '@dental/contracts';
@@ -23,6 +24,7 @@ function instant(value: string | null): string | null {
   return new Date(value).toISOString().slice(0,19) + '.' + fraction.padEnd(6,'0');
 }
 export interface IntakeTransport {
+  ownerSearch(body: InquiryOwnerSearchRequest, signal?: AbortSignal): Promise<InquiryOwnerSearchResult>;
   scheduleActive: { current: boolean };
   scheduleHistory(id: string, signal?: AbortSignal): Promise<InquiryScheduleHistory>;
   pendingSchedule: { current: ScheduleAttempt | null };
@@ -73,6 +75,12 @@ export function createDemoIntakeTransport(): IntakeTransport {
   const saved = new Map<string, { fingerprint: string; result: InquiryCreated }>();
   return {
     mode: 'demo', currentUserId: demoOwner, pendingFollowUp, ...privacy, clearPrivate(kind) { pendingFollowUp.current = null; privacy.clearPrivate(kind); },
+    async ownerSearch(input, signal) {
+      signal?.throwIfAborted(); if (disposed) throw new IntakeError('expired');
+      const body = InquiryOwnerSearchRequestSchema.parse(input);
+      const rows = items.filter(item => item.owner_user_id === demoOwner && item.display_name.toLowerCase().includes(body.name.toLowerCase())).sort((a,b) => Date.parse(b.created_at)-Date.parse(a.created_at) || b.id.localeCompare(a.id));
+      return InquiryOwnerSearchResultSchema.parse({ clinic_id: demoClinic, owner_user_id: demoOwner, truncated: rows.length > 50, items: rows.slice(0,50).map(({id,display_name,source,status,follow_up_at,created_at}) => ({id,display_name,source,status,follow_up_at,created_at})) });
+    },
     async scheduleHistory(id, signal) {
       authorize(id, signal);
       const rows = [...scheduleReceipts.entries()].filter(([key]) => key.startsWith(id + ':')).sort(([keyA, a], [keyB, b]) => b.result.receipt.recorded_at.localeCompare(a.result.receipt.recorded_at) || keyB.localeCompare(keyA));
@@ -152,7 +160,7 @@ export function createHttpIntakeTransport(options: { api: string; token: string;
   let privacyRevision = 0;
   const controllers = new Set<AbortController>();
   const fetcher = options.fetcher ?? fetch;
-  async function send(method: 'GET' | 'POST', body?: CreateInquiry | RecordFollowUp | SetInquirySchedule, key?: string, callerSignal?: AbortSignal, suffix = '') {
+  async function send(method: 'GET' | 'POST', body?: CreateInquiry | RecordFollowUp | SetInquirySchedule | InquiryOwnerSearchRequest, key?: string, callerSignal?: AbortSignal, suffix = '') {
     if (!token) throw new IntakeError('expired');
     const revision = privacyRevision;
     const controller = new AbortController();
@@ -160,7 +168,7 @@ export function createHttpIntakeTransport(options: { api: string; token: string;
     try {
       const response = await fetcher(`${api.replace(/\/$/, '')}/api/v1/inquiries${suffix}`, {
         method, cache: 'no-store', credentials: 'omit',
-        headers: { Authorization: `Bearer ${token}`, 'X-Clinic-Id': clinicId, ...(body ? { 'Content-Type': 'application/json', 'Idempotency-Key': key! } : {}) },
+        headers: { Authorization: `Bearer ${token}`, 'X-Clinic-Id': clinicId, ...(body ? { 'Content-Type': 'application/json' } : {}), ...(key ? { 'Idempotency-Key': key } : {}) },
         body: body ? JSON.stringify(body) : undefined,
         signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15000), ...(callerSignal ? [callerSignal] : [])]),
       });
@@ -171,7 +179,7 @@ export function createHttpIntakeTransport(options: { api: string; token: string;
           disabled = typeof problem === 'object' && problem !== null && 'code' in problem && problem.code === 'intake_disabled';
         }
         const kind: IntakeFailure = response.status === 401 ? 'expired' : response.status === 403 ? 'denied' : response.status === 404 ? 'missing' : disabled ? 'disabled' : response.status === 409 ? 'conflict' : response.status === 400 ? 'invalid' : 'unavailable';
-        if ((privacy.scheduleActive.current || suffix.endsWith('/follow-up-schedule') || suffix.endsWith('/follow-up-schedule/history')) && (kind === 'expired' || kind === 'denied' || kind === 'missing')) clearPrivate(kind);
+        if ((privacy.scheduleActive.current || suffix.endsWith('/follow-up-schedule') || suffix.endsWith('/follow-up-schedule/history') || suffix === '/owner-search') && (kind === 'expired' || kind === 'denied' || kind === 'missing')) clearPrivate(kind);
         throw new IntakeError(kind);
       }
       if (!token || revision !== privacyRevision) throw new IntakeError('expired');
@@ -188,6 +196,13 @@ export function createHttpIntakeTransport(options: { api: string; token: string;
   return {
     ...privacy, clearPrivate,
     mode: 'connected', currentUserId: userId, pendingFollowUp,
+    async ownerSearch(input, signal) {
+      const body = InquiryOwnerSearchRequestSchema.parse(input);
+      const parsed = InquiryOwnerSearchResultSchema.safeParse(await send('POST', body, undefined, signal, '/owner-search'));
+      if (!token) throw new IntakeError('expired');
+      if (!parsed.success || parsed.data.clinic_id.toLowerCase() !== clinicId.toLowerCase() || parsed.data.owner_user_id.toLowerCase() !== userId.toLowerCase()) throw new IntakeError('unavailable');
+      return parsed.data;
+    },
     async scheduleHistory(id, signal) {
       const parsed = InquiryScheduleHistorySchema.safeParse(await send('GET', undefined, undefined, signal, '/' + encodeURIComponent(id) + '/follow-up-schedule/history'));
       if (!token) throw new IntakeError('expired');
