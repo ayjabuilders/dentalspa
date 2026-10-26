@@ -283,6 +283,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/team/roster": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Observed active clinic members and access roles; first100 distinct members */
+        get: operations["TeamRosterController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1638,6 +1655,67 @@ export interface operations {
                 content?: never;
             };
             /** @description Unavailable or malformed trusted response */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TeamRosterController_list: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: date-time */
+                        observed_at: string;
+                        members: {
+                            /** Format: uuid */
+                            user_id: string;
+                            /** Format: uuid */
+                            clinic_id: string;
+                            display_name: string;
+                            roles: ("dentist" | "reception" | "assistant" | "manager")[];
+                        }[];
+                        truncated: boolean;
+                    };
+                };
+            };
+            /** @description No query or request body accepted */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Absent or expired identity */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Current active manager/dentist membership required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unavailable, incomplete profiles or malformed trusted response */
             503: {
                 headers: {
                     [name: string]: unknown;
