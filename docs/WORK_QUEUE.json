@@ -67,6 +67,44 @@
       "evidence": "PR #12 squash merged 423f512 after independent security/UI review and current-head CI40387947472 application/database success, including 21 Team pgTAP assertions. Combined lint/typechecks, 20 focused unit/integration tests, full build, four combined demo/transport browser cases and three Build Center tests passed; three configured-session cases passed in isolated UI lane. Zero hooks/deployments before merge."
     },
     {
+      "id": "TEAM-ACTIVITY-CONTRACT",
+      "state": "done",
+      "owner": "coordinator",
+      "depends_on": ["FOUNDATION-REVIEW", "TEAM-ROSTER-INTEGRATE"],
+      "branch": "codex/m16-activity-journal-contract",
+      "acceptance": "Freeze a manager-only, current-clinic, read-only projection of four already-audited operational actions with bounded data, strict privacy and explicit non-exhaustive language.",
+      "evidence": "Independent contract review corrected timestamp precision, malformed-date safety and truncation semantics. Six focused contract tests and contracts typecheck passed; API/UI lanes are unlocked from the frozen base.",
+      "development_gate": "passed"
+    },
+    {
+      "id": "TEAM-ACTIVITY-API",
+      "state": "ready",
+      "owner": "pwa_verification",
+      "depends_on": ["TEAM-ACTIVITY-CONTRACT"],
+      "branch": "codex/m16-team-activity-api",
+      "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/team-activity-api",
+      "allowed_files": ["apps/dental-api/src/team/**", "supabase/migrations/*team_activity*.sql", "supabase/tests/*team_activity*.sql", "tests/unit/team-activity*", "tests/integration/team-activity*"],
+      "acceptance": "Manager-only SQL/API projection with same-clinic isolation, allowlist mapping, 50/51 truncation, missing-profile privacy, no-store and adversarial tests."
+    },
+    {
+      "id": "TEAM-ACTIVITY-UI",
+      "state": "ready",
+      "owner": "connection_ui",
+      "depends_on": ["TEAM-ACTIVITY-CONTRACT"],
+      "branch": "codex/m16-team-activity-ui",
+      "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/team-activity-ui",
+      "allowed_files": ["apps/clinic-os/components/team/**", "apps/clinic-os/app/connection/page.tsx", "tests/e2e/team-activity.spec.ts"],
+      "acceptance": "Polished pearl/navy Team activity panel with synthetic and connected states, strict memory cleanup, truthful limits, keyboard/reduced-motion and responsive browser evidence."
+    },
+    {
+      "id": "TEAM-ACTIVITY-INTEGRATE",
+      "state": "planned",
+      "owner": "coordinator",
+      "depends_on": ["TEAM-ACTIVITY-API", "TEAM-ACTIVITY-UI"],
+      "branch": "codex/m16-activity-journal-contract",
+      "acceptance": "Independent security/UI review, generated OpenAPI, focused local checks, real PostgreSQL CI and no-deployment current-head merge; update Build Center without claiming a complete security audit."
+    },
+    {
       "id": "INTAKE-CONTRACT",
       "state": "done",
       "owner": "coordinator",
