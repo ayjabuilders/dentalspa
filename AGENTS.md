@@ -34,6 +34,7 @@ You are implementing a healthcare-adjacent operations system for a Moroccan dent
 - Respect WCAG 2.2 AA-oriented practices; keyboard, focus, reduced motion, contrast, 44px mobile touch targets, RTL readiness.
 - Support loading/empty/permission-denied/offline/conflict/error/success states; never show optimistic clinical completion before server confirmation.
 - Test authentication, isolation, booking concurrency, state transitions, event idempotency, role-specific release and non-retention.
+- Keep the owner-visible Build Center current: when a verified delivery changes module coverage, update `docs/MODULE_PROGRESS.json` with criterion state, evidence and linked queue tasks, plus the built/remaining descriptions in `apps/clinic-os/lib/product-roadmap.ts`. A successful build publishes these records automatically; it does not itself justify marking a capability complete. Use the package build command so failed builds never replace the last successful snapshot.
 
 ## Before every PR
 List the acceptance criteria being satisfied, commands run, tests passed/failed, privacy risks, schema changes, manual test steps, and items blocked by clinical or legal sign-off.
