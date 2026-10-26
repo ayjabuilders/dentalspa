@@ -47,9 +47,11 @@
           "INQUIRY-FOLLOW-UP-INTEGRATE",
           "INQUIRY-OWNER-WORKLIST-API",
           "INQUIRY-OWNER-WORKLIST-UI",
-          "INQUIRY-OWNER-WORKLIST-INTEGRATE"
+        "INQUIRY-OWNER-WORKLIST-INTEGRATE",
+        "INQUIRY-SCHEDULE-API",
+        "INQUIRY-SCHEDULE-UI"
           ],
-        "evidence": "PR #9–10 : propriétaire initial, échéance saisie, historique append-only des tentatives/échanges manuels et vue en lecture seule des échéances du propriétaire actuel; réattribution, prochaine échéance et cycle complet des résultats restent à construire. PostgreSQL CI validé."
+      "evidence": "PR #9–10 et slice de replanification: propriétaire initial, échéance, historique append-only, vue des échéances et commande bornée du propriétaire actuel pour replanifier/supprimer la date; réattribution et cycle complet des résultats restent à construire."
         },
         {
           "id": "M01-6",

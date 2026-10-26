@@ -2,6 +2,7 @@ import { z } from 'zod';
 export * from './intake';
 export * from './intake-follow-up';
 export * from './inquiry-worklist';
+export * from './inquiry-schedule';
 export * from './team-roster';
 export * from './team-activity';
 export * from './patient-lookup';

@@ -213,6 +213,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/inquiries/{id}/follow-up-schedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Change administrative follow-up instant; no contact or appointment */
+        post: operations["InquiryScheduleController_record"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/inquiries": {
         parameters: {
             query?: never;
@@ -1085,6 +1102,100 @@ export interface operations {
                 content?: never;
             };
             /** @description scheduling_disabled */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    InquiryScheduleController_record: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: date-time */
+                    expected_follow_up_at: string | null;
+                    /** Format: date-time */
+                    follow_up_at: string | null;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        receipt: {
+                            /** Format: uuid */
+                            inquiry_id: string;
+                            /** Format: uuid */
+                            clinic_id: string;
+                            /** Format: uuid */
+                            owner_user_id: string;
+                            /** Format: date-time */
+                            previous_follow_up_at: string | null;
+                            /** Format: date-time */
+                            follow_up_at: string | null;
+                            changed: boolean;
+                            /** Format: date-time */
+                            recorded_at: string;
+                            /** @enum {number} */
+                            event_version: 1;
+                        };
+                        replayed: boolean;
+                    };
+                };
+            };
+            /** @description Invalid request, query, identifier or key */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Current active inquiry owner with permitted role required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Absent or foreign inquiry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Stale expected instant or same scoped key with different normalized input */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description intake_disabled for disabled commands; generic unavailable for provider failures */
             503: {
                 headers: {
                     [name: string]: unknown;

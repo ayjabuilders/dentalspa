@@ -13,7 +13,7 @@ function message(error: unknown) {
   const kind = error instanceof IntakeError ? error.kind : 'unavailable';
   return kind === 'expired' ? 'Votre session a expiré. Les échéances ont été effacées.' : kind === 'denied' ? 'Votre compte n’est pas autorisé à consulter ces échéances.' : kind === 'missing' ? 'Cette demande est absente, réattribuée ou inaccessible. Aucun détail n’a été ouvert.' : kind === 'offline' ? 'Hors connexion. Retrouvez le réseau pour consulter vos échéances.' : 'Les échéances sont indisponibles. Réessayez.';
 }
-export function OwnerWorklist({ transport, selectionRevision, onSelectionStart, onSelected, onReset, onSessionExpired }: { transport: IntakeTransport; selectionRevision: number; onSelectionStart: () => void; onSelected: (item: Inquiry) => void; onReset: () => void; onSessionExpired: () => void }) {
+export function OwnerWorklist({ transport, freshData, selectionRevision, onSelectionStart, onSelected, onReset, onSessionExpired }: { transport: IntakeTransport; freshData?: InquiryOwnerWorklist | null; selectionRevision: number; onSelectionStart: () => void; onSelected: (item: Inquiry) => void; onReset: () => void; onSessionExpired: () => void }) {
   const [data, setData] = useState<InquiryOwnerWorklist | null>(null); const [bucket, setBucket] = useState<Bucket>('overdue');
   const [loading, setLoading] = useState(true); const [error, setError] = useState(''); const [detailError, setDetailError] = useState('');
   const [opening, setOpening] = useState<string | null>(null); const [opened, setOpened] = useState<string | null>(null); const [retryId, setRetryId] = useState<string | null>(null);
@@ -41,12 +41,14 @@ export function OwnerWorklist({ transport, selectionRevision, onSelectionStart, 
   }
   useEffect(() => {
     active.current = true;
+    const unsubscribe = transport.onPrivateClear(() => { listRequest.current?.abort(); detailRequest.current?.abort(); setData(null); setLoading(false); setOpening(null); setOpened(null); setRetryId(null); setDetailError(''); setError('Accès ou connexion interrompu. Relisez les échéances.'); callbacks.current.onReset(); });
     const network = () => { setOnline(navigator.onLine); if (!navigator.onLine) { listRequest.current?.abort(); detailRequest.current?.abort(); setData(null); setLoading(false); setOpening(null); setOpened(null); setRetryId(null); setDetailError(''); setError(message(new IntakeError('offline'))); callbacks.current.onReset(); } };
     network(); setZone(Intl.DateTimeFormat().resolvedOptions().timeZone); void load();
     window.addEventListener('online', network); window.addEventListener('offline', network);
-    return () => { active.current = false; listRequest.current?.abort(); detailRequest.current?.abort(); window.removeEventListener('online', network); window.removeEventListener('offline', network); };
+    return () => { unsubscribe(); active.current = false; listRequest.current?.abort(); detailRequest.current?.abort(); window.removeEventListener('online', network); window.removeEventListener('offline', network); };
   }, [transport]);
   useEffect(() => { detailRequest.current?.abort(); setOpening(null); setOpened(null); setRetryId(null); setDetailError(''); }, [selectionRevision]);
+  useEffect(() => { if (freshData) { listRequest.current?.abort(); setData(freshData); setLoading(false); setError(''); } }, [freshData]);
   function change(value: Bucket) { detailRequest.current?.abort(); setBucket(value); setOpening(null); setOpened(null); setRetryId(null); setDetailError(''); callbacks.current.onReset(); }
   const current = data?.[bucket];
   return <section className="owner-worklist work-panel" aria-labelledby={`${id}-title`}>

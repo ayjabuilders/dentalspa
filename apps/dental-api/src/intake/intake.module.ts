@@ -11,5 +11,9 @@ import { OwnerWorklistController } from './presentation/owner-worklist.controlle
 import { OwnerWorklistService } from './application/owner-worklist.service';
 import { OWNER_WORKLIST_REPOSITORY } from './domain/owner-worklist';
 import { SupabaseOwnerWorklist } from './infrastructure/owner-worklist.repository';
-@Module({controllers:[IntakeController,FollowUpController,OwnerWorklistController],providers:[IntakeService,{provide:INTAKE_REPOSITORY,useClass:SupabaseIntake},FollowUpService,{provide:FOLLOW_UP_REPOSITORY,useClass:SupabaseFollowUp},OwnerWorklistService,{provide:OWNER_WORKLIST_REPOSITORY,useClass:SupabaseOwnerWorklist}]})
+import { InquiryScheduleController } from './presentation/inquiry-schedule.controller';
+import { InquiryScheduleService } from './application/inquiry-schedule.service';
+import { INQUIRY_SCHEDULE_REPOSITORY } from './domain/inquiry-schedule';
+import { SupabaseInquirySchedule } from './infrastructure/inquiry-schedule.repository';
+@Module({controllers:[InquiryScheduleController,IntakeController,FollowUpController,OwnerWorklistController],providers:[InquiryScheduleService,{provide:INQUIRY_SCHEDULE_REPOSITORY,useClass:SupabaseInquirySchedule},IntakeService,{provide:INTAKE_REPOSITORY,useClass:SupabaseIntake},FollowUpService,{provide:FOLLOW_UP_REPOSITORY,useClass:SupabaseFollowUp},OwnerWorklistService,{provide:OWNER_WORKLIST_REPOSITORY,useClass:SupabaseOwnerWorklist}]})
 export class IntakeModule {}
