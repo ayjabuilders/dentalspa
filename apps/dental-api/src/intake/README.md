@@ -21,3 +21,15 @@ The HTTP layer maps SQLSTATE rather than provider message/status text. API/SQL a
 PGlite tests execute the real migration/RPC/RLS and cover input parity, disabled commands, active roles, tenant isolation, replay/conflict, per-actor/clinic uniqueness, rollback on outbox failure, UTC replay and bounded newest-first listing. Queued concurrent calls demonstrate uniqueness but PGlite serializes transactions; a real multi-connection contention test remains an activation gate. `supabase/tests/intake.test.sql` supplies full-stack pgTAP tests; it requires local Supabase/Docker and is not claimed executed by embedded tests.
 
 Before activation: run full Supabase migrations/policy tests, concurrent retries across independent PostgreSQL connections, hosted identity/revocation checks, and product/privacy review. No credentials, real inquiry data or remote deployment are included.
+
+## Synthetic follow-up attestations v1
+
+`GET/POST /inquiries/:id/follow-ups` implement the frozen follow-up contract. The current inquiry owner must remain an active reception/manager/dentist member. Other staff cannot read or append this history. Owner transfer does not erase historical actors, but immediately prevents the former owner from retrieving an idempotency receipt. Both user-scoped RPCs use POST and independently recheck owner, tenant and role, including privileged database callers.
+
+Writes reuse both existing default-off intake switches. Authorized history remains readable while writes are disabled. The record attests a manual action outside Dental Spa; it sends nothing and leaves inquiry ownership/status/deadline unchanged. Bodies accept only the frozen kind/channel codes; record time comes from the database. There is no correction, delete, backdating or clinical-content field.
+
+The inquiry row lock serializes appends/retries with ownership updates. Idempotency scope is `(clinic, actor, inquiry, command, key)`. Authorization and activation precede receipt lookup; exact replay returns the saved immutable item. All record/audit/outbox/receipt writes share one transaction. The `InquiryFollowUpRecorded` v1 envelope uses inquiry aggregate identity and only follow-up/inquiry IDs, kind, channel and recorded time. Private tables expose no direct client grants. A trigger additionally rejects record UPDATE/DELETE; any later correction/retention mechanism needs a separate reviewed contract.
+
+History fetches51 and returns50, ordered by recorded time and UUID descending, with explicit truncation. HTTP success and failure responses are `no-store`; sanitized disabled responses alone include `intake_disabled`. The dedicated follow-up providers preserve the existing intake repository interface and workflows.
+
+Focused API/adapter/PGlite tests cover these boundaries and all three sink rollback failures. `supabase/tests/inquiry_follow_up.test.sql` supplies23 PostgreSQL assertions. Full local Supabase CI, independent-connection retry/ownership races and operational approval remain gates; embedded tests are not claims of those checks.
