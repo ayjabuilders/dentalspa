@@ -1,3 +1,4 @@
+import { SetInquiryScheduleSchema, InquiryScheduleResultSchema, type SetInquirySchedule, type InquiryScheduleResult } from '@dental/contracts';
 import { InquiryOwnerWorklistSchema, InquirySchema, type InquiryOwnerWorklist, type Inquiry } from '@dental/contracts';
 import { FollowUpListSchema, FollowUpRecordedSchema, RecordFollowUpSchema, type FollowUpList, type FollowUpRecorded, type RecordFollowUp } from '@dental/contracts';
 import { CreateInquirySchema, InquiryCreatedSchema, InquiryListSchema, type CreateInquiry, type InquiryCreated, type InquiryList } from '@dental/contracts';
@@ -7,7 +8,25 @@ export class IntakeError extends Error {
   constructor(public readonly kind: IntakeFailure) { super(kind); this.name = 'IntakeError'; }
 }
 export type FollowUpAttempt = { inquiry: InquiryList['items'][number]; body: RecordFollowUp; key: string };
+export type ScheduleAttempt = { id: string; displayName?: string; body: SetInquirySchedule; key: string };
+function privacyState() {
+  const pendingSchedule: { current: ScheduleAttempt | null } = { current: null };
+  const scheduleActive = { current: false };
+  let clearing = false;
+  const listeners = new Set<(kind: IntakeFailure) => void>();
+  return { pendingSchedule, scheduleActive, onPrivateClear(listener: (kind: IntakeFailure) => void) { listeners.add(listener); return () => { listeners.delete(listener); }; }, clearPrivate(kind: IntakeFailure) { pendingSchedule.current = null; scheduleActive.current = false; if (clearing) return; clearing = true; try { listeners.forEach(listener => listener(kind)); } finally { clearing = false; } } };
+}
+function instant(value: string | null): string | null {
+  if (value === null) return null;
+  const fraction = value.match(/\.(\d+)(?=Z|[+-]\d{2}:\d{2}$)/)?.[1] ?? '';
+  return new Date(value).toISOString().slice(0,19) + '.' + fraction.padEnd(6,'0');
+}
 export interface IntakeTransport {
+  scheduleActive: { current: boolean };
+  pendingSchedule: { current: ScheduleAttempt | null };
+  onPrivateClear(listener: (kind: IntakeFailure) => void): () => void;
+  clearPrivate(kind: IntakeFailure): void;
+  setSchedule(id: string, body: SetInquirySchedule, key: string, signal?: AbortSignal): Promise<InquiryScheduleResult>;
   /** Unresolved receipt stays in this session transport across closing/reopening the tool. */
   pendingFollowUp: { current: FollowUpAttempt | null };
   mode: 'demo' | 'connected';
@@ -31,6 +50,7 @@ const demoOwner = '10000000-0000-4000-8000-000000000002';
 
 /** One isolated synthetic store per mounted preview. Never writes browser storage. */
 export function createDemoIntakeTransport(): IntakeTransport {
+  const privacy = privacyState();
   const pendingFollowUp: { current: FollowUpAttempt | null } = { current: null };
   let items: InquiryList['items'] = [
     { id: '10000000-0000-4000-8000-000000000011', clinic_id: demoClinic, owner_user_id: demoOwner, display_name: 'Lina Exemple', contact_email: 'lina@example.invalid', contact_phone: null, source: 'phone', follow_up_at: null, status: 'new', created_at: '2026-10-26T09:30:00Z' },
@@ -39,6 +59,7 @@ export function createDemoIntakeTransport(): IntakeTransport {
   ];
   const followUps = new Map<string, FollowUpList['items']>();
   const followUpReceipts = new Map<string, { fingerprint: string; result: FollowUpRecorded }>();
+  const scheduleReceipts = new Map<string, { fingerprint: string; result: InquiryScheduleResult }>();
   let disposed = false;
   function authorize(inquiryId: string, signal?: AbortSignal) {
     signal?.throwIfAborted();
@@ -49,7 +70,19 @@ export function createDemoIntakeTransport(): IntakeTransport {
   }
   const saved = new Map<string, { fingerprint: string; result: InquiryCreated }>();
   return {
-    mode: 'demo', currentUserId: demoOwner, pendingFollowUp,
+    mode: 'demo', currentUserId: demoOwner, pendingFollowUp, ...privacy, clearPrivate(kind) { pendingFollowUp.current = null; privacy.clearPrivate(kind); },
+    async setSchedule(id, input, key, signal) {
+      authorize(id, signal); const body = SetInquiryScheduleSchema.parse(input);
+      const fingerprint = JSON.stringify([instant(body.expected_follow_up_at), instant(body.follow_up_at)]);
+      const saved = scheduleReceipts.get(id + ':' + key);
+      if (saved) { if (saved.fingerprint !== fingerprint) throw new IntakeError('conflict'); return { ...saved.result, replayed: true }; }
+      const item = items.find(item => item.id === id)!;
+      if (instant(item.follow_up_at) !== instant(body.expected_follow_up_at)) throw new IntakeError('conflict');
+      const changed = instant(item.follow_up_at) !== instant(body.follow_up_at);
+      const result = InquiryScheduleResultSchema.parse({ receipt: { inquiry_id: id, clinic_id: demoClinic, owner_user_id: demoOwner, previous_follow_up_at: item.follow_up_at, follow_up_at: body.follow_up_at, changed, recorded_at: new Date().toISOString(), event_version: 1 }, replayed: false });
+      if (changed) items = items.map(value => value.id === id ? { ...value, follow_up_at: body.follow_up_at } : value);
+      scheduleReceipts.set(id + ':' + key, { fingerprint, result }); return result;
+    },
     async ownerWorklist(signal) {
       signal?.throwIfAborted(); if (disposed) throw new IntakeError('expired');
       const observed_at = new Date().toISOString(); const observed = Date.parse(observed_at);
@@ -78,7 +111,7 @@ export function createDemoIntakeTransport(): IntakeTransport {
       followUps.set(id, [result.item, ...(followUps.get(id) ?? [])].sort((a, b) => b.recorded_at.localeCompare(a.recorded_at) || b.id.localeCompare(a.id)));
       return result;
     },
-    dispose() { pendingFollowUp.current = null; disposed = true; items = []; saved.clear(); followUps.clear(); followUpReceipts.clear(); },
+    dispose() { privacy.clearPrivate('expired'); scheduleReceipts.clear(); pendingFollowUp.current = null; disposed = true; items = []; saved.clear(); followUps.clear(); followUpReceipts.clear(); },
     async list(signal) {
       signal?.throwIfAborted();
       return InquiryListSchema.parse({ items: items.slice(0, 100), truncated: items.length > 100 });
@@ -102,13 +135,16 @@ export function createDemoIntakeTransport(): IntakeTransport {
 
 /** Credentials are closed over in memory and revoked when the session view closes. */
 export function createHttpIntakeTransport(options: { api: string; token: string; clinicId: string; userId: string; fetcher?: typeof fetch }): IntakeTransport {
+  const privacy = privacyState();
   const pendingFollowUp: { current: FollowUpAttempt | null } = { current: null };
   let token: string | null = options.token;
   const { api, clinicId, userId } = options;
+  let privacyRevision = 0;
   const controllers = new Set<AbortController>();
   const fetcher = options.fetcher ?? fetch;
-  async function send(method: 'GET' | 'POST', body?: CreateInquiry | RecordFollowUp, key?: string, callerSignal?: AbortSignal, suffix = '') {
+  async function send(method: 'GET' | 'POST', body?: CreateInquiry | RecordFollowUp | SetInquirySchedule, key?: string, callerSignal?: AbortSignal, suffix = '') {
     if (!token) throw new IntakeError('expired');
+    const revision = privacyRevision;
     const controller = new AbortController();
     controllers.add(controller);
     try {
@@ -125,11 +161,12 @@ export function createHttpIntakeTransport(options: { api: string; token: string;
           disabled = typeof problem === 'object' && problem !== null && 'code' in problem && problem.code === 'intake_disabled';
         }
         const kind: IntakeFailure = response.status === 401 ? 'expired' : response.status === 403 ? 'denied' : response.status === 404 ? 'missing' : disabled ? 'disabled' : response.status === 409 ? 'conflict' : response.status === 400 ? 'invalid' : 'unavailable';
+        if ((privacy.scheduleActive.current || suffix.endsWith('/follow-up-schedule')) && (kind === 'expired' || kind === 'denied' || kind === 'missing')) clearPrivate(kind);
         throw new IntakeError(kind);
       }
-      if (!token) throw new IntakeError('expired');
+      if (!token || revision !== privacyRevision) throw new IntakeError('expired');
       const result: unknown = await response.json();
-      if (!token) throw new IntakeError('expired');
+      if (!token || revision !== privacyRevision) throw new IntakeError('expired');
       return result;
     } catch (error) {
       if (error instanceof IntakeError) throw error;
@@ -137,8 +174,19 @@ export function createHttpIntakeTransport(options: { api: string; token: string;
       throw new IntakeError(typeof navigator !== 'undefined' && !navigator.onLine ? 'offline' : 'unavailable');
     } finally { controllers.delete(controller); }
   }
+  function clearPrivate(kind: IntakeFailure) { privacyRevision++; pendingFollowUp.current = null; controllers.forEach(controller => controller.abort()); privacy.clearPrivate(kind); }
   return {
+    ...privacy, clearPrivate,
     mode: 'connected', currentUserId: userId, pendingFollowUp,
+    async setSchedule(id, input, key, signal) {
+      const body = SetInquiryScheduleSchema.parse(input);
+      const parsed = InquiryScheduleResultSchema.safeParse(await send('POST', body, key, signal, '/' + encodeURIComponent(id) + '/follow-up-schedule'));
+      if (!token) throw new IntakeError('expired');
+      if (!parsed.success) throw new IntakeError('unavailable');
+      const receipt = parsed.data.receipt;
+      if (receipt.inquiry_id !== id || receipt.clinic_id !== clinicId || receipt.owner_user_id !== userId || instant(receipt.previous_follow_up_at) !== instant(body.expected_follow_up_at) || instant(receipt.follow_up_at) !== instant(body.follow_up_at) || receipt.changed !== (instant(body.expected_follow_up_at) !== instant(body.follow_up_at))) throw new IntakeError('unavailable');
+      return parsed.data;
+    },
     async ownerWorklist(signal) {
       const parsed = InquiryOwnerWorklistSchema.safeParse(await send('GET', undefined, undefined, signal, '/owner-worklist'));
       if (!token) throw new IntakeError('expired');
@@ -177,6 +225,6 @@ export function createHttpIntakeTransport(options: { api: string; token: string;
       if (!parsed.success || parsed.data.item.clinic_id !== clinicId || parsed.data.item.owner_user_id !== userId) throw new IntakeError('unavailable');
       return parsed.data;
     },
-    dispose() { pendingFollowUp.current = null; token = null; controllers.forEach(controller => controller.abort()); controllers.clear(); },
+    dispose() { clearPrivate('expired'); pendingFollowUp.current = null; token = null; controllers.forEach(controller => controller.abort()); controllers.clear(); },
   };
 }

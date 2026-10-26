@@ -2,11 +2,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { AlertCircle, ArrowRight, Check, ChevronRight, ClipboardList, Clock3, Inbox, LoaderCircle, Mail, Phone, Plus, RefreshCw, Search, ShieldCheck, UserRound, X } from 'lucide-react';
 import { Button, Modal } from '@dental/ui-clinic';
-import { CreateInquirySchema, IntakeSourceSchema, type CreateInquiry, type Inquiry, type InquiryList } from '@dental/contracts';
+import { CreateInquirySchema, IntakeSourceSchema, type CreateInquiry, type Inquiry, type InquiryList, type InquiryOwnerWorklist } from '@dental/contracts';
 import { createDemoIntakeTransport, inquiryAttempt, IntakeError, type IntakeAttempt, type IntakeFailure, type IntakeTransport } from './transport';
 import { InquiryFollowUp } from './inquiry-follow-up';
 import { OwnerWorklist } from './owner-worklist';
 import './intake.css';
+import { InquirySchedule } from './inquiry-schedule';
 
 const sources: Record<CreateInquiry['source'], string> = { phone: 'Téléphone', website: 'Site web', whatsapp: 'WhatsApp', instagram: 'Instagram', email: 'E-mail', google_business: 'Google Business', walk_in: 'Sur place', other: 'Autre' };
 const failures: Record<IntakeFailure, string> = {
@@ -29,6 +30,8 @@ export function DemoIntakeWorkspace() {
 }
 
 export function IntakeWorkspace({ transport, onSessionExpired }: { transport: IntakeTransport; onSessionExpired?: () => void }) {
+  const [freshWorklist, setFreshWorklist] = useState<InquiryOwnerWorklist | null>(null);
+  const [privacyRevision, setPrivacyRevision] = useState(0);
   const [list, setList] = useState<InquiryList | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<IntakeFailure | null>(null);
@@ -74,11 +77,12 @@ export function IntakeWorkspace({ transport, onSessionExpired }: { transport: In
 
   useEffect(() => {
     active.current = true;
-    const network = () => setOnline(navigator.onLine);
+    const unsubscribe = transport.onPrivateClear(kind => { loadRequest.current?.abort(); createRequest.current?.abort(); setList(null); setFreshWorklist(null); setOwnerDetail(null); setOwnerSelection(true); setSelectedId(null); setQuery(''); setSource('all'); if (kind !== 'offline') { setDraft(initialDraft); setOpen(false); setSubmitError(''); } setSuccess(''); setLoading(false); setLoadError(kind); setPrivacyRevision(value => value + 1); if (kind === 'expired') expiredCallback.current?.(); });
+    const network = () => { setOnline(navigator.onLine); if (!navigator.onLine) transport.clearPrivate('offline'); };
     network(); setTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone);
     window.addEventListener('online', network); window.addEventListener('offline', network);
     void load();
-    return () => { active.current = false; loadRequest.current?.abort(); createRequest.current?.abort(); window.removeEventListener('online', network); window.removeEventListener('offline', network); };
+    return () => { unsubscribe(); active.current = false; loadRequest.current?.abort(); createRequest.current?.abort(); window.removeEventListener('online', network); window.removeEventListener('offline', network); };
   }, [load]);
   useEffect(() => { if (submitError) errorRef.current?.focus(); }, [submitError]);
 
@@ -127,11 +131,11 @@ export function IntakeWorkspace({ transport, onSessionExpired }: { transport: In
   }
 
   return <section className="intake-workspace" aria-labelledby="intake-title">
-    <div className="page-heading intake-heading"><div><p className="eyebrow muted">LE PREMIER CONTACT COMPTE</p><h1 id="intake-title">Vos nouvelles demandes</h1><p>Une attention claire, dès le premier échange.</p></div><Button variant="primary" onClick={startInquiry} disabled={!online || loading || loadError !== null}><Plus size={18}/>Nouvelle demande</Button></div>
+    <div className="page-heading intake-heading"><div><p className="eyebrow muted">LE PREMIER CONTACT COMPTE</p><h1 id="intake-title">Vos nouvelles demandes</h1><p>Une attention claire, dès le premier échange.</p></div><Button variant="primary" onClick={startInquiry} disabled={!online || loading || (loadError !== null && loadError !== 'offline')}><Plus size={18}/>Nouvelle demande</Button></div>
     <div className={`intake-context ${transport.mode === 'connected' ? 'connected' : ''}`}><ShieldCheck size={19}/><p><strong>{transport.mode === 'demo' ? 'Aperçu synthétique · mémoire temporaire' : 'Cabinet vérifié · accès connecté'}</strong><span>{transport.mode === 'demo' ? 'Aucune donnée n’est envoyée. Les demandes ajoutées disparaissent au rechargement.' : 'Seules les demandes autorisées par le cabinet sont affichées.'} Une demande n’est ni un dossier patient ni un rendez-vous.</span></p></div>
     {!online && <div className="intake-message" role="status"><AlertCircle size={18}/><p>{failures.offline}</p></div>}
     {success && <div className="intake-message intake-success" role="status"><Check size={18}/><p>{success}</p><button aria-label="Masquer la confirmation" onClick={() => setSuccess('')}><X size={17}/></button></div>}
-    <OwnerWorklist transport={transport} selectionRevision={selectionRevision} onSelectionStart={() => { setOwnerSelection(true); setOwnerDetail(null); }} onSelected={item => { setOwnerDetail(item); setOwnerSelection(true); }} onReset={() => setOwnerDetail(null)} onSessionExpired={() => { setList(null); setOwnerDetail(null); expiredCallback.current?.(); }}/>
+    <OwnerWorklist freshData={freshWorklist} transport={transport} selectionRevision={selectionRevision} onSelectionStart={() => { setOwnerSelection(true); setOwnerDetail(null); }} onSelected={item => { setOwnerDetail(item); setOwnerSelection(true); }} onReset={() => setOwnerDetail(null)} onSessionExpired={() => { setList(null); setOwnerDetail(null); expiredCallback.current?.(); }}/>
     <div className="intake-grid">
       <section className="work-panel intake-master" aria-label="Liste des demandes">
         <div className="intake-list-heading"><div><Inbox size={19}/><h2>À prendre en charge</h2><span className="intake-count">{list?.items.length ?? '—'}</span></div><button className="icon-button" aria-label="Actualiser les demandes" onClick={() => void load()} disabled={loading || !online || saving}><RefreshCw size={18} className={loading ? 'intake-spin' : ''}/></button></div>
@@ -140,7 +144,7 @@ export function IntakeWorkspace({ transport, onSessionExpired }: { transport: In
         {list?.truncated && <p className="intake-truncated" role="status">Seules les 100 demandes les plus récentes sont affichées. La recherche et les filtres s’appliquent à cette liste.</p>}
         {!loading && !loadError && <p className="intake-list-footer">{visible.length} demande{visible.length > 1 ? 's' : ''} affichée{visible.length > 1 ? 's' : ''} · attribution manuelle des sources</p>}
       </section>
-      <aside ref={detailFocus} tabIndex={-1} className="work-panel intake-detail" aria-label="Demande sélectionnée">{selected && (ownerSelection || (!loading && !loadError)) ? <InquiryDetail inquiry={selected} transport={transport}/> : <div className="intake-empty"><ClipboardList/><h3>Chaque demande, son attention.</h3><p>Sélectionnez un premier contact pour retrouver ses coordonnées et son suivi.</p></div>}<InquiryFollowUp inquiry={ownerSelection || (!loading && !loadError) ? selected : null} transport={transport} onSessionExpired={() => { setList(null); expiredCallback.current?.(); }}/></aside>
+      <aside ref={detailFocus} tabIndex={-1} className="work-panel intake-detail" aria-label="Demande sélectionnée">{selected && (ownerSelection || (!loading && !loadError)) ? <InquiryDetail inquiry={selected} transport={transport}/> : <div className="intake-empty"><ClipboardList/><h3>Chaque demande, son attention.</h3><p>Sélectionnez un premier contact pour retrouver ses coordonnées et son suivi.</p></div>}<InquirySchedule inquiry={ownerSelection || (!loading && !loadError) ? selected : null} transport={transport} onFresh={(item, freshList, worklist) => { setList(freshList); setOwnerDetail(item); setOwnerSelection(true); setFreshWorklist(worklist); }}/><InquiryFollowUp key={privacyRevision} inquiry={ownerSelection || (!loading && !loadError) ? selected : null} transport={transport} onSessionExpired={() => { setList(null); expiredCallback.current?.(); }}/></aside>
     </div>
     <Modal open={open} onOpenChange={closeDialog} title="Un nouveau premier contact" description={transport.mode === 'demo' ? 'Démonstration locale : utilisez uniquement des informations fictives.' : 'Saisie manuelle dans le cabinet vérifié. Données synthétiques uniquement.'} wide>
       <form className="intake-form" onSubmit={submit} noValidate aria-busy={saving}>
