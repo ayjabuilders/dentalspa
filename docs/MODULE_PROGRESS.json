@@ -30,9 +30,10 @@
           "taskIds": [
             "INTAKE-INTEGRATE",
             "INQUIRY-CONTACT-PREFERENCE-INTEGRATE",
-            "INQUIRY-COMMUNICATION-LANGUAGE-INTEGRATE"
+            "INQUIRY-COMMUNICATION-LANGUAGE-INTEGRATE",
+            "INQUIRY-COMMUNICATION-TIME-ZONE-INTEGRATE"
           ],
-          "evidence": "PR #2, #18 et #19 : canal d’origine et préférences de contact/langue explicitement déclarées livrés; service demandé et urgence restent à couvrir. Ces déclarations ne valent ni consentement, ni joignabilité, ni compréhension, ni interprétariat, ni autorisation d’envoi."
+          "evidence": "PR #2, #18, #19 et #20 : canal d’origine, préférences de contact/langue et fuseau de communication explicitement déclarés livrés; service demandé et urgence restent à couvrir. Ces déclarations ne valent ni consentement, ni joignabilité, ni compréhension, ni interprétariat, ni lieu/disponibilité, ni autorisation d’envoi."
         },
         {
           "id": "M01-4",

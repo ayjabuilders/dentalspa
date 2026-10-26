@@ -338,7 +338,7 @@
       "base": "76867d9",
       "allowed_files": ["apps/dental-api/src/intake/**", "supabase/migrations/*communication_time_zone*.sql", "supabase/tests/*communication_time_zone*.sql", "scripts/inquiry-communication-time-zone-concurrency.mjs", "tests/unit/inquiry-communication-time-zone-*", "tests/integration/inquiry-communication-time-zone-*"],
       "acceptance": "Private current-owner state, revisioned idempotent command, versioned exact catalogue, minimal audit/outbox and adversarial SQL/API evidence.",
-      "evidence": "Commit ca112cc integrated after independent security review. Thirty-one new focused tests plus fifteen language/access regressions passed; 48 pgTAP assertions and the independent-session CAS/replay harness await current-head CI.",
+      "evidence": "Commit ca112cc integrated after independent security review. Thirty-one new focused tests plus fifteen language/access regressions passed; all 48 pgTAP assertions and both independent-session CAS/replay scenarios passed in exact-head CI40422590299.",
       "development_gate": "passed"
     },
     {
@@ -356,12 +356,12 @@
     },
     {
       "id": "INQUIRY-COMMUNICATION-TIME-ZONE-INTEGRATE",
-      "state": "verification",
+      "state": "done",
       "owner": "coordinator",
       "depends_on": ["INQUIRY-COMMUNICATION-TIME-ZONE-API", "INQUIRY-COMMUNICATION-TIME-ZONE-UI"],
       "branch": "codex/m01-inquiry-time-zone-contract",
       "acceptance": "Independent security/UI review, generated OpenAPI, focused local/PostgreSQL/browser checks, no-deployment merge and owner-visible evidence.",
-      "next_action": "Generate OpenAPI/types, run combined checks and exact-head PostgreSQL CI, then merge only with zero hooks/deployments."
+      "evidence": "PR #20 squash merged 749fec2 after exact-head CI40422590299 application/database success. The database job passed 372 total pgTAP assertions, including all 48 time-zone assertions, and both independent-session CAS/replay scenarios; hooks and deployments were zero."
     },
     {
       "id": "INTAKE-CONTRACT",
