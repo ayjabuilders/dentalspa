@@ -41,6 +41,13 @@ test.describe('verified patient lookup browser flow', () => {
     const calls = await verifiedLookup(page, async route => { await route.fulfill({ status: 200, headers, json: { items: [item], truncated: false } }); });
     await expect(page.getByRole('button', { name: 'Rechercher', exact: true })).toBeDisabled();
     await page.getByRole('radio', { name: /Référence exacte/ }).check();
+    const radioSize = await page.getByRole('radio', { name: /Référence exacte/ }).boundingBox();
+    expect(radioSize?.width).toBe(17);
+    expect(radioSize?.height).toBe(17);
+    expect(await page.locator('.lookup-modes label').first().evaluate(element => getComputedStyle(element).display)).toBe('flex');
+    expect((await page.locator('.lookup-modes label').first().boundingBox())!.height).toBeGreaterThanOrEqual(44);
+    await page.getByRole('radio', { name: /Référence exacte/ }).focus();
+    expect(await page.locator('.lookup-modes label').first().evaluate(element => getComputedStyle(element).boxShadow)).not.toBe('none');
     await page.getByLabel('Référence complète', { exact: true }).fill('  DEMO-001  ');
     expect(calls).toHaveLength(1);
     await page.getByRole('button', { name: 'Rechercher', exact: true }).click();
