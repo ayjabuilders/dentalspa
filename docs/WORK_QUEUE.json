@@ -223,11 +223,12 @@
     },
     {
       "id": "INQUIRY-OWNER-SEARCH-INTEGRATE",
-      "state": "verification",
+      "state": "done",
       "owner": "coordinator",
       "depends_on": ["INQUIRY-OWNER-SEARCH-API", "INQUIRY-OWNER-SEARCH-UI"],
       "branch": "codex/m01-owner-search-contract",
-      "acceptance": "Independent security/UI review, generated OpenAPI, focused local/PostgreSQL/browser checks, no-deployment merge and owner-visible evidence."
+      "acceptance": "Independent security/UI review, generated OpenAPI, focused local/PostgreSQL/browser checks, no-deployment merge and owner-visible evidence.",
+      "evidence": "PR #17 squash merged 2529260 after exact-head CI40410311718 application/database success, including 20 owner-search pgTAP assertions. Independent reviews and combined local checks passed; zero hooks/deployments before merge."
     },
     {
       "id": "INTAKE-CONTRACT",
