@@ -1,5 +1,6 @@
 import { z } from 'zod';
 export * from './intake';
+export * from './patient-lookup';
 export const RoleSchema = z.enum(['dentist', 'reception', 'assistant', 'manager']);
 export type Role = z.infer<typeof RoleSchema>;
 export const IdSchema = z.string().uuid();

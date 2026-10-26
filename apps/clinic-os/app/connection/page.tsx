@@ -2,14 +2,16 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { ShieldCheck, ArrowLeft, ArrowRight, LogOut, Eye, EyeOff, LoaderCircle, LockKeyhole, Users, AlertCircle } from 'lucide-react';
+import { ShieldCheck, ArrowLeft, ArrowRight, LogOut, Eye, EyeOff, LoaderCircle, LockKeyhole, AlertCircle, Search } from 'lucide-react';
 import { Button } from '@dental/ui-clinic';
-import { IdSchema, PatientSummarySchema, WorkspaceSchema, type PatientSummary } from '@dental/contracts';
+import { IdSchema, WorkspaceSchema } from '@dental/contracts';
 import { IntakeWorkspace } from '../../components/intake/intake-workspace';
 import { createHttpIntakeTransport, type IntakeTransport } from '../../components/intake/transport';
+import { PatientLookup } from '../../components/patient-lookup/patient-lookup';
+import { createPatientLookupTransport, type PatientLookupTransport } from '../../components/patient-lookup/transport';
 import './connection.css';
 
-const stages = ['Vérification de votre identité…', 'Vérification des accès au cabinet…', 'Chargement des fiches autorisées…'];
+const stages = ['Vérification de votre identité…', 'Vérification des accès au cabinet…'];
 
 export default function Connection() {
   const [email, setEmail] = useState('');
@@ -20,11 +22,14 @@ export default function Connection() {
   const [closing, setClosing] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
-  const [records, setRecords] = useState<PatientSummary[] | null>(null);
+  const [verifiedWorkspace, setVerifiedWorkspace] = useState<ReturnType<typeof WorkspaceSchema.parse> | null>(null);
   const [online, setOnline] = useState(true);
   const [intakeTransport, setIntakeTransport] = useState<IntakeTransport | null>(null);
   const [showIntake, setShowIntake] = useState(false);
   const connectedIntake = useRef<IntakeTransport | null>(null);
+  const [lookupTransport, setLookupTransport] = useState<PatientLookupTransport | null>(null);
+  const [showLookup, setShowLookup] = useState(false);
+  const connectedLookup = useRef<PatientLookupTransport | null>(null);
   const active = useRef(true);
   const busy = useRef(false);
   const request = useRef<AbortController | null>(null);
@@ -57,6 +62,7 @@ export default function Connection() {
       active.current = false;
       request.current?.abort();
       connectedIntake.current?.dispose?.();
+      connectedLookup.current?.dispose();
       if (expiry.current) clearTimeout(expiry.current);
       window.removeEventListener('online', updateNetwork);
       window.removeEventListener('offline', updateNetwork);
@@ -64,18 +70,22 @@ export default function Connection() {
     };
   }, [client]);
   useEffect(() => { if (error) errorRegion.current?.focus(); }, [error]);
-  useEffect(() => { if (records !== null) resultHeading.current?.focus(); }, [records]);
+  useEffect(() => { if (verifiedWorkspace !== null) resultHeading.current?.focus(); }, [verifiedWorkspace]);
 
   async function clearSession() {
     busy.current = true;
     setClosing(true);
     if (expiry.current) clearTimeout(expiry.current);
     expiry.current = null;
-    setRecords(null);
+    setVerifiedWorkspace(null);
     connectedIntake.current?.dispose?.();
     connectedIntake.current = null;
     setIntakeTransport(null);
     setShowIntake(false);
+    connectedLookup.current?.dispose();
+    connectedLookup.current = null;
+    setLookupTransport(null);
+    setShowLookup(false);
     setPassword('');
     setVisiblePassword(false);
     try {
@@ -100,7 +110,7 @@ export default function Connection() {
     }
     busy.current = true;
     setStage(0);
-    setRecords(null);
+    setVerifiedWorkspace(null);
     const controller = new AbortController();
     request.current = controller;
     let failureMessage = 'La connexion est indisponible. Vérifiez votre réseau et réessayez.';
@@ -132,39 +142,32 @@ export default function Connection() {
           : 'Le service de vérification du cabinet est indisponible. Réessayez plus tard.';
         throw new Error('workspace');
       }
-      failureMessage = 'La réponse du cabinet n’a pas pu être vérifiée. Aucune fiche n’a été affichée.';
+      failureMessage = 'La réponse du cabinet n’a pas pu être vérifiée. Aucun espace connecté n’a été ouvert.';
       const workspace = WorkspaceSchema.parse(await scope.json());
       if (workspace.clinic_id !== clinicId || workspace.user_id !== data.session.user.id) throw new Error('scope');
       if (!active.current) return;
-      setStage(2);
-      const response = await fetch(`${api}/api/v1/patients`, { headers, cache: 'no-store', signal });
-      if (!response.ok) {
-        failureMessage = response.status === 401 ? 'La session a expiré. Connectez-vous à nouveau.'
-          : response.status === 403 ? 'Ce compte ne peut pas consulter les fiches de ce cabinet.'
-          : 'Les fiches sont momentanément indisponibles. Réessayez plus tard.';
-        throw new Error('patients');
-      }
-      const authorized = PatientSummarySchema.array().parse(await response.json());
-      if (authorized.some(record => record.clinic_id !== workspace.clinic_id)) throw new Error('scope');
       if (expiresAt * 1000 <= Date.now()) {
         failureMessage = 'La session a expiré. Connectez-vous à nouveau.';
         throw new Error('expired');
       }
       if (!active.current) return;
-      setRecords(authorized);
+      setVerifiedWorkspace(workspace);
       const transport = createHttpIntakeTransport({ api, token: data.session.access_token, clinicId: workspace.clinic_id, userId: workspace.user_id });
       connectedIntake.current = transport;
       setIntakeTransport(transport);
+      const lookup = createPatientLookupTransport({ api, token: data.session.access_token, clinicId: workspace.clinic_id });
+      connectedLookup.current = lookup;
+      setLookupTransport(lookup);
       expiry.current = setTimeout(() => {
         if (!active.current) return;
-        setNotice('Votre session a expiré. Les fiches ont été retirées de cet écran.');
+        setNotice('Votre session a expiré. Les recherches et les données consultées ont été effacées.');
         void clearSession();
       }, expiresAt * 1000 - Date.now());
     } catch (failure) {
       if (active.current) {
         const timedOut = failure instanceof DOMException && failure.name === 'TimeoutError';
         setError(timedOut ? 'Le cabinet met trop de temps à répondre. Réessayez dans un instant.' : failureMessage);
-        setRecords(null);
+        setVerifiedWorkspace(null);
       }
       await client.auth.signOut({ scope: 'local' }).catch(() => undefined);
     } finally {
@@ -176,21 +179,21 @@ export default function Connection() {
 
   async function disconnect() {
     setError('');
-    setNotice('Vous êtes déconnecté. Les fiches ont été retirées de cet écran.');
+    setNotice('Vous êtes déconnecté. Les recherches et les données consultées ont été effacées.');
     await clearSession();
   }
 
-  return <main className={`connection-page connected-access ${showIntake ? 'intake-connected-page' : ''}`}>
+  return <main className={`connection-page connected-access ${showIntake ? 'intake-connected-page' : ''} ${showLookup ? 'patient-lookup-page' : ''}`}>
     <section className="connection-card work-panel" aria-labelledby="connection-title">
       <Link href="/" className="access-back"><ArrowLeft size={16}/>Retour à l’aperçu</Link>
       <div className="access-emblem"><ShieldCheck size={28}/></div>
-      <header><p className="eyebrow">ACCÈS AU CABINET</p><h1 id="connection-title">Votre espace sécurisé.</h1><p>Retrouvez les fiches auxquelles votre cabinet vous donne accès.</p></header>
+      <header><p className="eyebrow">ACCÈS AU CABINET</p><h1 id="connection-title">Votre espace sécurisé.</h1><p>Retrouvez les outils auxquels votre cabinet vous donne accès.</p></header>
       <div className="access-demo"><LockKeyhole size={17}/><span>Environnement de développement<br/><small>Comptes et données synthétiques uniquement.</small></span></div>
       {!client && <div className="access-feedback" role="status"><strong>Connexion en préparation</strong><p>{config.issue} L’aperçu reste disponible sans compte.</p></div>}
       {!online && <div className="access-feedback" role="status"><strong>Vous êtes hors connexion</strong><p>Reconnectez-vous au réseau pour vérifier vos accès. Les fiches ne sont pas sauvegardées pour une consultation hors ligne.</p></div>}
       {notice && <p className="access-notice" role="status">{notice}</p>}
       {error && <div className="access-feedback access-failure" role="alert" tabIndex={-1} ref={errorRegion}><AlertCircle size={18}/><p>{error}</p></div>}
-      {records === null ? <form onSubmit={connect} aria-label="Connexion au cabinet" aria-busy={pending}>
+      {verifiedWorkspace === null ? <form onSubmit={connect} aria-label="Connexion au cabinet" aria-busy={pending}>
         <fieldset disabled={!client || pending || closing}>
           <label htmlFor="access-email">Adresse e-mail</label>
           <input id="access-email" name="email" type="email" required autoComplete="username" autoCapitalize="none" spellCheck={false} value={email} onChange={event => setEmail(event.target.value)}/>
@@ -203,13 +206,14 @@ export default function Connection() {
         <Button type="submit" variant="primary" disabled={!client || pending || closing || !online}>{closing ? 'Déconnexion en cours…' : pending ? <><LoaderCircle className="access-spinner" size={18}/>Vérification en cours</> : <>Se connecter<ArrowRight size={18}/></>}</Button>
         <p className="access-progress" role="status" aria-live="polite">{closing ? 'Fermeture de la session…' : pending ? stages[stage] : 'Vos accès sont vérifiés par le serveur.'}</p>
       </form> : <section className="access-records" aria-labelledby="access-result-title">
-        <div className="access-success"><ShieldCheck size={20}/><div><h2 id="access-result-title" tabIndex={-1} ref={resultHeading}>Accès au cabinet vérifié</h2><p>{records.length} fiche{records.length > 1 ? 's' : ''} autorisée{records.length > 1 ? 's' : ''}</p></div></div>
-        {records.length ? <ul aria-label="Fiches autorisées">{records.map(record => <li key={record.id}><span>{record.display_name}</span><small>{record.reference}</small></li>)}</ul> : <div className="access-empty"><Users size={26}/><h3>Aucune fiche pour le moment</h3><p>Votre accès est valide. Aucune fiche patient n’est disponible dans ce cabinet.</p></div>}
+        <div className="access-success"><ShieldCheck size={20}/><div><h2 id="access-result-title" tabIndex={-1} ref={resultHeading}>Accès au cabinet vérifié</h2><p>Choisissez un outil pour poursuivre. Aucun registre patient n’est chargé automatiquement.</p></div></div>
         <Button type="button" onClick={disconnect}><LogOut size={17}/>Se déconnecter</Button>
-        {intakeTransport && <Button type="button" variant="primary" onClick={() => setShowIntake(value => !value)}>{showIntake ? 'Masquer les demandes' : 'Ouvrir les demandes du cabinet'}<ArrowRight size={17}/></Button>}
+        {intakeTransport && <Button type="button" variant="primary" onClick={() => { setShowLookup(false); setShowIntake(value => !value); }}>{showIntake ? 'Masquer les demandes' : 'Ouvrir les demandes du cabinet'}<ArrowRight size={17}/></Button>}
+        {lookupTransport && <Button type="button" onClick={() => { setShowIntake(false); setShowLookup(value => !value); }}>{showLookup ? 'Masquer la recherche de patient' : 'Rechercher un patient du cabinet'}<Search size={17}/></Button>}
       </section>}
       <footer><LockKeyhole size={15}/><small>Session en mémoire uniquement. Aucun dossier n’est enregistré dans le navigateur par cette application.</small></footer>
     </section>
-    {records !== null && intakeTransport && showIntake && <div className="intake-connected-panel"><div className="intake-connected-controls"><p>Session vérifiée · demandes du cabinet actif uniquement</p><Button type="button" onClick={disconnect}><LogOut size={17}/>Se déconnecter</Button></div><IntakeWorkspace transport={intakeTransport} onSessionExpired={() => { setNotice('Votre session a expiré. Les demandes ont été retirées de cet écran.'); void clearSession(); }}/></div>}
+    {verifiedWorkspace !== null && intakeTransport && showIntake && <div className="intake-connected-panel"><div className="intake-connected-controls"><p>Session vérifiée · demandes du cabinet actif uniquement</p><Button type="button" onClick={disconnect}><LogOut size={17}/>Se déconnecter</Button></div><IntakeWorkspace transport={intakeTransport} onSessionExpired={() => { setNotice('Votre session a expiré. Les demandes ont été retirées de cet écran.'); void clearSession(); }}/></div>}
+    {verifiedWorkspace !== null && lookupTransport && showLookup && <div><div className="lookup-connected-controls"><Button type="button" onClick={disconnect}><LogOut size={17}/>Se déconnecter</Button></div><PatientLookup transport={lookupTransport} onSessionExpired={() => { setNotice('Votre session a expiré. La recherche et ses résultats ont été effacés.'); void clearSession(); }}/></div>}
   </main>;
 }
