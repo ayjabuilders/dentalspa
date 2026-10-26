@@ -12,7 +12,7 @@ This chat coordinates integration in `C:/Users/platf/Documents/Dental Spa`. ADR-
 
 ## Next action
 
-The active branch is `codex/m02-patient-lookup-contract` on merged main. Frozen contract f90f957 passed four focused schema tests after independent API, UI and adversarial privacy review. API/SQL and verified-session UI agents are now implementing from that exact revision in separate worktrees with disjoint ownership. Selection, patient creation, merge and booking remain out of scope until their own policies are frozen.
+The active branch is `codex/m02-patient-lookup-contract` on merged main. Frozen contract f90f957 is implemented by API/SQL 0c1e15b and verified-session UI 4c48cfa, with scoped visual correction 60d1567 and generated OpenAPI 8af73c5. Independent review found no blocker. Combined lint, typecheck, 70 unit tests, 71 integration tests and full production build passed; the configured synthetic build also passed all 8 lookup browser/transport cases. Parent inspected desktop/mobile and pearl/navy rendering, caught and verified the radio-style correction, and saved `qa/screenshots/patient-lookup-dark.png`. Next: commit evidence, push a bounded PR, verify full CI including 24 new pgTAP assertions, then merge only if current-head checks pass and no deployment surface appears. Selection, patient creation, merge and booking remain out of scope until their own policies are frozen.
 
 ## Activation gates
 
