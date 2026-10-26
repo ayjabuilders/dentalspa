@@ -119,7 +119,7 @@
     },
     {
       "id": "INQUIRY-SCHEDULE-API",
-      "state": "ready",
+      "state": "active",
       "owner": "pwa_verification",
       "depends_on": ["INQUIRY-SCHEDULE-CONTRACT"],
       "branch": "codex/m01-inquiry-schedule-api",
@@ -129,7 +129,7 @@
     },
     {
       "id": "INQUIRY-SCHEDULE-UI",
-      "state": "ready",
+      "state": "active",
       "owner": "connection_ui",
       "depends_on": ["INQUIRY-SCHEDULE-CONTRACT"],
       "branch": "codex/m01-inquiry-schedule-ui",
