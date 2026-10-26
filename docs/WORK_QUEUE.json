@@ -266,11 +266,12 @@
     },
     {
       "id": "INQUIRY-CONTACT-PREFERENCE-INTEGRATE",
-      "state": "verification",
+      "state": "done",
       "owner": "coordinator",
       "depends_on": ["INQUIRY-CONTACT-PREFERENCE-API", "INQUIRY-CONTACT-PREFERENCE-UI"],
       "branch": "codex/m01-contact-preference-contract",
-      "acceptance": "Independent security/UI review, generated OpenAPI, focused local/PostgreSQL/browser checks, no-deployment merge and owner-visible evidence."
+      "acceptance": "Independent security/UI review, generated OpenAPI, focused local/PostgreSQL/browser checks, no-deployment merge and owner-visible evidence.",
+      "evidence": "PR #18 squash merged 0149833 after exact-head CI40415899333 application/database success, including 34 contact-preference pgTAP assertions and two independent-session contention/replay scenarios. Independent review and local UI/build checks passed; zero hooks/deployments before merge."
     },
     {
       "id": "INTAKE-CONTRACT",

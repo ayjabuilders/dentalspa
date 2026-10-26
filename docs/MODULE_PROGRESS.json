@@ -28,9 +28,10 @@
           "label": "Capturer service, provenance, urgence et préférence de rappel",
           "state": "partial",
           "taskIds": [
-            "INTAKE-INTEGRATE"
+            "INTAKE-INTEGRATE",
+            "INQUIRY-CONTACT-PREFERENCE-INTEGRATE"
           ],
-          "evidence": "PR #2 : canal d’origine livré; service demandé, urgence et préférence de rappel restent à couvrir."
+          "evidence": "PR #2 et #18 : canal d’origine et préférence de contact explicitement déclarée livrés; service demandé et urgence restent à couvrir. La préférence ne vaut ni consentement, ni joignabilité, ni autorisation d’envoi."
         },
         {
           "id": "M01-4",
