@@ -133,11 +133,32 @@
       "evidence": "PR #3 squash merged d4a432e after independent review and current-head CI40351974022 application/database success. No repository hooks or deployments were present before merge."
     },
     {
+      "id": "PWA-LOCAL-RUNTIME",
+      "state": "done",
+      "owner": "coordinator",
+      "depends_on": [
+        "SCHEDULING-HOLD-INTEGRATE"
+      ],
+      "acceptance": "Inspect the live local scheduling workflow and PWA metadata/service worker without installing software or claiming device acceptance.",
+      "evidence": "Live IAB verification exercised search, proposal, temporary hold and release with truthful terminal state. Manifest is standalone with three icons; generated service worker is reachable and skips non-GET, cross-origin and authorization-bearing requests. OS installation and true 200% browser zoom remain unverified device gates."
+    },
+    {
+      "id": "PATIENT-SELECTION-DECISION-PACKET",
+      "state": "done",
+      "owner": "coordinator + auth_verification + connection_ui",
+      "depends_on": [
+        "PATIENT-LOOKUP-INTEGRATE"
+      ],
+      "acceptance": "Present bounded, source-cited product/clinic choices for identity evidence, correction, freshness, duplicate override, reference generation, audit/privacy and separate account linkage without approving or implementing policy.",
+      "evidence": "docs/PATIENT_SELECTION_DECISION_PACKET.md consolidates independent security and UX analysis into eight bounded decisions, recommended safe defaults, truthful states and approval requirements. No policy or implementation was inferred."
+    },
+    {
       "id": "PATIENT-SELECTION-POLICY",
       "state": "blocked",
       "owner": "coordinator",
       "depends_on": [
-        "PATIENT-LOOKUP-INTEGRATE"
+        "PATIENT-LOOKUP-INTEGRATE",
+        "PATIENT-SELECTION-DECISION-PACKET"
       ],
       "acceptance": "Freeze explicit identity evidence, correction, review freshness, duplicate override and reference-generation rules before a lookup result may become a patient selection.",
       "blocker": "Clinic identity-check and duplicate-resolution policy is not approved. Patient lookup remains read-only and cannot authorize booking or account linkage.",
@@ -209,7 +230,7 @@
     },
     {
       "id": "SCHEDULING-CONCURRENCY-EVIDENCE",
-      "state": "verification",
+      "state": "done",
       "owner": "pwa_verification",
       "depends_on": [
         "SCHEDULING-HOLD-INTEGRATE"
@@ -218,7 +239,7 @@
       "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/scheduling-concurrency",
       "base": "f384035",
       "acceptance": "Exercise the scheduling RPC transaction through two genuinely independent PostgreSQL connections for shared-provider, shared-chair, adjacency, lock-wait expiry and rollback behavior in the local Supabase CI environment, without hosted access or production activation.",
-      "evidence": "Integrated as 440fac3 plus pre-expiry ordering assertion c03fc62. Eleven local-PostgreSQL scenarios use three explicit pg.Client sessions, distinct backend PIDs and observable advisory-lock barriers. Independent review found no blocker; syntax, ESLint and local-only URL guard pass. Actual database execution awaits current-head CI because Docker/Supabase is unavailable locally.",
+      "evidence": "PR #5 squash merged 89d46cd after independent review and current-head CI40361590387 application/database success. The real `pnpm db:concurrency` step passed all eleven loopback PostgreSQL scenarios with three explicit sessions, distinct backend PIDs and observable lock barriers; no hooks or deployments existed.",
       "next_action": "Implement a fail-closed Node 24 harness with explicit pg.Client sessions, observable pg_blocking_pids barriers and unique synthetic fixtures; run it only after local Supabase reset in database CI.",
       "allowed_files": [
         "scripts/scheduling-concurrency.mjs",

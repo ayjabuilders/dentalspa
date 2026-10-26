@@ -53,7 +53,7 @@ Line references identify the source passages in this repository at contract-free
 | Matching an existing record must not create an authenticated patient account link | [Test/pilot plan](11_TEST_PILOT_PLAN.md), line 5: “Existing patient's booking via phone → matching without duplicate → later user account linked securely.” |
 | Name or phone alone cannot establish Patient Pass identity | [Security and safety](09_SECURITY_SAFETY.md), line 10: “Account must be verified and linked through secure enrollment/recovery; name or phone alone is insufficient.” |
 | Anonymous public booking must not enumerate patients | [Test/pilot plan](11_TEST_PILOT_PLAN.md), line 13 |
-| Existing-patient account verification and legacy deduplication rules are unresolved | [Clinic discovery](02_CLINIC_DISCOVERY.md), lines 19 and 21 |
+| Existing-patient account verification and legacy deduplication rules are unresolved | [Clinic discovery](02_CLINIC_DISCOVERY.md), lines 17 and 19 |
 | Development dependencies and operational release gates are separate | [ADR-003](adr/ADR-003_DEVELOPMENT_AND_RELEASE_GATES.md), lines 7 and 11 |
 
 ## Current implementation constraints
