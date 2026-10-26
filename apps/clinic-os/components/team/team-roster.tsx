@@ -5,6 +5,7 @@ import { Users, ShieldCheck, Search, X, RefreshCw, LoaderCircle, LockKeyhole, Li
 import type { TeamRoster } from '@dental/contracts';
 import { createDemoTeamTransport, TeamError, type TeamTransport, type TeamFailure } from './transport';
 import './team-roster.css';
+import { TeamActivityPanel } from './team-activity';
 const roles: Record<string, string> = { assistant: 'Assistant', dentist: 'Dentiste', manager: 'Gestionnaire', reception: 'Accueil' };
 const failures: Record<TeamFailure, { title: string; detail: string }> = {
   denied: { title: 'Annuaire non autorisé', detail: 'Cet annuaire nécessite un accès actif Gestionnaire ou Dentiste dans ce cabinet.' },
@@ -57,6 +58,6 @@ export function TeamRosterView({ transport, onSessionExpired }: { transport: Tea
         {!roster.members.length ? <div className="team-roster-empty" role="status"><Users size={28}/><h3>Aucun membre retourné</h3><p>Aucun membre ne figure dans cette observation autorisée.</p></div> : !visible.length ? <div className="team-roster-empty" role="status"><Search size={28}/><h3>Aucun résultat dans la liste chargée</h3><p>Ce filtre ne permet pas de conclure à l’absence d’un membre dans le cabinet.</p><Button onClick={() => { setQuery(''); setRole('all'); }}>Réinitialiser les filtres</Button></div> : <div className="team-roster-list-region" role="region" aria-label="Membres et rôles d’accès" tabIndex={0}><ul className="team-roster-list">{visible.map(member => <li key={member.user_id}><span className="team-roster-avatar" aria-hidden="true">{member.display_name.split(/\s+/).filter(Boolean).slice(0, 2).map(part => [...part][0]).join('').toLocaleUpperCase('fr')}</span><div className="team-roster-name"><strong>{member.display_name}</strong><small>Membre du cabinet</small></div><div className="team-roster-roles"><span>Rôles d’accès</span><ul aria-label={`Rôles d’accès de ${member.display_name}`}>{member.roles.map(value => <li key={value}>{roles[value]}</li>)}</ul></div></li>)}</ul></div>}
         <p className="team-roster-observation">{visible.length} affiché(s) parmi {roster.members.length} chargé(s) · Observé le <time dateTime={roster.observed_at}>{observed}</time> · {zone}</p>
       </>}
-    </section><aside className="work-panel team-roster-guide"><span className="team-roster-guide-icon"><ShieldCheck size={24}/></span><p className="eyebrow">UNE VUE, UN CADRE CLAIR</p><h2>Des accès.<br/>Pas un planning.</h2><p>Cet annuaire montre les appartenances actives observées. Il n’indique pas qui est présent ou disponible aujourd’hui.</p><div><strong>Lecture seule</strong><span>Aucune invitation, modification, affectation ou approbation depuis cet écran.</span></div><small>{transport.mode === 'demo' ? 'Les personnes et accès présentés ici sont fictifs.' : 'Aucun nom n’est conservé dans le navigateur pour une consultation hors ligne.'}</small></aside></div>
+    </section><TeamActivityPanel transport={transport} onSessionExpired={onSessionExpired}/></div>
   </section>;
 }

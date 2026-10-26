@@ -1,8 +1,9 @@
-import { TeamRosterSchema, type TeamRoster } from '@dental/contracts';
+import { TeamActivitySchema, type TeamActivity, TeamRosterSchema, type TeamRoster } from '@dental/contracts';
 export type TeamFailure = 'expired' | 'denied' | 'offline' | 'unavailable';
 export class TeamError extends Error { constructor(public kind: TeamFailure) { super(kind); } }
 export interface TeamTransport {
   mode: 'demo' | 'connected';
+  activity(signal?: AbortSignal): Promise<TeamActivity>;
   roster(signal?: AbortSignal): Promise<TeamRoster>;
   onDispose(listener: () => void): () => void;
   dispose(): void;
@@ -34,6 +35,23 @@ export function createTeamTransport(options: { api: string; token: string; clini
         throw new TeamError(typeof navigator !== 'undefined' && !navigator.onLine ? 'offline' : 'unavailable');
       } finally { controllers.delete(controller); }
     },
+    async activity(signal) {
+      if (!token || life.closed) throw new TeamError('expired');
+      const controller = new AbortController(); controllers.add(controller);
+      try {
+        const response = await fetcher(`${api.replace(/\/$/, '')}/api/v1/team/activity`, { method: 'GET', cache: 'no-store', credentials: 'omit', headers: { Authorization: `Bearer ${token}`, 'X-Clinic-Id': clinicId }, signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15000), ...(signal ? [signal] : [])]) });
+        if (!token) throw new TeamError('expired');
+        if (!response.ok) throw new TeamError(response.status === 401 ? 'expired' : response.status === 403 ? 'denied' : 'unavailable');
+        const parsed = TeamActivitySchema.safeParse(await response.json());
+        if (!token) throw new TeamError('expired');
+        if (!parsed.success) throw new TeamError('unavailable');
+        return parsed.data;
+      } catch (error) {
+        if (!token) throw new TeamError('expired');
+        if (error instanceof TeamError) throw error;
+        throw new TeamError(typeof navigator !== 'undefined' && !navigator.onLine ? 'offline' : 'unavailable');
+      } finally { controllers.delete(controller); }
+    },
     dispose() { token = null; controllers.forEach(controller => controller.abort()); controllers.clear(); life.dispose(); },
   };
 }
@@ -41,6 +59,16 @@ export function createDemoTeamTransport(): TeamTransport {
   const life = lifecycle();
   return {
     mode: 'demo', onDispose: life.onDispose, dispose: life.dispose,
+    async activity(signal) {
+      signal?.throwIfAborted(); if (life.closed) throw new TeamError('expired');
+      const now = Date.now();
+      return TeamActivitySchema.parse({ observed_at: new Date(now).toISOString(), truncated: false, items: [
+        { kind: 'inquiry_follow_up_recorded', actor_display_name: 'Adam Exemple', occurred_at: new Date(now - 300000).toISOString() },
+        { kind: 'slot_hold_released', actor_display_name: 'Nora Exemple', occurred_at: new Date(now - 1800000).toISOString() },
+        { kind: 'slot_hold_created', actor_display_name: null, occurred_at: new Date(now - 3600000).toISOString() },
+        { kind: 'inquiry_created', actor_display_name: 'Lina Exemple', occurred_at: new Date(now - 7200000).toISOString() },
+      ] });
+    },
     async roster(signal) {
       signal?.throwIfAborted(); if (life.closed) throw new TeamError('expired');
       return TeamRosterSchema.parse({ observed_at: new Date().toISOString(), truncated: false, members: [
