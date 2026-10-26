@@ -157,7 +157,7 @@
     },
     {
       "id": "SCHEDULING-HOLD-API",
-      "state": "verification",
+      "state": "done",
       "owner": "pwa_verification",
       "depends_on": [
         "SCHEDULING-HOLD-CONTRACT"
@@ -166,7 +166,7 @@
       "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/scheduling-hold-api",
       "base": "6c92b5a",
       "acceptance": "Tenant-safe informational availability and atomic provider/chair holds with real PostgreSQL exclusion constraints, clinic transaction locking, durable idempotency, audit/outbox and adversarial concurrency evidence.",
-      "evidence": "Integrated as e08d349. 38 focused contract/adapter/API/embedded-PostgreSQL checks pass after replay authorization coverage; full suite passes 87 unit/92 integration. Independent review found no blocker. Seventeen pgTAP assertions await CI; separate-connection contention remains an activation gate.",
+      "evidence": "PR #4 squash merged 9877ee3 after current-head CI40358746496 application/database success. The full Supabase job applied btree_gist and passed all 17 new pgTAP assertions; separate-connection contention remains a distinct gate.",
       "allowed_files": [
         "apps/dental-api/src/scheduling/**",
         "apps/dental-api/src/app.module.ts",
@@ -178,7 +178,7 @@
     },
     {
       "id": "SCHEDULING-HOLD-UI",
-      "state": "verification",
+      "state": "done",
       "owner": "connection_ui",
       "depends_on": [
         "SCHEDULING-HOLD-CONTRACT"
@@ -197,7 +197,7 @@
     },
     {
       "id": "SCHEDULING-HOLD-INTEGRATE",
-      "state": "verification",
+      "state": "done",
       "owner": "coordinator",
       "depends_on": [
         "SCHEDULING-HOLD-API",
@@ -205,7 +205,18 @@
       ],
       "branch": "codex/m02-scheduling-contract",
       "acceptance": "Independent security review, generated OpenAPI/types, combined regression/build/browser evidence and current-head CI before a bounded development merge.",
-      "evidence": "API and UI commits integrated. Shared fixed-offset-zone correction 0fdc5e1 and generated API/replay guard c111448 included. Lint, all 8 package typechecks, API/Clinic builds, 87 unit and 92 integration tests pass; independent API review found no blocker. PR/current-head application and full database CI are pending."
+      "evidence": "PR #4 squash merged 9877ee3. Independent security/UX reviews passed; local lint, all 8 package typechecks, API/Clinic builds, 87 unit, 92 integration and 7 focused browser tests passed. Current-head CI40358746496 application and full database jobs succeeded; no hooks or deployments existed."
+    },
+    {
+      "id": "SCHEDULING-CONCURRENCY-EVIDENCE",
+      "state": "ready",
+      "owner": "coordinator",
+      "depends_on": [
+        "SCHEDULING-HOLD-INTEGRATE"
+      ],
+      "branch": "codex/m02-scheduling-concurrency",
+      "acceptance": "Exercise the scheduling RPC transaction through two genuinely independent PostgreSQL connections for shared-provider, shared-chair, adjacency, lock-wait expiry and rollback behavior in the local Supabase CI environment, without hosted access or production activation.",
+      "next_action": "Choose the smallest reliable CI harness using the existing local Supabase stack; do not treat sequential pgTAP or PGlite transactions as contention proof."
     },
     {
       "id": "APPOINTMENT-CONFIRMATION-CONTRACT",
