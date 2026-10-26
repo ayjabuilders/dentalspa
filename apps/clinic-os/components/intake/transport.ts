@@ -1,3 +1,4 @@
+import { InquiryContactPreferenceStateSchema, InquiryContactPreferenceResultSchema, SetInquiryContactPreferenceSchema, type InquiryContactPreferenceState, type InquiryContactPreferenceResult, type SetInquiryContactPreference } from '@dental/contracts';
 import { InquiryOwnerSearchRequestSchema, InquiryOwnerSearchResultSchema, type InquiryOwnerSearchRequest, type InquiryOwnerSearchResult } from '@dental/contracts';
 import { InquiryScheduleHistorySchema, type InquiryScheduleHistory } from '@dental/contracts';
 import { SetInquiryScheduleSchema, InquiryScheduleResultSchema, type SetInquirySchedule, type InquiryScheduleResult } from '@dental/contracts';
@@ -11,12 +12,14 @@ export class IntakeError extends Error {
 }
 export type FollowUpAttempt = { inquiry: InquiryList['items'][number]; body: RecordFollowUp; key: string };
 export type ScheduleAttempt = { id: string; displayName?: string; body: SetInquirySchedule; key: string };
+export type PreferenceAttempt = { id: string; displayName?: string; body: SetInquiryContactPreference; key: string };
 function privacyState() {
+  const pendingPreference: { current: PreferenceAttempt | null } = { current: null };
   const pendingSchedule: { current: ScheduleAttempt | null } = { current: null };
   const scheduleActive = { current: false };
   let clearing = false;
   const listeners = new Set<(kind: IntakeFailure) => void>();
-  return { pendingSchedule, scheduleActive, onPrivateClear(listener: (kind: IntakeFailure) => void) { listeners.add(listener); return () => { listeners.delete(listener); }; }, clearPrivate(kind: IntakeFailure) { pendingSchedule.current = null; scheduleActive.current = false; if (clearing) return; clearing = true; try { listeners.forEach(listener => listener(kind)); } finally { clearing = false; } } };
+  return { pendingPreference, pendingSchedule, scheduleActive, onPrivateClear(listener: (kind: IntakeFailure) => void) { listeners.add(listener); return () => { listeners.delete(listener); }; }, clearPrivate(kind: IntakeFailure) { pendingPreference.current = null; pendingSchedule.current = null; scheduleActive.current = false; if (clearing) return; clearing = true; try { listeners.forEach(listener => listener(kind)); } finally { clearing = false; } } };
 }
 function instant(value: string | null): string | null {
   if (value === null) return null;
@@ -24,6 +27,9 @@ function instant(value: string | null): string | null {
   return new Date(value).toISOString().slice(0,19) + '.' + fraction.padEnd(6,'0');
 }
 export interface IntakeTransport {
+  pendingPreference: { current: PreferenceAttempt | null };
+  contactPreference(id: string, signal?: AbortSignal): Promise<InquiryContactPreferenceState>;
+  setContactPreference(id: string, body: SetInquiryContactPreference, key: string, signal?: AbortSignal): Promise<InquiryContactPreferenceResult>;
   ownerSearch(body: InquiryOwnerSearchRequest, signal?: AbortSignal): Promise<InquiryOwnerSearchResult>;
   scheduleActive: { current: boolean };
   scheduleHistory(id: string, signal?: AbortSignal): Promise<InquiryScheduleHistory>;
@@ -63,6 +69,9 @@ export function createDemoIntakeTransport(): IntakeTransport {
   ];
   const followUps = new Map<string, FollowUpList['items']>();
   const followUpReceipts = new Map<string, { fingerprint: string; result: FollowUpRecorded }>();
+  const preferenceStates = new Map<string, InquiryContactPreferenceState>();
+  const preferenceReceipts = new Map<string, { fingerprint: string; result: InquiryContactPreferenceResult }>();
+  function preferenceState(id: string) { return preferenceStates.get(id) ?? { schema_version: 1 as const, inquiry_id: id, clinic_id: demoClinic, owner_user_id: demoOwner, preference: null, revision: 0, updated_at: null }; }
   const scheduleReceipts = new Map<string, { fingerprint: string; result: InquiryScheduleResult }>();
   let disposed = false;
   function authorize(inquiryId: string, signal?: AbortSignal) {
@@ -75,6 +84,18 @@ export function createDemoIntakeTransport(): IntakeTransport {
   const saved = new Map<string, { fingerprint: string; result: InquiryCreated }>();
   return {
     mode: 'demo', currentUserId: demoOwner, pendingFollowUp, ...privacy, clearPrivate(kind) { pendingFollowUp.current = null; privacy.clearPrivate(kind); },
+    async contactPreference(id, signal) { authorize(id, signal); return InquiryContactPreferenceStateSchema.parse(preferenceState(id)); },
+    async setContactPreference(id, input, key, signal) {
+      authorize(id, signal); const body = SetInquiryContactPreferenceSchema.parse(input); const fingerprint = JSON.stringify(body);
+      const saved = preferenceReceipts.get(id + ':' + key);
+      if (saved) { if (saved.fingerprint !== fingerprint) throw new IntakeError('conflict'); return { ...saved.result, replayed: true }; }
+      const state = preferenceState(id); if (state.revision !== body.expected_revision) throw new IntakeError('conflict');
+      const changed = state.preference !== body.preference; if (changed && state.revision === 2147483647) throw new IntakeError('conflict');
+      const stamp = new Date().toISOString(); const revision = state.revision + (changed ? 1 : 0);
+      const result = InquiryContactPreferenceResultSchema.parse({ receipt: { inquiry_id: id, clinic_id: demoClinic, owner_user_id: demoOwner, previous_preference: state.preference, preference: body.preference, previous_revision: state.revision, revision, changed, recorded_at: stamp, event_version: 1 }, replayed: false });
+      if (changed) preferenceStates.set(id, { ...state, preference: body.preference, revision, updated_at: stamp });
+      preferenceReceipts.set(id + ':' + key, { fingerprint, result }); return result;
+    },
     async ownerSearch(input, signal) {
       signal?.throwIfAborted(); if (disposed) throw new IntakeError('expired');
       const body = InquiryOwnerSearchRequestSchema.parse(input);
@@ -129,7 +150,7 @@ export function createDemoIntakeTransport(): IntakeTransport {
       followUps.set(id, [result.item, ...(followUps.get(id) ?? [])].sort((a, b) => b.recorded_at.localeCompare(a.recorded_at) || b.id.localeCompare(a.id)));
       return result;
     },
-    dispose() { privacy.clearPrivate('expired'); scheduleReceipts.clear(); pendingFollowUp.current = null; disposed = true; items = []; saved.clear(); followUps.clear(); followUpReceipts.clear(); },
+    dispose() { preferenceStates.clear(); preferenceReceipts.clear(); privacy.clearPrivate('expired'); scheduleReceipts.clear(); pendingFollowUp.current = null; disposed = true; items = []; saved.clear(); followUps.clear(); followUpReceipts.clear(); },
     async list(signal) {
       signal?.throwIfAborted();
       return InquiryListSchema.parse({ items: items.slice(0, 100), truncated: items.length > 100 });
@@ -160,7 +181,7 @@ export function createHttpIntakeTransport(options: { api: string; token: string;
   let privacyRevision = 0;
   const controllers = new Set<AbortController>();
   const fetcher = options.fetcher ?? fetch;
-  async function send(method: 'GET' | 'POST', body?: CreateInquiry | RecordFollowUp | SetInquirySchedule | InquiryOwnerSearchRequest, key?: string, callerSignal?: AbortSignal, suffix = '') {
+  async function send(method: 'GET' | 'POST', body?: CreateInquiry | RecordFollowUp | SetInquirySchedule | InquiryOwnerSearchRequest | SetInquiryContactPreference, key?: string, callerSignal?: AbortSignal, suffix = '') {
     if (!token) throw new IntakeError('expired');
     const revision = privacyRevision;
     const controller = new AbortController();
@@ -179,7 +200,7 @@ export function createHttpIntakeTransport(options: { api: string; token: string;
           disabled = typeof problem === 'object' && problem !== null && 'code' in problem && problem.code === 'intake_disabled';
         }
         const kind: IntakeFailure = response.status === 401 ? 'expired' : response.status === 403 ? 'denied' : response.status === 404 ? 'missing' : disabled ? 'disabled' : response.status === 409 ? 'conflict' : response.status === 400 ? 'invalid' : 'unavailable';
-        if ((privacy.scheduleActive.current || suffix.endsWith('/follow-up-schedule') || suffix.endsWith('/follow-up-schedule/history') || suffix === '/owner-search') && (kind === 'expired' || kind === 'denied' || kind === 'missing')) clearPrivate(kind);
+        if ((privacy.pendingPreference.current !== null || privacy.scheduleActive.current || suffix.endsWith('/follow-up-schedule') || suffix.endsWith('/follow-up-schedule/history') || suffix === '/owner-search' || suffix.endsWith('/contact-preference')) && (kind === 'expired' || kind === 'denied' || kind === 'missing')) clearPrivate(kind);
         throw new IntakeError(kind);
       }
       if (!token || revision !== privacyRevision) throw new IntakeError('expired');
@@ -196,6 +217,20 @@ export function createHttpIntakeTransport(options: { api: string; token: string;
   return {
     ...privacy, clearPrivate,
     mode: 'connected', currentUserId: userId, pendingFollowUp,
+    async contactPreference(id, signal) {
+      const parsed = InquiryContactPreferenceStateSchema.safeParse(await send('GET', undefined, undefined, signal, '/' + encodeURIComponent(id) + '/contact-preference'));
+      if (!token) throw new IntakeError('expired');
+      if (!parsed.success || parsed.data.inquiry_id !== id || parsed.data.clinic_id !== clinicId || parsed.data.owner_user_id !== userId) throw new IntakeError('unavailable');
+      return parsed.data;
+    },
+    async setContactPreference(id, input, key, signal) {
+      const body = SetInquiryContactPreferenceSchema.parse(input);
+      const parsed = InquiryContactPreferenceResultSchema.safeParse(await send('POST', body, key, signal, '/' + encodeURIComponent(id) + '/contact-preference'));
+      if (!token) throw new IntakeError('expired');
+      if (!parsed.success) throw new IntakeError('unavailable'); const receipt = parsed.data.receipt;
+      if (receipt.inquiry_id !== id || receipt.clinic_id !== clinicId || receipt.owner_user_id !== userId || receipt.previous_revision !== body.expected_revision || receipt.preference !== body.preference) throw new IntakeError('unavailable');
+      return parsed.data;
+    },
     async ownerSearch(input, signal) {
       const body = InquiryOwnerSearchRequestSchema.parse(input);
       const parsed = InquiryOwnerSearchResultSchema.safeParse(await send('POST', body, undefined, signal, '/owner-search'));
