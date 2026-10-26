@@ -37,6 +37,9 @@ test('responsive pearl/navy dialog and keyboard targets', async ({ page }) => {
   }
 });
 
+test.describe('verified inquiry schedule', () => {
+test.skip(process.env.SCHEDULE_CONFIGURED !== '1', 'Requires isolated synthetic authentication build.');
+
 test('fresh exact microseconds CAS; unknown uses same key/body after dialog navigation and rereads', async ({ page }) => {
   const posts: { key: string | undefined; body: { expected_follow_up_at: string; follow_up_at: string } }[] = [];
   const app = await connected(page, async route => { const body = route.request().postDataJSON(); posts.push({ key: route.request().headers()['idempotency-key'], body }); if (posts.length === 1) return route.abort('failed'); app.set(body.follow_up_at); return route.fulfill({ status: 200, headers, json: { ...receipt(body), replayed: true } }); });
@@ -54,6 +57,14 @@ test('denied write clears surrounding private detail and draft', async ({ page }
 
 test('offline clears uncertain command and private inquiry views without background replay', async ({ page, context }) => {
   let posts = 0; await connected(page, route => { posts++; return route.abort('failed'); }); await open(page); await page.getByLabel('Sans date', { exact: true }).check(); await page.getByRole('button', { name: 'Enregistrer l’échéance' }).click(); await expect(page.getByRole('dialog')).toContainText('Résultat à vérifier'); await context.setOffline(true); await expect(page.getByRole('dialog')).toHaveCount(0); await expect(page.getByText('Lina Synthétique', { exact: true })).toHaveCount(0); await context.setOffline(false); expect(posts).toBe(1); await expect(page.getByRole('button', { name: 'Vérifier la replanification' })).toHaveCount(0);
+});
+
+test('expired schedule clears session and disabled command never claims success', async ({ page }) => {
+  let status = 503;
+  await connected(page, route => route.fulfill({ status, headers, json: status === 503 ? { code: 'intake_disabled' } : {} }));
+  await open(page); await page.getByRole('button', { name: 'Enregistrer l’échéance' }).click(); await expect(page.getByRole('dialog')).toContainText('désactivée'); await expect(page.getByRole('button', { name: 'Vérifier le résultat exact' })).toHaveCount(0);
+  status = 401; await page.getByRole('button', { name: 'Enregistrer l’échéance' }).click(); await expect(page.getByRole('dialog')).toHaveCount(0); await expect(page.getByRole('button', { name: 'Se connecter', exact: true })).toBeVisible(); await expect(page.getByText('Lina Synthétique', { exact: true })).toHaveCount(0);
+});
 });
 
 test('strict schedule receipt scope/echo/changed checks and disposal clear pending command', async () => {
@@ -76,10 +87,4 @@ test('legacy denied history keeps its retry boundary unless a schedule lifecycle
   await expect(transport.followUps(id)).rejects.toMatchObject({ kind: 'denied' }); expect(cleared).toBe(0);
   transport.scheduleActive.current = true;
   await expect(transport.followUps(id)).rejects.toMatchObject({ kind: 'denied' }); expect(cleared).toBe(1); expect(transport.scheduleActive.current).toBe(false);
-});
-test('expired schedule clears session and disabled command never claims success', async ({ page }) => {
-  let status = 503;
-  await connected(page, route => route.fulfill({ status, headers, json: status === 503 ? { code: 'intake_disabled' } : {} }));
-  await open(page); await page.getByRole('button', { name: 'Enregistrer l’échéance' }).click(); await expect(page.getByRole('dialog')).toContainText('désactivée'); await expect(page.getByRole('button', { name: 'Vérifier le résultat exact' })).toHaveCount(0);
-  status = 401; await page.getByRole('button', { name: 'Enregistrer l’échéance' }).click(); await expect(page.getByRole('dialog')).toHaveCount(0); await expect(page.getByRole('button', { name: 'Se connecter', exact: true })).toBeVisible(); await expect(page.getByText('Lina Synthétique', { exact: true })).toHaveCount(0);
 });
