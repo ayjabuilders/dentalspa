@@ -249,16 +249,39 @@
       ]
     },
     {
+      "id": "RESOURCE-RULES-DECISION-PACKET",
+      "state": "done",
+      "owner": "coordinator",
+      "depends_on": [
+        "SCHEDULING-HOLD-INTEGRATE"
+      ],
+      "branch": "codex/resource-rules-packet",
+      "acceptance": "Present source-backed, bounded clinic decisions for schedulable offerings, resource eligibility, hours, buffers, authority, hold lifetime, cancellation and patient communication without treating examples as approved operating policy.",
+      "evidence": "PR #8 carries the independently reviewed R1–R8 decision packet; it preserves the synthetic-only hold boundary. Clinic/product policy approval remains outstanding."
+    },
+    {
+      "id": "RESOURCE-RULES-POLICY",
+      "state": "blocked",
+      "owner": null,
+      "depends_on": [
+        "RESOURCE-RULES-DECISION-PACKET"
+      ],
+      "acceptance": "Record accountable clinic/product approval, exact configuration, authority, exceptions, patient wording and version for R1–R8 before using real resources or appointment confirmation.",
+      "blocker": "R1–R8 require accountable clinic/product choices and any applicable clinical or legal review.",
+      "unblocks_on": "The owner records R1–R8 decisions and the required sign-off in docs/RESOURCE_RULES_DECISION_PACKET.md."
+    },
+    {
       "id": "APPOINTMENT-CONFIRMATION-CONTRACT",
       "state": "blocked",
       "owner": null,
       "depends_on": [
         "PATIENT-SELECTION-POLICY",
+        "RESOURCE-RULES-POLICY",
         "SCHEDULING-HOLD-API"
       ],
       "acceptance": "Freeze atomic hold consumption, appointment confirmation, cancellation and rescheduling without conflating arrival, consultation or notification.",
       "blocker": "Patient-selection policy and operational resource rules are unresolved.",
-      "unblocks_on": "PATIENT-SELECTION-POLICY and SCHEDULING-HOLD-API pass their development gates; clinic rules are approved for activation."
+      "unblocks_on": "PATIENT-SELECTION-POLICY and RESOURCE-RULES-POLICY decisions are approved; the scheduling hold development gate has passed."
     },
     {
       "id": "HOSTED-FOUNDATION",

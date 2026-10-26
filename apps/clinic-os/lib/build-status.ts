@@ -36,6 +36,8 @@ const labels: Record<string, string> = {
   'SCHEDULING-HOLD-INTEGRATE': 'Intégration de la planification',
   'SCHEDULING-CONCURRENCY-EVIDENCE': 'Preuve de concurrence PostgreSQL',
   'PWA-LOCAL-RUNTIME': 'PWA locale et cache sécurisé',
+  'RESOURCE-RULES-DECISION-PACKET': 'Décisions sur les ressources du cabinet',
+  'RESOURCE-RULES-POLICY': 'Politique des ressources du cabinet',
   'APPOINTMENT-CONFIRMATION-CONTRACT': 'Confirmation, annulation et déplacement',
 };
 
@@ -54,7 +56,7 @@ function phase(id: string) {
   if (id.startsWith('INTAKE')) return 'M02 · Demandes';
   if (id.startsWith('PATIENT-LOOKUP')) return 'M02 · Recherche patient';
   if (id.startsWith('PATIENT-SELECTION')) return 'M02 · Sélection patient';
-  if (id.startsWith('SCHEDULING') || id.startsWith('APPOINTMENT')) return 'M02 · Planification';
+  if (id.startsWith('SCHEDULING') || id.startsWith('RESOURCE-RULES') || id.startsWith('APPOINTMENT')) return 'M02 · Planification';
   if (id.startsWith('PWA')) return 'Expérience installable';
   return 'À planifier';
 }
