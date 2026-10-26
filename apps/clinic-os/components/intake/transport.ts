@@ -1,3 +1,4 @@
+import { InquiryOwnerWorklistSchema, InquirySchema, type InquiryOwnerWorklist, type Inquiry } from '@dental/contracts';
 import { FollowUpListSchema, FollowUpRecordedSchema, RecordFollowUpSchema, type FollowUpList, type FollowUpRecorded, type RecordFollowUp } from '@dental/contracts';
 import { CreateInquirySchema, InquiryCreatedSchema, InquiryListSchema, type CreateInquiry, type InquiryCreated, type InquiryList } from '@dental/contracts';
 
@@ -11,6 +12,8 @@ export interface IntakeTransport {
   pendingFollowUp: { current: FollowUpAttempt | null };
   mode: 'demo' | 'connected';
   currentUserId: string;
+  ownerWorklist(signal?: AbortSignal): Promise<InquiryOwnerWorklist>;
+  inquiry(id: string, signal?: AbortSignal): Promise<Inquiry>;
   list(signal?: AbortSignal): Promise<InquiryList>;
   create(body: CreateInquiry, key: string, signal?: AbortSignal): Promise<InquiryCreated>;
   followUps(inquiryId: string, signal?: AbortSignal): Promise<FollowUpList>;
@@ -31,8 +34,8 @@ export function createDemoIntakeTransport(): IntakeTransport {
   const pendingFollowUp: { current: FollowUpAttempt | null } = { current: null };
   let items: InquiryList['items'] = [
     { id: '10000000-0000-4000-8000-000000000011', clinic_id: demoClinic, owner_user_id: demoOwner, display_name: 'Lina Exemple', contact_email: 'lina@example.invalid', contact_phone: null, source: 'phone', follow_up_at: null, status: 'new', created_at: '2026-10-26T09:30:00Z' },
-    { id: '10000000-0000-4000-8000-000000000012', clinic_id: demoClinic, owner_user_id: demoOwner, display_name: 'Adam Exemple', contact_email: null, contact_phone: null, source: 'website', follow_up_at: null, status: 'new', created_at: '2026-10-26T08:45:00Z' },
-    { id: '10000000-0000-4000-8000-000000000013', clinic_id: demoClinic, owner_user_id: demoOwner, display_name: 'Nora Exemple', contact_email: 'nora@example.invalid', contact_phone: null, source: 'walk_in', follow_up_at: null, status: 'new', created_at: '2026-10-25T15:00:00Z' },
+    { id: '10000000-0000-4000-8000-000000000012', clinic_id: demoClinic, owner_user_id: demoOwner, display_name: 'Adam Exemple', contact_email: null, contact_phone: null, source: 'website', follow_up_at: new Date(Date.now() + 86400000).toISOString(), status: 'new', created_at: '2026-10-26T08:45:00Z' },
+    { id: '10000000-0000-4000-8000-000000000013', clinic_id: demoClinic, owner_user_id: demoOwner, display_name: 'Nora Exemple', contact_email: 'nora@example.invalid', contact_phone: null, source: 'walk_in', follow_up_at: new Date(Date.now() - 86400000).toISOString(), status: 'new', created_at: '2026-10-25T15:00:00Z' },
   ];
   const followUps = new Map<string, FollowUpList['items']>();
   const followUpReceipts = new Map<string, { fingerprint: string; result: FollowUpRecorded }>();
@@ -47,6 +50,19 @@ export function createDemoIntakeTransport(): IntakeTransport {
   const saved = new Map<string, { fingerprint: string; result: InquiryCreated }>();
   return {
     mode: 'demo', currentUserId: demoOwner, pendingFollowUp,
+    async ownerWorklist(signal) {
+      signal?.throwIfAborted(); if (disposed) throw new IntakeError('expired');
+      const observed_at = new Date().toISOString(); const observed = Date.parse(observed_at);
+      const minimal = items.filter(item => item.owner_user_id === demoOwner).map(({ id, clinic_id, owner_user_id, display_name, source, status, follow_up_at, created_at }) => ({ id, clinic_id, owner_user_id, display_name, source, status, follow_up_at, created_at }));
+      const dated = (a: typeof minimal[number], b: typeof minimal[number]) => Date.parse(a.follow_up_at!) - Date.parse(b.follow_up_at!) || a.id.localeCompare(b.id);
+      const bucket = (rows: typeof minimal) => ({ items: rows.slice(0, 50), truncated: rows.length > 50 });
+      return InquiryOwnerWorklistSchema.parse({ observed_at,
+        overdue: bucket(minimal.filter(item => item.follow_up_at !== null && Date.parse(item.follow_up_at) <= observed).sort(dated)),
+        upcoming: bucket(minimal.filter(item => item.follow_up_at !== null && Date.parse(item.follow_up_at) > observed).sort(dated)),
+        undated: bucket(minimal.filter(item => item.follow_up_at === null).sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at) || b.id.localeCompare(a.id))),
+      });
+    },
+    async inquiry(id, signal) { authorize(id, signal); return InquirySchema.parse(items.find(item => item.id === id)); },
     async followUps(id, signal) {
       authorize(id, signal);
       const records = followUps.get(id) ?? [];
@@ -123,6 +139,18 @@ export function createHttpIntakeTransport(options: { api: string; token: string;
   }
   return {
     mode: 'connected', currentUserId: userId, pendingFollowUp,
+    async ownerWorklist(signal) {
+      const parsed = InquiryOwnerWorklistSchema.safeParse(await send('GET', undefined, undefined, signal, '/owner-worklist'));
+      if (!token) throw new IntakeError('expired');
+      if (!parsed.success || [parsed.data.overdue, parsed.data.upcoming, parsed.data.undated].some(bucket => bucket.items.some(item => item.clinic_id !== clinicId || item.owner_user_id !== userId))) throw new IntakeError('unavailable');
+      return parsed.data;
+    },
+    async inquiry(id, signal) {
+      const parsed = InquirySchema.safeParse(await send('GET', undefined, undefined, signal, '/' + encodeURIComponent(id)));
+      if (!token) throw new IntakeError('expired');
+      if (!parsed.success || parsed.data.id !== id || parsed.data.clinic_id !== clinicId || parsed.data.owner_user_id !== userId) throw new IntakeError('unavailable');
+      return parsed.data;
+    },
     async followUps(id, signal) {
       const parsed = FollowUpListSchema.safeParse(await send('GET', undefined, undefined, signal, '/' + encodeURIComponent(id) + '/follow-ups'));
       if (!token) throw new IntakeError('expired');
