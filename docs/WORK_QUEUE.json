@@ -130,7 +130,7 @@
         "INQUIRY-FOLLOW-UP-UI"
       ],
       "acceptance": "Integrate API/UI, regenerate OpenAPI, review independently, verify relevant local/CI database and browser checks, then merge a bounded synthetic development PR without activating real follow-up.",
-      "evidence": "PR #9 independently reviewed. Combined lint, all typechecks, 101 unit, 109 integration, production build and 13 focused browser tests passed locally; 3 configured-session browser tests passed in the isolated UI lane. Current-head CI40378250989 application/database passed; development merge pending."
+      "evidence": "PR #9 squash merged 4a7a941 after independent review and final-head CI40379397727 application/database success. Combined lint, all typechecks, 101 unit, 109 integration, production build and 13 focused browser tests passed locally; 3 configured-session browser tests passed in the isolated UI lane. Repository hooks/deployments both zero before merge."
     },
     {
       "id": "INQUIRY-OWNER-WORKLIST-CONTRACT",
