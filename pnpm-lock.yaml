@@ -111,6 +111,9 @@ importers:
 
   apps/dental-api:
     dependencies:
+      '@dental/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
       '@nestjs/common':
         specifier: 12.2.0
         version: 12.2.0(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@10.2.2)
