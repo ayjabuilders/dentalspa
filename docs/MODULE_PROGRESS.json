@@ -747,9 +747,10 @@
           "taskIds": [
           "FOUNDATION-REVIEW",
           "TEAM-ROSTER-API",
-          "TEAM-ROSTER-UI"
+          "TEAM-ROSTER-UI",
+          "TEAM-ROSTER-INTEGRATE"
           ],
-        "evidence": "PR #1 et travail Team roster vérifié localement : gardes cabinet/rôle, annuaire en lecture seule réservé aux Gestionnaires/Dentistes actifs; permissions fines pour tous les modules, rôles de qualification et validation hébergée restent à construire. PostgreSQL CI Team en attente."
+        "evidence": "PR #1 et #12 : gardes cabinet/rôle, annuaire en lecture seule réservé aux Gestionnaires/Dentistes actifs, 21 assertions PostgreSQL; permissions fines pour tous les modules, qualification et validation hébergée restent à construire."
         },
         {
           "id": "M16-2",

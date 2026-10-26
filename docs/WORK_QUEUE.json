@@ -59,12 +59,12 @@
     },
     {
       "id": "TEAM-ROSTER-INTEGRATE",
-      "state": "verification",
+      "state": "done",
       "owner": "coordinator",
       "depends_on": ["TEAM-ROSTER-API", "TEAM-ROSTER-UI"],
       "branch": "codex/m16-team-roster-contract",
       "acceptance": "Independent security/UI review, generated OpenAPI, combined checks, PostgreSQL pgTAP/current-head CI, no-deployment merge and Build Center evidence.",
-      "evidence": "Combined lint/typechecks, 20 focused unit/integration tests and full production build passed; four combined demo/transport browser cases passed and three configured-session cases passed in isolated UI lane. OpenAPI and schema hardening integrated. PostgreSQL CI and development merge pending."
+      "evidence": "PR #12 squash merged 423f512 after independent security/UI review and current-head CI40387947472 application/database success, including 21 Team pgTAP assertions. Combined lint/typechecks, 20 focused unit/integration tests, full build, four combined demo/transport browser cases and three Build Center tests passed; three configured-session cases passed in isolated UI lane. Zero hooks/deployments before merge."
     },
     {
       "id": "INTAKE-CONTRACT",
