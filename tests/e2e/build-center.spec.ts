@@ -12,6 +12,7 @@ test('full PRD scope is distinct from delivery counts and links open truthful de
   await expect(page.getByRole('progressbar')).toHaveCount(21);
   await expect(page.locator('[data-module-id="M01"]').getByRole('progressbar')).toHaveAttribute('aria-valuenow', String(m01!.progress.percent));
   await expect(page.locator('[data-module-id="M21"]')).toContainText('Academy & Network Enablement');
+  await expect(page.locator('[data-module-id="M16"]').getByRole('link', { name: 'Tester Équipe & activité' })).toBeVisible();
   await expect(page.locator('.build-hero')).not.toContainText('%');
   await expect(page.locator('[data-module-id="M18"] a')).toHaveCount(0);
   const popupPromise = context.waitForEvent('page');
@@ -31,6 +32,9 @@ test('full PRD scope is distinct from delivery counts and links open truthful de
   await page.getByRole('button', { name: /Journal des slices/ }).click();
   await expect(page.locator('.build-task')).toHaveCount(current.tasks.length);
   await expect(page.getByText('Décisions sur les ressources du cabinet', { exact: true })).toBeVisible();
+  const activityTask = page.locator('.build-task').filter({ hasText: 'Journal d’activité Équipe' });
+  await expect(activityTask).toBeVisible();
+  await expect(activityTask.getByRole('link', { name: 'Tester l’activité Équipe' })).toBeVisible();
   await page.getByRole('button', { name: /Bloqué/ }).click();
   await expect(page.locator('.build-task')).toHaveCount(current.tasks.filter(task => task.state === 'blocked').length);
   await expect(page.getByText('Fondation de la plateforme', { exact: true })).toHaveCount(0);

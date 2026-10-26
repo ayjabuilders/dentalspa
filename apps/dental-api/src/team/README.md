@@ -9,3 +9,11 @@ The STABLE function uses one statement snapshot for all-member profile completen
 HTTP responses and controller errors are no-store. Unknown provider details and malformed projections become generic unavailable responses, with no contact or provider error content exposed. Query parameters and request bodies are rejected.
 
 Focused verification: team-roster API and adapter tests, PGlite migration/isolation tests, and supabase/tests/team_roster.test.sql for PostgreSQL CI. PGlite is not a substitute for executing pgTAP against local PostgreSQL in CI. No hosted schema changes or real clinic data are involved.
+
+## Recent activity
+
+GET /api/v1/team/activity is manager-only and read-only. It returns the latest 50 of at least 51 supported audit actions when truncated, or a complete bounded result otherwise. This is not a complete security or employee-monitoring report. The allowlist is fixed to inquiry creation, manual follow-up recording and scheduling hold creation/release. Unknown actions and system hold expiry are excluded.
+
+The authenticated-user POST RPC repeats manager/clinic authorization, uses a fixed empty search path and one statement snapshot/time, and orders full PostgreSQL timestamp instants with a private UUID tie-breaker. The projection includes only normalized kind, nullable current actor display name, and timestamp. IDs, contact and action targets never leave SQL. Missing profiles use null; current names do not constitute immutable identity evidence. No direct audit grants, write flag, audit/outbox writes or mutations are added.
+
+Focused API/adapter and PGlite tests cover authority, privacy, ordering and response boundaries. supabase/tests/team_activity.test.sql remains a required real PostgreSQL CI gate. Hosted identity, retention and employee-monitoring/legal review remain separate activation gates.

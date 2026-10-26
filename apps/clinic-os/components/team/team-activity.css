@@ -1,0 +1,40 @@
+.team-activity.work-panel{position:relative;scroll-margin-top:84px;min-width:0;overflow:hidden;padding:24px;background:linear-gradient(155deg,var(--surface),var(--raised));border-top:3px solid var(--team-accent)}
+.team-activity-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:24px}
+.team-activity-emblem{width:48px;height:48px;flex-shrink:0;display:grid;place-items:center;border-radius:16px;color:var(--team-accent);background:var(--soft);border:1px solid var(--line)}
+.team-activity-access{display:flex;gap:6px;align-items:center;color:var(--muted);font-size:12px;line-height:1.5}
+.team-activity-access svg{flex-shrink:0}
+.team-activity-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.team-activity-heading h2{font-size:25px;line-height:1.3;letter-spacing:-.7px;margin:9px 0 0}
+.team-activity-heading .button{min-width:44px;min-height:44px;padding:10px;flex-shrink:0}
+.team-activity-intro{font-size:14px;line-height:1.75;color:var(--muted);margin:16px 0}
+.team-activity-mode{font-size:12px;line-height:1.7;color:var(--team-accent);border-bottom:1px solid var(--line);padding-bottom:18px;margin:0}
+.team-activity-state{display:flex;align-items:flex-start;flex-direction:column;gap:14px;padding:24px 0}
+.team-activity-state>svg{color:var(--team-accent)}
+.team-activity-state h3{font-size:17px;line-height:1.5;margin:0}
+.team-activity-state p{font-size:14px;line-height:1.75;color:var(--muted);margin:0}
+.team-activity-state .button{min-height:44px;white-space:normal}
+.team-activity-count{display:flex;align-items:baseline;gap:10px;margin:18px 0}
+.team-activity-count strong{font:800 26px var(--heading);letter-spacing:-.8px}
+.team-activity-count span{font-size:12px;color:var(--muted)}
+.team-activity-partial{font-size:14px;line-height:1.7;padding:14px;background:var(--soft);border-radius:10px}
+.team-activity-scroll{max-height:510px;overflow:auto;overscroll-behavior:contain;padding:2px 5px 2px 0;margin-right:-5px}
+.team-activity-timeline{list-style:none;margin:0;padding:0}
+.team-activity-timeline>li{display:grid;grid-template-columns:40px minmax(0,1fr);gap:13px;position:relative;padding:14px 0 20px;animation:team-activity-enter 420ms cubic-bezier(.16,1,.3,1) both;animation-delay:var(--activity-delay);transition:background 260ms,transform 260ms;border-radius:10px}
+.team-activity-timeline>li:hover{background:var(--soft);transform:translateX(2px)}
+.team-activity-timeline>li:not(:last-child):before{content:'';position:absolute;top:56px;bottom:0;left:19px;width:1px;background:var(--line)}
+.team-activity-action-icon{width:40px;height:40px;display:grid;place-items:center;border:1px solid var(--line);border-radius:13px;background:var(--soft);color:var(--team-accent)}
+.team-activity-slot_hold_created{color:var(--muted)}
+.team-activity-timeline h3{font-size:14px;line-height:1.6;margin:0 0 5px}
+.team-activity-actor{font-size:14px;line-height:1.65;margin:0;color:var(--ink);overflow-wrap:anywhere}
+.team-activity-timeline time{display:block;font-size:12px;color:var(--muted);line-height:1.7;margin-top:4px}
+.team-activity-action-note{font-size:12px;line-height:1.65;color:var(--muted);margin:7px 0 0}
+.team-activity-observed{font-size:12px;line-height:1.7;color:var(--muted);padding-top:18px;border-top:1px solid var(--line);margin:18px 0}
+.team-activity-observed span{display:block}
+.team-activity .team-activity-footnote{display:block;border-top:1px solid var(--line);padding-top:18px;margin-top:14px;font-size:12px;line-height:1.75;color:var(--muted)}
+.team-activity button:focus-visible,.team-activity-scroll:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+.team-activity-spin{animation:team-activity-spin 1s linear infinite}
+@keyframes team-activity-enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes team-activity-spin{to{transform:rotate(360deg)}}
+@media(max-width:1150px){.team-activity-scroll{max-height:540px}.team-activity-timeline>li{grid-template-columns:40px minmax(0,1fr)}}
+@media(max-width:639px){.team-activity.work-panel{padding:20px 16px}.team-activity-top{gap:10px}.team-activity-access{max-width:180px}.team-activity-scroll{max-height:560px}.team-activity-heading h2{font-size:25px}}
+@media(prefers-reduced-motion:reduce){.team-activity *{animation:none!important;transition:none!important}.team-activity-timeline>li:hover{transform:none}}

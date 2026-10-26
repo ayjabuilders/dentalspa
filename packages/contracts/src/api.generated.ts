@@ -300,6 +300,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/team/activity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Recent supported operational actions; first 50; not exhaustive */
+        get: operations["TeamActivityController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1716,6 +1733,66 @@ export interface operations {
                 content?: never;
             };
             /** @description Unavailable, incomplete profiles or malformed trusted response */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TeamActivityController_list: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: date-time */
+                        observed_at: string;
+                        items: {
+                            /** @enum {string} */
+                            kind: "inquiry_created" | "inquiry_follow_up_recorded" | "slot_hold_created" | "slot_hold_released";
+                            actor_display_name: string | null;
+                            /** Format: date-time */
+                            occurred_at: string;
+                        }[];
+                        truncated: boolean;
+                    };
+                };
+            };
+            /** @description No query or request body accepted */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Absent or expired identity */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Current active manager membership required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unavailable or malformed trusted response */
             503: {
                 headers: {
                     [name: string]: unknown;
