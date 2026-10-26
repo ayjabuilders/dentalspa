@@ -3,7 +3,7 @@
 You are implementing a healthcare-adjacent operations system for a Moroccan dental cabinet. Optimize for **clinical safety, patient privacy, correct state transitions, excellent UX and maintainability**; not maximum feature count.
 
 ## Scope discipline
-- Follow `codex/00_START_HERE.md` and the **current milestone only**. Make small reviewable PRs. Never claim unimplemented functionality is production-ready.
+- Follow `codex/00_START_HERE.md`, ADR-003 and the coordinator's current slice queue. Development dependencies gate implementation; operational/clinical gates still block activation and release. Make small reviewable PRs. Never claim unimplemented functionality is production-ready.
 - Do not change locked stack (Next.js, NestJS, Supabase, Vercel) without documenting an ADR and approval.
 - Source-derived process steps in specs are *organizational reference*, not automatically approved clinical protocols. Flag unknowns in `docs/02_CLINIC_DISCOVERY.md`.
 - Never create diagnoses, prescriptions, drug advice or mandatory clinical steps by inference.

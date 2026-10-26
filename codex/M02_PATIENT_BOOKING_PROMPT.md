@@ -1,2 +1,2 @@
-# Codex Prompt — Milestone 02 (run only after M01 acceptance)
+# Codex Prompt — Milestone 02 (development gate per ADR-003; release gates remain open)
 Read `AGENTS.md`, docs 03–05, 07–11, `contracts/OPENAPI_DRAFT.yaml` and M01 implementation. Build GJ-01 inquiry -> booking with transactional calendar, source attribution, manual lead intake and patient dedup review. Include staff reception view, clinic calendar and read-only patient appointment card (verified account only). Add no-double-booking concurrency tests, idempotent POST, cancellation/reschedule audit, clinic isolation and public privacy/abuse tests. Never claim unverified vendor integrations.
