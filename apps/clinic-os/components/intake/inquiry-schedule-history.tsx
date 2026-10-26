@@ -28,10 +28,10 @@ export function InquiryScheduleHistory({ inquiry, transport, revision }: { inqui
     const off = transport.onPrivateClear(kind => { invalidated.current = true; request.current?.abort(); setData(null); setLoading(false); setError(kind); setOpen(true); });
     const network = () => { setOnline(navigator.onLine); if (!navigator.onLine) transport.clearPrivate('offline'); };
     network(); window.addEventListener('online',network); window.addEventListener('offline',network);
-    return () => { active.current = false; request.current?.abort(); transport.scheduleHistoryActive.current = false; off(); window.removeEventListener('online',network); window.removeEventListener('offline',network); };
+    return () => { active.current = false; request.current?.abort(); off(); window.removeEventListener('online',network); window.removeEventListener('offline',network); };
   }, [transport]);
   useEffect(() => {
-    request.current?.abort(); transport.scheduleHistoryActive.current = false; setData(null); setLoading(false);
+    request.current?.abort(); setData(null); setLoading(false);
     if (invalidated.current && !inquiry) return;
     invalidated.current = false; setError(null); setOpen(false);
   }, [inquiry?.id, inquiry?.owner_user_id, transport, revision]);
@@ -40,7 +40,7 @@ export function InquiryScheduleHistory({ inquiry, transport, revision }: { inqui
     const target = selected.current;
     if (!target || target.owner_user_id !== transport.currentUserId) return;
     if (!navigator.onLine) { transport.clearPrivate('offline'); return; }
-    transport.scheduleHistoryActive.current = true; const controller = new AbortController(); request.current = controller; setLoading(true);
+    const controller = new AbortController(); request.current = controller; setLoading(true);
     try {
       const result = await transport.scheduleHistory(target.id,controller.signal);
       if (active.current && !controller.signal.aborted && selected.current?.id === target.id) setData(result);
@@ -50,7 +50,7 @@ export function InquiryScheduleHistory({ inquiry, transport, revision }: { inqui
       if (kind === 'expired' || kind === 'denied' || kind === 'missing') transport.clearPrivate(kind);
     } finally { if (active.current && !controller.signal.aborted) setLoading(false); }
   }
-  function toggle() { if (open) { request.current?.abort(); transport.scheduleHistoryActive.current = false; setData(null); setLoading(false); setOpen(false); } else void load(); }
+  function toggle() { if (open) { request.current?.abort(); setData(null); setLoading(false); setOpen(false); } else void load(); }
   const visible = data?.inquiry_id === inquiry?.id && owned ? data : null;
   if (!owned && !error) return null;
   return <section className="schedule-history" aria-label="Historique des échéances de la demande">

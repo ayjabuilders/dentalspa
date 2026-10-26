@@ -1,6 +1,6 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
 import { createDemoIntakeTransport, createHttpIntakeTransport } from '../../apps/clinic-os/components/intake/transport';
-const base = process.env.HISTORY_UI_URL ?? 'http://localhost:4300';
+const base = process.env.HISTORY_UI_URL ?? 'http://localhost:4200';
 const clinic = '10000000-0000-4000-8000-000000000001', user = '10000000-0000-4000-8000-000000000002', id = '10000000-0000-4000-8000-000000000011', other = '10000000-0000-4000-8000-000000000012';
 const inquiry = { id, clinic_id: clinic, owner_user_id: user, display_name: 'Lina Synthétique', contact_phone: null, contact_email: null, source: 'phone', status: 'new', created_at: '2026-10-26T09:30:00Z', follow_up_at: null };
 const item = { previous_follow_up_at: null, follow_up_at: '2030-11-12T10:30:00Z', changed: true, recorded_at: '2026-10-27T10:00:00.123456Z', event_version: 1 };
@@ -15,7 +15,7 @@ async function connected(page: Page, handler: (route: Route) => Promise<void>) {
     if (url.endsWith('/history')) { reads++; return handler(route); }
     if (url.endsWith('/follow-up-schedule')) return route.abort('failed');
     if (url.endsWith('/owner-worklist')) return route.fulfill({ status: 200, headers, json: { observed_at: '2026-10-27T09:00:00Z', overdue: { items: [], truncated: false }, upcoming: { items: [], truncated: false }, undated: { items: [], truncated: false } } });
-    if (url.endsWith('/follow-ups')) return route.fulfill({ status: 200, headers, json: { items: [], truncated: false } });
+    if (url.endsWith('/follow-ups')) return route.fulfill({ status: 503, headers, json: {} });
     if (url.endsWith('/'+id)) return route.fulfill({ status: 200, headers, json: inquiry });
     return route.fulfill({ status: 200, headers, json: { items: [inquiry,{ ...inquiry,id:other,display_name:'Adam Synthétique' }], truncated: false } });
   });
@@ -63,6 +63,16 @@ test('selection change aborts late history; retry distinguishes unavailable and 
   await page.locator('.schedule-history-disclosure').click(); await expect(page.locator('.schedule-history-state')).toContainText('indisponible'); await page.getByRole('button',{name:'Réessayer l’historique des échéances'}).click(); await expect(page.locator('.schedule-history-state')).toContainText('Aucun résultat');
 });
 
+test('unrelated denied follow-up retry preserves an open authorized schedule history', async ({ page }) => {
+  await connected(page, route => route.fulfill({ status: 200, headers, json: history }));
+  await page.locator('.schedule-history-disclosure').click(); await expect(page.locator('.schedule-history-scroll li')).toHaveCount(2);
+  await page.route('**/api/v1/inquiries/*/follow-ups', route => route.fulfill({ status: 403, headers, json: {} }));
+  await page.getByRole('button', { name: 'Réessayer l’historique', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Réessayer l’historique', exact: true })).toBeVisible();
+  await expect(page.locator('.schedule-history-scroll li')).toHaveCount(2);
+  await expect(page.getByText('Lina Synthétique', { exact: true }).first()).toBeVisible();
+});
+
 test('offline clears loaded history and logout disposes it', async ({ page,context }) => {
   await connected(page, route=>route.fulfill({status:200,headers,json:history})); await page.locator('.schedule-history-disclosure').click(); await expect(page.locator('.schedule-history-scroll li')).toHaveCount(2); await context.setOffline(true); await expect(page.locator('.schedule-history-scroll li')).toHaveCount(0); await expect(page.getByText('Lina Synthétique',{exact:true})).toHaveCount(0); await context.setOffline(false); await expect(page.locator('.schedule-history-scroll li')).toHaveCount(0); await page.getByRole('button',{name:'Se déconnecter',exact:true}).first().click(); await expect(page.locator('.schedule-history')).toHaveCount(0);
 });
@@ -79,4 +89,18 @@ test('strict history transport rejects foreign identity/private fields and prese
 
 test('demo history projects one minimal outcome per accepted command including no-ops and replay does not duplicate',async()=>{
   const demo=createDemoIntakeTransport();const body={expected_follow_up_at:null,follow_up_at:null};const key=crypto.randomUUID();await demo.setSchedule(id,body,key);await demo.setSchedule(id,body,key);const result=await demo.scheduleHistory(id);expect(result.items).toHaveLength(1);expect(result.items[0]?.changed).toBe(false);expect(Object.keys(result.items[0]!)).toEqual(['previous_follow_up_at','follow_up_at','changed','recorded_at','event_version']);
+});
+
+
+test('loaded schedule history preserves unrelated denial retry boundaries while its own denial clears private state', async () => {
+  let status = 200; let cleared = 0;
+  const transport = createHttpIntakeTransport({ api: 'https://api.example.invalid', token: 'synthetic', clinicId: clinic, userId: user, fetcher: async () => Response.json(status === 200 ? history : {}, { status }) });
+  transport.onPrivateClear(() => { cleared++; });
+  await expect(transport.scheduleHistory(id)).resolves.toEqual(history);
+  status = 403;
+  await expect(transport.followUps(id)).rejects.toMatchObject({ kind: 'denied' }); expect(cleared).toBe(0);
+  status = 404;
+  await expect(transport.followUps(id)).rejects.toMatchObject({ kind: 'missing' }); expect(cleared).toBe(0);
+  await expect(transport.scheduleHistory(id)).rejects.toMatchObject({ kind: 'missing' }); expect(cleared).toBe(1);
+  transport.dispose!();
 });

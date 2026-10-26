@@ -13,10 +13,9 @@ export type ScheduleAttempt = { id: string; displayName?: string; body: SetInqui
 function privacyState() {
   const pendingSchedule: { current: ScheduleAttempt | null } = { current: null };
   const scheduleActive = { current: false };
-  const scheduleHistoryActive = { current: false };
   let clearing = false;
   const listeners = new Set<(kind: IntakeFailure) => void>();
-  return { pendingSchedule, scheduleActive, scheduleHistoryActive, onPrivateClear(listener: (kind: IntakeFailure) => void) { listeners.add(listener); return () => { listeners.delete(listener); }; }, clearPrivate(kind: IntakeFailure) { pendingSchedule.current = null; scheduleActive.current = false; scheduleHistoryActive.current = false; if (clearing) return; clearing = true; try { listeners.forEach(listener => listener(kind)); } finally { clearing = false; } } };
+  return { pendingSchedule, scheduleActive, onPrivateClear(listener: (kind: IntakeFailure) => void) { listeners.add(listener); return () => { listeners.delete(listener); }; }, clearPrivate(kind: IntakeFailure) { pendingSchedule.current = null; scheduleActive.current = false; if (clearing) return; clearing = true; try { listeners.forEach(listener => listener(kind)); } finally { clearing = false; } } };
 }
 function instant(value: string | null): string | null {
   if (value === null) return null;
@@ -25,7 +24,6 @@ function instant(value: string | null): string | null {
 }
 export interface IntakeTransport {
   scheduleActive: { current: boolean };
-  scheduleHistoryActive: { current: boolean };
   scheduleHistory(id: string, signal?: AbortSignal): Promise<InquiryScheduleHistory>;
   pendingSchedule: { current: ScheduleAttempt | null };
   onPrivateClear(listener: (kind: IntakeFailure) => void): () => void;
@@ -173,7 +171,7 @@ export function createHttpIntakeTransport(options: { api: string; token: string;
           disabled = typeof problem === 'object' && problem !== null && 'code' in problem && problem.code === 'intake_disabled';
         }
         const kind: IntakeFailure = response.status === 401 ? 'expired' : response.status === 403 ? 'denied' : response.status === 404 ? 'missing' : disabled ? 'disabled' : response.status === 409 ? 'conflict' : response.status === 400 ? 'invalid' : 'unavailable';
-        if ((privacy.scheduleActive.current || privacy.scheduleHistoryActive.current || suffix.endsWith('/follow-up-schedule') || suffix.endsWith('/follow-up-schedule/history')) && (kind === 'expired' || kind === 'denied' || kind === 'missing')) clearPrivate(kind);
+        if ((privacy.scheduleActive.current || suffix.endsWith('/follow-up-schedule') || suffix.endsWith('/follow-up-schedule/history')) && (kind === 'expired' || kind === 'denied' || kind === 'missing')) clearPrivate(kind);
         throw new IntakeError(kind);
       }
       if (!token || revision !== privacyRevision) throw new IntakeError('expired');
