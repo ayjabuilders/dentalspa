@@ -1,23 +1,21 @@
 # Dental Spa orchestration
 
-This chat is the sole integration coordinator. The owner approved ADR-003 and autonomous bounded development merges on 26 October 2026. Working directory: `C:/Users/platf/Documents/Dental Spa`. Durable assignments and dependencies: `WORK_QUEUE.json`.
+This chat coordinates integration in `C:/Users/platf/Documents/Dental Spa`. ADR-003 authorizes bounded autonomous development merges after independent review and current-head CI. Queue: `WORK_QUEUE.json`. Maximum three agents, isolated worktrees and disjoint ownership.
 
-## Current work
+## Current evidence — 26 October 2026
 
-- Foundation PR #1: https://github.com/ayjabuilders/dentalspa/pull/1. Code revision 3cb16d0 passed application and full Supabase CI (40338957635). Independent review found no blocking issue for a development merge; coordinator separately reviewed reviewer-authored identity/guard changes. Current head bc11ae6 adds approved gate policy and queue; await its CI and verify no auto-deployment before squash merge.
-- Integration branch: `codex/m02-intake`, based explicitly on foundation head bc11ae6 pending its merge. Frozen intake contract commit dd53154. Rebase integration onto merged main before PR; preserve worktree commits and cherry-pick only reviewed changes.
-- Backend lane: `codex/intake-api`, worktree `C:/Users/platf/Documents/DentalSpa-worktrees/intake-api`; user-scoped RPC, RLS, atomic create/idempotency/audit/outbox and tests.
-- UI lane: `codex/intake-ui`, worktree `C:/Users/platf/Documents/DentalSpa-worktrees/intake-ui`; standalone synthetic intake and connected memory-only transport, filters/detail/create dialog and browser tests.
-- Reviewer lane: contract/adversarial review; no implementation-file ownership.
+- Foundation PR #1 merged as 88c9af5 after independent review and CI40342606919: application and full Supabase database both passed. No active repository hooks or deployments found.
+- `codex/m02-intake` rebased onto merged main. Backend1291ce6 and UI25bbf53 integrated. Shared schemas and generated OpenAPI included.
+- Integrated lint, typecheck, 55 unit tests, 52 integration tests and all application builds passed. All20 browser regressions passed before the CSS-only source-filter correction; focused layout verification follows. Added23pgTAP assertions await full Supabase CI; local Docker absent.
+- Independent final review found no blocker, including UTC replay, Unicode validation, activation switches, tenant scope, atomic audit/outbox and memory-only UI. Development approval only.
+- Parent inspected1280px light list/detail and dark creation dialog. Source-select clipping corrected in0024789; final visual check pending. Full responsive visual approval remains pending.
 
-## Development versus release
+## Next action
 
-M02 synthetic development is now authorized under ADR-003. Technical dependencies gate each slice; missing hosted access does not block unrelated implementation. Hosted Supabase identity/Storage/revocation, staging restore, installed-device PWA and later clinical/privacy approvals remain activation/release gates. No hosted migration, real patient data, real AI/capture or production deployment.
+Integrate CSS correction, finish browser regression, publish bounded intake PR and verify current-head CI before merge. Backend lane is preparing read-only patient-matching requirements for the next contract; do not implement automatic merge or booking before contract freeze.
 
-Local Docker/Podman is absent; full Supabase migrations/pgTAP run successfully in GitHub CI. Supabase MCP authentication is saved but actions are unavailable in this session. Do not repeatedly retry this unchanged blocker. Worker foundation remains disabled/unwired.
+## Activation gates
 
-## Loop
+Both API intake commands and private database switch default off. Synthetic data only. No hosted migrations, real patient data, AI/capture or production deployment. Hosted identity/Storage/revocation, staging restore, installed-device PWA and real multi-connection contention remain unverified. Supabase MCP tools unavailable; do not retry unchanged blocker. Development may proceed independently under ADR-003.
 
-Reconcile queue, agents and CI; dispatch ready independent tasks; independently review, test and integrate; unlock the next slice immediately. Max three agents with disjoint ownership. Prefer Git/CLI/API. Never expose credentials. Do not duplicate assignments or rerun unchanged passing checks. The heartbeat is configured for ten-minute recovery during active work; when only external blockers remain, back off hourly. Respect Plan mode and user pause/cancel. This requires the app/computer to be available.
-
-Next after intake integration: explicit patient matching/duplicate review, then transactional booking/calendar and verified patient appointment projection. No automatic patient merge or inferred clinical rules.
+Heartbeat recovery configured every ten minutes; back off when only external blockers remain. Never claim execution while the app/computer is unavailable. Prefer Git/CLI/API, keep credentials out of files/logs, respect pause/cancel.

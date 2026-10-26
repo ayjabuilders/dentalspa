@@ -4,12 +4,12 @@
   "tasks": [
     {
       "id": "FOUNDATION-REVIEW",
-      "state": "verification",
+      "state": "done",
       "owner": "auth_verification + coordinator",
       "depends_on": [],
       "branch": "codex/m01-foundation",
       "acceptance": "Independent review, current CI and no automatic deployment; merge PR #1 only if no blocking findings.",
-      "evidence": "Independent reviewer found no development-merge blocker; coordinator reviewed identity/guard changes. Await current-head CI and deployment-hook check."
+      "evidence": "PR #1 squash merged 88c9af5 after independent review and current-head CI40342606919 application/database success; no active hooks or deployments."
     },
     {
       "id": "INTAKE-CONTRACT",
@@ -24,7 +24,7 @@
     },
     {
       "id": "INTAKE-API",
-      "state": "running",
+      "state": "verification",
       "owner": "pwa_verification",
       "depends_on": [
         "INTAKE-CONTRACT"
@@ -45,7 +45,7 @@
     },
     {
       "id": "INTAKE-UI",
-      "state": "running",
+      "state": "verification",
       "owner": "connection_ui",
       "depends_on": [
         "INTAKE-CONTRACT"
@@ -64,7 +64,7 @@
     },
     {
       "id": "INTAKE-INTEGRATE",
-      "state": "backlog",
+      "state": "running",
       "owner": "coordinator",
       "depends_on": [
         "INTAKE-API",
