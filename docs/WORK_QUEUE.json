@@ -157,21 +157,41 @@
     },
     {
       "id": "SCHEDULING-HOLD-API",
-      "state": "ready",
+      "state": "running",
       "owner": "pwa_verification",
       "depends_on": [
         "SCHEDULING-HOLD-CONTRACT"
       ],
-      "acceptance": "Tenant-safe informational availability and atomic provider/chair holds with real PostgreSQL exclusion constraints, clinic transaction locking, durable idempotency, audit/outbox and adversarial concurrency evidence."
+      "branch": "codex/scheduling-hold-api",
+      "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/scheduling-hold-api",
+      "base": "6c92b5a",
+      "acceptance": "Tenant-safe informational availability and atomic provider/chair holds with real PostgreSQL exclusion constraints, clinic transaction locking, durable idempotency, audit/outbox and adversarial concurrency evidence.",
+      "allowed_files": [
+        "apps/dental-api/src/scheduling/**",
+        "apps/dental-api/src/app.module.ts",
+        "supabase/migrations/*scheduling_hold*",
+        "supabase/tests/scheduling_hold*",
+        "tests/unit/scheduling-hold-*",
+        "tests/integration/scheduling-hold-*"
+      ]
     },
     {
       "id": "SCHEDULING-HOLD-UI",
-      "state": "ready",
+      "state": "running",
       "owner": "connection_ui",
       "depends_on": [
         "SCHEDULING-HOLD-CONTRACT"
       ],
-      "acceptance": "Dental Spa agenda and hold-review UI with synthetic fixtures, truthful proposed/observed/held/expired/conflict/unknown states, timezone clarity and no implied booking or patient selection."
+      "branch": "codex/scheduling-hold-ui",
+      "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/scheduling-hold-ui",
+      "base": "6c92b5a",
+      "acceptance": "Dental Spa agenda and hold-review UI with synthetic fixtures, truthful proposed/observed/held/expired/conflict/unknown states, timezone clarity and no implied booking or patient selection.",
+      "allowed_files": [
+        "apps/clinic-os/components/scheduling/**",
+        "apps/clinic-os/components/workspace.tsx",
+        "apps/clinic-os/app/connection/page.tsx",
+        "tests/e2e/scheduling-hold.spec.ts"
+      ]
     },
     {
       "id": "APPOINTMENT-CONFIRMATION-CONTRACT",
