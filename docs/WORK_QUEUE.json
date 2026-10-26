@@ -319,6 +319,44 @@
       "evidence": "PR #19 squash merged de2b489 after exact-head CI40419416695 application/database success. The database job passed 324 total pgTAP assertions, including all 47 language assertions, and both independent-session CAS/replay scenarios; hooks and deployments were zero."
     },
     {
+      "id": "INQUIRY-COMMUNICATION-TIME-ZONE-CONTRACT",
+      "state": "done",
+      "owner": "coordinator",
+      "depends_on": ["INQUIRY-COMMUNICATION-LANGUAGE-INTEGRATE"],
+      "branch": "codex/m01-inquiry-time-zone-contract",
+      "acceptance": "Freeze a separate current-owner projection and compare-and-set command for an explicitly stated administrative communication time zone, without location, availability, deadline conversion, consent or messaging claims.",
+      "evidence": "Independent security/domain, UX and API/database reviews cleared the exact 12-value versioned catalogue, separate CAS/idempotency resource, minimized event and compact third-row UI. Three focused contract tests and contracts typecheck passed.",
+      "development_gate": "passed"
+    },
+    {
+      "id": "INQUIRY-COMMUNICATION-TIME-ZONE-API",
+      "state": "ready",
+      "owner": "pwa_verification",
+      "depends_on": ["INQUIRY-COMMUNICATION-TIME-ZONE-CONTRACT"],
+      "branch": "codex/m01-inquiry-time-zone-api",
+      "allowed_files": ["apps/dental-api/src/intake/**", "supabase/migrations/*communication_time_zone*.sql", "supabase/tests/*communication_time_zone*.sql", "scripts/inquiry-communication-time-zone-concurrency.mjs", "tests/unit/inquiry-communication-time-zone-*", "tests/integration/inquiry-communication-time-zone-*"],
+      "acceptance": "Private current-owner state, revisioned idempotent command, versioned exact catalogue, minimal audit/outbox and adversarial SQL/API evidence."
+    },
+    {
+      "id": "INQUIRY-COMMUNICATION-TIME-ZONE-UI",
+      "state": "ready",
+      "owner": "connection_ui",
+      "depends_on": ["INQUIRY-COMMUNICATION-TIME-ZONE-CONTRACT"],
+      "branch": "codex/m01-inquiry-time-zone-ui",
+      "allowed_files": ["apps/clinic-os/components/intake/**", "tests/e2e/inquiry-communication-time-zone.spec.ts", "tests/e2e/inquiry-communication-language.spec.ts", "tests/e2e/inquiry-contact-preference.spec.ts"],
+      "acceptance": "Polished compact qualification row with exact selection, truthful limitations and isolated connected recovery states."
+    },
+    {
+      "id": "INQUIRY-COMMUNICATION-TIME-ZONE-INTEGRATE",
+      "state": "blocked",
+      "owner": "coordinator",
+      "depends_on": ["INQUIRY-COMMUNICATION-TIME-ZONE-API", "INQUIRY-COMMUNICATION-TIME-ZONE-UI"],
+      "branch": "codex/m01-inquiry-time-zone-contract",
+      "acceptance": "Independent security/UI review, generated OpenAPI, focused local/PostgreSQL/browser checks, no-deployment merge and owner-visible evidence.",
+      "blocker": "The contract and implementation lanes are incomplete.",
+      "unblocks_on": "Both implementation lanes are reviewed and integrated."
+    },
+    {
       "id": "INTAKE-CONTRACT",
       "state": "done",
       "owner": "coordinator",
