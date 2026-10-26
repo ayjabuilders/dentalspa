@@ -35,6 +35,7 @@ describe('scheduling hold v1 contract', () => {
     expect(CreateSchedulingHoldSchema.safeParse({ ...validHold, ends_at: validHold.starts_at }).success).toBe(false);
     expect(CreateSchedulingHoldSchema.safeParse({ ...validHold, display_timezone: 'UTC+1' }).success).toBe(false);
     expect(CreateSchedulingHoldSchema.safeParse({ ...validHold, display_timezone: 'Mars/Olympus' }).success).toBe(false);
+    expect(CreateSchedulingHoldSchema.safeParse({ ...validHold, display_timezone: '+01:00' }).success).toBe(false);
     expect(CreateSchedulingHoldSchema.safeParse({ ...validHold, display_timezone: 'UTC' }).success).toBe(true);
     expect(CreateSchedulingHoldSchema.safeParse({ ...validHold, starts_at: '2026-10-27T09:00:00.1234Z' }).success).toBe(false);
   });

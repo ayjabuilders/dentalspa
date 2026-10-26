@@ -5,6 +5,7 @@ const OffsetDateTimeSchema = z.iso.datetime({ offset: true }).refine((value) => 
   return fractionalSeconds === undefined || fractionalSeconds.length <= 3;
 }, 'timestamps support at most millisecond precision');
 const IanaTimezoneSchema = z.string().trim().min(1).max(64).refine((value) => {
+  if (/^[+-]/.test(value)) return false;
   try {
     new Intl.DateTimeFormat('en', { timeZone: value }).format();
     return true;
