@@ -1,5 +1,6 @@
 import { z } from 'zod';
 export * from './intake';
+export * from './intake-follow-up';
 export * from './patient-lookup';
 export * from './scheduling-hold';
 export const RoleSchema = z.enum(['dentist', 'reception', 'assistant', 'manager']);
