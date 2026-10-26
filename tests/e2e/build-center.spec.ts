@@ -23,10 +23,14 @@ test('full PRD scope is distinct from delivery counts and links open truthful de
   await page.getByRole('button', { name: /Gates & validations/ }).click();
   await expect(page.locator('.scope-card')).toHaveCount(7);
   await expect(page.getByRole('link', { name: 'Lire les décisions' })).toBeVisible();
+  const statusResponse = await page.request.get(`${base}/api/build-status`);
+  expect(statusResponse.ok()).toBe(true);
+  const status = await statusResponse.json() as { tasks: Array<{ state: string }> };
   await page.getByRole('button', { name: /Journal des slices/ }).click();
-  await expect(page.locator('.build-task')).toHaveCount(19);
+  await expect(page.locator('.build-task')).toHaveCount(status.tasks.length);
+  await expect(page.getByText('Décisions sur les ressources du cabinet', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: /Bloqué/ }).click();
-  await expect(page.locator('.build-task')).toHaveCount(3);
+  await expect(page.locator('.build-task')).toHaveCount(status.tasks.filter(task => task.state === 'blocked').length);
   await expect(page.getByText('Fondation de la plateforme', { exact: true })).toHaveCount(0);
   await expect(page.locator('body')).not.toContainText('DentalSpa-worktrees');
 });
