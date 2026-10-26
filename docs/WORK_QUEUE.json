@@ -250,14 +250,14 @@
     },
     {
       "id": "RESOURCE-RULES-DECISION-PACKET",
-      "state": "active",
+      "state": "done",
       "owner": "coordinator",
       "depends_on": [
         "SCHEDULING-HOLD-INTEGRATE"
       ],
       "branch": "codex/resource-rules-packet",
       "acceptance": "Present source-backed, bounded clinic decisions for schedulable offerings, resource eligibility, hours, buffers, authority, hold lifetime, cancellation and patient communication without treating examples as approved operating policy.",
-      "evidence": "Draft docs/RESOURCE_RULES_DECISION_PACKET.md records R1–R8 and preserves the synthetic-only hold boundary; review and clinic/product approval remain outstanding."
+      "evidence": "PR #8 carries the independently reviewed R1–R8 decision packet; it preserves the synthetic-only hold boundary. Clinic/product policy approval remains outstanding."
     },
     {
       "id": "RESOURCE-RULES-POLICY",
