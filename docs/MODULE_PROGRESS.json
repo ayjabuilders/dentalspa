@@ -42,9 +42,11 @@
         {
           "id": "M01-5",
           "label": "Gérer responsable, échéance, relances et résultat",
-          "state": "planned",
-          "taskIds": [],
-          "evidence": ""
+          "state": "partial",
+          "taskIds": [
+            "INQUIRY-FOLLOW-UP-INTEGRATE"
+          ],
+          "evidence": "PR #9 : propriétaire initial, échéance saisie et historique append-only des tentatives/échanges manuels; réattribution, prochaine échéance et cycle complet des résultats restent à construire."
         },
         {
           "id": "M01-6",

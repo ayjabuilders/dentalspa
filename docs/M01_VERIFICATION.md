@@ -1,6 +1,8 @@
 # M01 verification — 26 October 2026
 
-Local foundation implemented; milestone acceptance remains pending the integration and release gates below. No hosted migration, deployment, GitHub push or PR has been performed.
+Historical verification log. Earlier no-push, unmerged-PR and unexecuted-CI statements below describe the state when they were written; they are superseded by the merged PR and CI evidence in [ORCHESTRATION_STATUS.md](ORCHESTRATION_STATUS.md). Hosted identity/Storage, staging restore and physical installed-device checks remain open release gates, not a blanket block on reviewed synthetic development under ADR-003.
+
+At this log's initial checkpoint, the local foundation was implemented and no hosted migration, deployment, GitHub push or PR had been performed. Milestone operational acceptance remains pending the integration and release gates below.
 
 ## CI and worker follow-up — 26 October 2026
 

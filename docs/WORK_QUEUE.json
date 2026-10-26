@@ -86,7 +86,7 @@
     },
     {
       "id": "INQUIRY-FOLLOW-UP-API",
-      "state": "verification",
+      "state": "done",
       "owner": "pwa_verification",
       "depends_on": [
         "INQUIRY-FOLLOW-UP-CONTRACT"
@@ -102,11 +102,11 @@
         "tests/integration/intake-follow-up*"
       ],
       "acceptance": "Owner/role/tenant-safe bounded history and idempotent append-only follow-up RPC with atomic audit/outbox and negative PostgreSQL/API evidence.",
-      "evidence": "API lane c828085 integrated; 68 relevant tests passed, including 26 new; independent security/domain review clear. Full PostgreSQL pgTAP CI remains pending."
+      "evidence": "PR #9 API lane c828085 integrated. Independent security/domain review clear; 68 relevant tests passed, including 26 new. Current-head CI40378250989 applied the additive migration and passed inquiry_follow_up pgTAP plus the full database job."
     },
     {
       "id": "INQUIRY-FOLLOW-UP-UI",
-      "state": "verification",
+      "state": "done",
       "owner": "connection_ui",
       "depends_on": [
         "INQUIRY-FOLLOW-UP-CONTRACT"
@@ -119,18 +119,18 @@
         "tests/e2e/intake-follow-up.spec.ts"
       ],
       "acceptance": "Truthful synthetic and connected follow-up dialog/history with exact-key unknown-result recovery, session cleanup and focused browser coverage.",
-      "evidence": "UI lane 13d1ff6 integrated; 13 focused browser tests passed in isolated preview, including synthetic configured-session cases; independent UI review clear. Final integrated CI remains pending."
+      "evidence": "PR #9 UI lane 13d1ff6 integrated. Independent UI review clear; 13 focused browser tests passed in isolated preview, including synthetic configured-session cases, and final pearl/navy screenshots were inspected. Current-head CI40378250989 application passed."
     },
     {
       "id": "INQUIRY-FOLLOW-UP-INTEGRATE",
-      "state": "running",
+      "state": "done",
       "owner": "coordinator",
       "depends_on": [
         "INQUIRY-FOLLOW-UP-API",
         "INQUIRY-FOLLOW-UP-UI"
       ],
       "acceptance": "Integrate API/UI, regenerate OpenAPI, review independently, verify relevant local/CI database and browser checks, then merge a bounded synthetic development PR without activating real follow-up.",
-      "evidence": "Combined lint, all typechecks, 101 unit, 109 integration, production build and 13 focused browser tests passed locally; 3 configured-session browser tests were separately verified in the UI lane. CI and merge pending."
+      "evidence": "PR #9 independently reviewed. Combined lint, all typechecks, 101 unit, 109 integration, production build and 13 focused browser tests passed locally; 3 configured-session browser tests passed in the isolated UI lane. Current-head CI40378250989 application/database passed; development merge pending."
     },
     {
       "id": "PATIENT-LOOKUP-CONTRACT",

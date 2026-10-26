@@ -14,8 +14,8 @@ const preview = (href: string, label: string): TestLink => ({ href, label, kind:
 
 export const productModules: ProductModule[] = [
   { id: 'M01', title: 'Growth & Acquisition CRM', tier: 'P0', state: 'partial', sourcePage: 21,
-    built: 'Saisie manuelle des demandes, liste, filtre, détail et API cloisonnée; recherche patient en lecture seule. PR #2–3.',
-    remaining: ['Qualification, responsable, échéance et relances', 'Rapprochement, sélection et conversion patient sans doublon', 'Parcours jusqu’au rendez-vous et connecteurs validés'],
+    built: 'Saisie manuelle des demandes, liste, filtre, détail et API cloisonnée; recherche patient en lecture seule; historique de suivi manuel sans envoi. PR #2–3 et #9.',
+    remaining: ['Qualification, réattribution du responsable et prochaine échéance', 'Rapprochement, sélection et conversion patient sans doublon', 'Parcours jusqu’au rendez-vous et connecteurs validés'],
     gate: 'Politique d’identité D1–D8 puis règles de conversion et de communication.', links: [intakeTest, connectionTest] },
   { id: 'M02', title: 'Smart Booking & Capacity', tier: 'P0', state: 'partial', sourcePage: 22,
     built: 'Disponibilité indicative, options temporaires praticien/fauteuil, libération et tests de concurrence PostgreSQL. PR #4–5.',
