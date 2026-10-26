@@ -2,12 +2,93 @@
   "version": 1,
   "max_agents": 3,
   "tasks": [
-    {"id":"FOUNDATION-REVIEW","state":"review","owner":"auth_verification + coordinator","depends_on":[],"branch":"codex/m01-foundation","acceptance":"Independent review, current CI and no automatic deployment; merge PR #1 only if no blocking findings."},
-    {"id":"INTAKE-CONTRACT","state":"ready","owner":"coordinator","depends_on":["FOUNDATION-REVIEW"],"acceptance":"Freeze minimal manual-intake v1 schemas and errors; no clinical notes or automatic patient merge."},
-    {"id":"INTAKE-API","state":"backlog","owner":null,"depends_on":["INTAKE-CONTRACT"],"acceptance":"Tenant-authorized list/create; atomic idempotency, audit and outbox; negative policy/SQL/API tests."},
-    {"id":"INTAKE-UI","state":"backlog","owner":null,"depends_on":["INTAKE-CONTRACT"],"acceptance":"Photographic Dental Spa shell, working intake form/filter/detail, explicit demo transport, connected transport with no persisted tokens or patient records."},
-    {"id":"INTAKE-INTEGRATE","state":"backlog","owner":"coordinator","depends_on":["INTAKE-API","INTAKE-UI"],"acceptance":"Contract/API/browser tests and independent review before bounded PR merge."},
-    {"id":"BOOKING-CONTRACT","state":"backlog","owner":null,"depends_on":["INTAKE-INTEGRATE"],"acceptance":"Resource-safe request/confirmation and patient matching decisions frozen from PRD before parallel implementation."},
-    {"id":"HOSTED-FOUNDATION","state":"blocked","owner":"coordinator","depends_on":[],"blocker":"Supabase MCP actions unavailable; no hosted migrations performed.","unblocks_on":"Authorized development-project access becomes available.","acceptance":"Hosted identity/Storage/revocation and staging restore evidence; release gate, not a global development block."}
+    {
+      "id": "FOUNDATION-REVIEW",
+      "state": "verification",
+      "owner": "auth_verification + coordinator",
+      "depends_on": [],
+      "branch": "codex/m01-foundation",
+      "acceptance": "Independent review, current CI and no automatic deployment; merge PR #1 only if no blocking findings.",
+      "evidence": "Independent reviewer found no development-merge blocker; coordinator reviewed identity/guard changes. Await current-head CI and deployment-hook check."
+    },
+    {
+      "id": "INTAKE-CONTRACT",
+      "state": "verification",
+      "owner": "coordinator",
+      "depends_on": [
+        "FOUNDATION-REVIEW"
+      ],
+      "acceptance": "Freeze minimal manual-intake v1 schemas and errors; no clinical notes or automatic patient merge.",
+      "evidence": "Frozen reviewed contract dd53154 with packaging and DB-gate clarification 741963e; stable shared base for parallel work, not yet merged to main.",
+      "development_gate": "passed"
+    },
+    {
+      "id": "INTAKE-API",
+      "state": "running",
+      "owner": "pwa_verification",
+      "depends_on": [
+        "INTAKE-CONTRACT"
+      ],
+      "acceptance": "Tenant-authorized list/create; atomic idempotency, audit and outbox; negative policy/SQL/API tests.",
+      "branch": "codex/intake-api",
+      "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/intake-api",
+      "base": "dd53154",
+      "allowed_files": [
+        "apps/dental-api/src/intake/**",
+        "apps/dental-api/src/app.module.ts",
+        "apps/dental-api/src/bootstrap.ts",
+        "supabase/migrations/*intake*",
+        "supabase/tests/intake*",
+        "tests/integration/intake*",
+        "tests/unit/intake*"
+      ]
+    },
+    {
+      "id": "INTAKE-UI",
+      "state": "running",
+      "owner": "connection_ui",
+      "depends_on": [
+        "INTAKE-CONTRACT"
+      ],
+      "acceptance": "Photographic Dental Spa shell, working intake form/filter/detail, explicit demo transport, connected transport with no persisted tokens or patient records.",
+      "branch": "codex/intake-ui",
+      "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/intake-ui",
+      "base": "dd53154",
+      "allowed_files": [
+        "apps/clinic-os/components/intake/**",
+        "apps/clinic-os/components/workspace.tsx",
+        "apps/clinic-os/app/connection/page.tsx",
+        "apps/clinic-os/app/[module]/page.tsx",
+        "tests/e2e/intake*"
+      ]
+    },
+    {
+      "id": "INTAKE-INTEGRATE",
+      "state": "backlog",
+      "owner": "coordinator",
+      "depends_on": [
+        "INTAKE-API",
+        "INTAKE-UI"
+      ],
+      "acceptance": "Contract/API/browser tests and independent review before bounded PR merge."
+    },
+    {
+      "id": "BOOKING-CONTRACT",
+      "state": "backlog",
+      "owner": null,
+      "depends_on": [
+        "INTAKE-INTEGRATE"
+      ],
+      "acceptance": "Resource-safe request/confirmation and patient matching decisions frozen from PRD before parallel implementation."
+    },
+    {
+      "id": "HOSTED-FOUNDATION",
+      "state": "blocked",
+      "owner": "coordinator",
+      "depends_on": [],
+      "blocker": "Supabase MCP actions unavailable; no hosted migrations performed.",
+      "unblocks_on": "Authorized development-project access becomes available.",
+      "acceptance": "Hosted identity/Storage/revocation and staging restore evidence; release gate, not a global development block."
+    }
   ]
 }

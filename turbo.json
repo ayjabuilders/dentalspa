@@ -26,7 +26,8 @@
         "ALLOWED_ORIGINS",
         "NEXT_PUBLIC_SUPABASE_URL",
         "NEXT_PUBLIC_SUPABASE_ANON_KEY",
-        "NEXT_PUBLIC_API_URL"
+        "NEXT_PUBLIC_API_URL",
+        "ENABLE_INTAKE_COMMANDS"
       ]
     },
     "typecheck": {

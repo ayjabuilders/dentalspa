@@ -1,27 +1,23 @@
 # Dental Spa orchestration
 
-This chat is the integration lead. Working directory: `C:/Users/platf/Documents/Dental Spa`. The user authorized parallel agents and ongoing follow-up on 26 October 2026. A same-thread follow-up runs every 30 minutes while the local app/computer are available; it must not busy-loop on unchanged blockers.
+This chat is the sole integration coordinator. The owner approved ADR-003 and autonomous bounded development merges on 26 October 2026. Working directory: `C:/Users/platf/Documents/Dental Spa`. Durable assignments and dependencies: `WORK_QUEUE.json`.
 
-## Current boundary
+## Current work
 
-M01 Foundation remains the active milestone. M02 is planned in `M02_DELIVERY_SEQUENCE.md`, not accepted or implemented. Read `AGENTS.md` and `codex/00_START_HERE.md` before assigning new work. No real patient data, clinical AI, external messaging or production deployment.
+- Foundation PR #1: https://github.com/ayjabuilders/dentalspa/pull/1. Code revision 3cb16d0 passed application and full Supabase CI (40338957635). Independent review found no blocking issue for a development merge; coordinator separately reviewed reviewer-authored identity/guard changes. Current head bc11ae6 adds approved gate policy and queue; await its CI and verify no auto-deployment before squash merge.
+- Integration branch: `codex/m02-intake`, based explicitly on foundation head bc11ae6 pending its merge. Frozen intake contract commit dd53154. Rebase integration onto merged main before PR; preserve worktree commits and cherry-pick only reviewed changes.
+- Backend lane: `codex/intake-api`, worktree `C:/Users/platf/Documents/DentalSpa-worktrees/intake-api`; user-scoped RPC, RLS, atomic create/idempotency/audit/outbox and tests.
+- UI lane: `codex/intake-ui`, worktree `C:/Users/platf/Documents/DentalSpa-worktrees/intake-ui`; standalone synthetic intake and connected memory-only transport, filters/detail/create dialog and browser tests.
+- Reviewer lane: contract/adversarial review; no implementation-file ownership.
 
-## Active work
+## Development versus release
 
-- Integration lead: foundation pushed to `codex/m01-foundation`; draft PR https://github.com/ayjabuilders/dentalspa/pull/1 is attached to this chat. First CI run `40337512461` passed both application and database jobs for commit `9eb5c2103bd751ed7b7e1fa64dab4655c86bb7ca`. Worker commit `261ef7d7ee13b1591162bc9810cb473f5031ca24` is pushed, with checks underway. Source PDF/DOCX files remain local and excluded from the public repository. Prefer Git and CLI/API operations; `gh` is absent but authenticated GitHub REST works through the existing Git credential manager without printing or persisting tokens.
-- Database agent complete: pgTAP expanded to 34 assertions; embedded policy suite to 12 tests. Full Supabase pgTAP and database lint passed in CI.
-- Worker agent complete: private, disabled-by-default outbox worker foundation with bounded leases/retries and idempotent consumption. No external side effects and no booking domain commands. Reviewed locally: 31 unit and 34 integration tests, lint, typecheck and API build pass. CI run `40338269757` passed both application and full Supabase database jobs for worker commit `261ef7d7ee13b1591162bc9810cb473f5031ca24`.
+M02 synthetic development is now authorized under ADR-003. Technical dependencies gate each slice; missing hosted access does not block unrelated implementation. Hosted Supabase identity/Storage/revocation, staging restore, installed-device PWA and later clinical/privacy approvals remain activation/release gates. No hosted migration, real patient data, real AI/capture or production deployment.
 
-Next action: verify the CI scheduling-only follow-up on PR #1, then resolve remaining hosted integration/restore access. Do not rerun the same local suite without new code. CI now runs on pull requests and pushes to main, skips documentation-only changes, and cancels superseded runs per PR. The branch remains unmerged and the worker remains disabled.
+Local Docker/Podman is absent; full Supabase migrations/pgTAP run successfully in GitHub CI. Supabase MCP authentication is saved but actions are unavailable in this session. Do not repeatedly retry this unchanged blocker. Worker foundation remains disabled/unwired.
 
-Prior integrated evidence: build/lint/typecheck pass; 25 unit, 21 integration and 15 browser tests pass. See `M01_VERIFICATION.md` for exact limits. Do not treat these counts as evidence for subsequent edits.
+## Loop
 
-## Blocking dependencies
+Reconcile queue, agents and CI; dispatch ready independent tasks; independently review, test and integrate; unlock the next slice immediately. Max three agents with disjoint ownership. Prefer Git/CLI/API. Never expose credentials. Do not duplicate assignments or rerun unchanged passing checks. The heartbeat is configured for ten-minute recovery during active work; when only external blockers remain, back off hourly. Respect Plan mode and user pause/cancel. This requires the app/computer to be available.
 
-- Supabase MCP authentication is saved but remote tools are not exposed in this session. No hosted migration has run.
-- Local Docker/Podman is absent; GitHub CI successfully runs the full local Supabase stack. Reuse it for changed migrations, not for repeated unchanged validation.
-- Hosted identity/Storage/revocation checks, installed-device PWA checks and staging restore evidence remain acceptance gates. Local emulation is not hosted verification.
-
-## Operating rules
-
-Assign at most three agents with disjoint file ownership. Review their changes and run relevant tests before integrating; do not parallelize dependent contract/schema changes blindly. Update this file with completed work, exact CI/commit identifiers, current owners and the next actionable step. Re-run checks only after related code changes, failures or new evidence. Report a repeated blocker once and wait for changed external state or user input; never invent progress or acceptance. Stop if the user pauses/cancels.
+Next after intake integration: explicit patient matching/duplicate review, then transactional booking/calendar and verified patient appointment projection. No automatic patient merge or inferred clinical rules.
