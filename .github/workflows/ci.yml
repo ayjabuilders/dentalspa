@@ -45,6 +45,8 @@ jobs:
       - run: pnpm db:start
       - run: pnpm db:reset
       - run: pnpm db:test
+      - run: pnpm db:inquiry-schedule-concurrency
+        timeout-minutes: 3
       - run: pnpm db:concurrency
         timeout-minutes: 5
       - run: pnpm db:outbox-concurrency
