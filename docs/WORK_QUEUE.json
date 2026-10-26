@@ -293,7 +293,7 @@
       "base": "00d2d6e",
       "allowed_files": ["apps/dental-api/src/intake/**", "supabase/migrations/*communication_language*.sql", "supabase/tests/*communication_language*.sql", "scripts/inquiry-communication-language-concurrency.mjs", "tests/unit/inquiry-communication-language-*", "tests/integration/inquiry-communication-language-*"],
       "acceptance": "Private current-owner state, revisioned idempotent command, minimal audit/outbox and adversarial SQL/API evidence.",
-      "evidence": "Commit 0d3ae9a integrated after independent security review. Twenty-eight focused language tests and fifteen access/contact-preference regressions passed in the API lane; 47 pgTAP assertions and the independent-session contention harness await current-head CI.",
+      "evidence": "Commit 0d3ae9a integrated after independent security review. Twenty-eight focused language tests and fifteen access/contact-preference regressions passed in the API lane; all 47 pgTAP assertions and both independent-session contention/replay scenarios passed in exact-head CI40419416695.",
       "development_gate": "passed"
     },
     {
@@ -311,12 +311,12 @@
     },
     {
       "id": "INQUIRY-COMMUNICATION-LANGUAGE-INTEGRATE",
-      "state": "verification",
+      "state": "done",
       "owner": "coordinator",
       "depends_on": ["INQUIRY-COMMUNICATION-LANGUAGE-API", "INQUIRY-COMMUNICATION-LANGUAGE-UI"],
       "branch": "codex/m01-inquiry-language-contract",
       "acceptance": "Independent security/UI review, generated OpenAPI, focused local/PostgreSQL/browser checks, no-deployment merge and owner-visible evidence.",
-      "next_action": "Generate the OpenAPI/types, run combined checks and exact-head PostgreSQL CI, then merge only with zero hooks/deployments."
+      "evidence": "PR #19 squash merged de2b489 after exact-head CI40419416695 application/database success. The database job passed 324 total pgTAP assertions, including all 47 language assertions, and both independent-session CAS/replay scenarios; hooks and deployments were zero."
     },
     {
       "id": "INTAKE-CONTRACT",
