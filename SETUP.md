@@ -54,6 +54,14 @@ The user supplied cloud project is `dbnxfqjevdffgrkvczli` (DentalSpa V1, ayjabui
 
 The outbox worker foundation is intentionally unwired. It has no active process or connection credentials; `runOnce` requires an explicit transactional adapter and local SQL handler. See `apps/dental-api/src/audit/worker/README.md` before any activation. Do not run it inside an HTTP request or attach external messaging as a transactional handler.
 
+## M02.1 synthetic intake development
+
+`/intake` uses explicitly labelled in-memory synthetic inquiries. It never sends a booking or creates a patient. The verified connection screen can open the same interface against authorized inquiry endpoints; tokens and results stay in memory and are cleared on expiry/logout.
+
+Writes are disabled by default at two independent boundaries: API `ENABLE_INTAKE_COMMANDS=false` and the private database command switch. Only in an isolated synthetic development database, after applying migrations and provisioning approved staff membership, trusted administration may execute `update private.intake_command_settings set enabled=true where singleton;` and start the API with `ENABLE_INTAKE_COMMANDS=true`. Never expose that setting to browser roles. Hosted/production activation remains outside this slice.
+
+POST `/api/v1/inquiries` requires a UUID `Idempotency-Key`; retry unchanged submissions with the same key. GET is tenant-scoped and returns at most 100 records with explicit truncation. Role authorization, SQL validation and idempotency apply even when calling the RPC directly. No patient merge, appointment confirmation or vendor messaging is implemented by intake creation.
+
 ## Checks
 
 ```powershell

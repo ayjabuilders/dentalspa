@@ -10,7 +10,7 @@ export function describeApi(app: Parameters<typeof SwaggerModule.createDocument>
 export async function createApplication() {
   const app = await NestFactory.create(AppModule, { logger: ['error', 'warn'] });
   app.setGlobalPrefix('api/v1');
-  app.enableCors({ origin: (process.env.ALLOWED_ORIGINS ?? 'http://localhost:4200,http://localhost:4201,http://localhost:4202').split(','), methods: ['GET', 'OPTIONS'], allowedHeaders: ['Authorization', 'X-Clinic-Id', 'Content-Type', 'X-Correlation-Id'] });
+  app.enableCors({ origin: (process.env.ALLOWED_ORIGINS ?? 'http://localhost:4200,http://localhost:4201,http://localhost:4202').split(','), methods: ['GET', 'POST', 'OPTIONS'], allowedHeaders: ['Authorization', 'X-Clinic-Id', 'Content-Type', 'X-Correlation-Id', 'Idempotency-Key'] });
   app.use((req: Request & { correlationId?: string }, res: Response, next: NextFunction) => {
     const start = Date.now();
     req.correlationId = safeCorrelation(req.headers['x-correlation-id']);

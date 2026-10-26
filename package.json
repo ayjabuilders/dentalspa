@@ -14,11 +14,11 @@
     "unit": "vitest run tests/unit",
     "integration": "vitest run tests/integration",
     "e2e": "playwright test",
-    "test": "pnpm unit && pnpm integration",
+    "test": "pnpm --filter @dental/contracts build && pnpm unit && pnpm integration",
     "db:start": "supabase start",
     "db:reset": "supabase db reset --local",
     "db:test": "supabase test db",
-    "contracts:generate": "pnpm --filter @dental/dental-api build && node scripts/openapi.mjs && openapi-typescript contracts/foundation.openapi.json -o packages/contracts/src/api.generated.ts"
+    "contracts:generate": "pnpm --filter @dental/contracts build && pnpm --filter @dental/dental-api build && node scripts/openapi.mjs && openapi-typescript contracts/foundation.openapi.json -o packages/contracts/src/api.generated.ts"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.11",

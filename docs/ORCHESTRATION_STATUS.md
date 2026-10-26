@@ -1,27 +1,21 @@
 # Dental Spa orchestration
 
-This chat is the integration lead. Working directory: `C:/Users/platf/Documents/Dental Spa`. The user authorized parallel agents and ongoing follow-up on 26 October 2026. A same-thread follow-up runs every 30 minutes while the local app/computer are available; it must not busy-loop on unchanged blockers.
+This chat coordinates integration in `C:/Users/platf/Documents/Dental Spa`. ADR-003 authorizes bounded autonomous development merges after independent review and current-head CI. Queue: `WORK_QUEUE.json`. Maximum three agents, isolated worktrees and disjoint ownership.
 
-## Current boundary
+## Current evidence — 26 October 2026
 
-M01 Foundation remains the active milestone. M02 is planned in `M02_DELIVERY_SEQUENCE.md`, not accepted or implemented. Read `AGENTS.md` and `codex/00_START_HERE.md` before assigning new work. No real patient data, clinical AI, external messaging or production deployment.
+- Foundation PR #1 merged as 88c9af5 after independent review and CI40342606919: application and full Supabase database both passed. No active repository hooks or deployments found.
+- `codex/m02-intake` rebased onto merged main. Backend1291ce6 and UI25bbf53 integrated. Shared schemas and generated OpenAPI included.
+- Integrated lint, typecheck, 55 unit tests, 52 integration tests and all application builds passed. All20 browser regressions passed before the CSS-only source-filter correction; focused layout verification follows. Added23pgTAP assertions await full Supabase CI; local Docker absent.
+- Independent final review found no blocker, including UTC replay, Unicode validation, activation switches, tenant scope, atomic audit/outbox and memory-only UI. Development approval only.
+- Parent inspected1280px light list/detail and dark creation dialog. Source-select clipping corrected in0024789; final visual check pending. Full responsive visual approval remains pending.
 
-## Active work
+## Next action
 
-- Integration lead: foundation pushed to `codex/m01-foundation`; draft PR https://github.com/ayjabuilders/dentalspa/pull/1 is attached to this chat. First CI run `40337512461` passed both application and database jobs for commit `9eb5c2103bd751ed7b7e1fa64dab4655c86bb7ca`. Worker commit `261ef7d7ee13b1591162bc9810cb473f5031ca24` is pushed, with checks underway. Source PDF/DOCX files remain local and excluded from the public repository. Prefer Git and CLI/API operations; `gh` is absent but authenticated GitHub REST works through the existing Git credential manager without printing or persisting tokens.
-- Database agent complete: pgTAP expanded to 34 assertions; embedded policy suite to 12 tests. Full Supabase pgTAP and database lint passed in CI.
-- Worker agent complete: private, disabled-by-default outbox worker foundation with bounded leases/retries and idempotent consumption. No external side effects and no booking domain commands. Reviewed locally: 31 unit and 34 integration tests, lint, typecheck and API build pass. CI run `40338269757` passed both application and full Supabase database jobs for worker commit `261ef7d7ee13b1591162bc9810cb473f5031ca24`.
+Integrate CSS correction, finish browser regression, publish bounded intake PR and verify current-head CI before merge. Backend lane is preparing read-only patient-matching requirements for the next contract; do not implement automatic merge or booking before contract freeze.
 
-Next action: verify the CI scheduling-only follow-up on PR #1, then resolve remaining hosted integration/restore access. Do not rerun the same local suite without new code. CI now runs on pull requests and pushes to main, skips documentation-only changes, and cancels superseded runs per PR. The branch remains unmerged and the worker remains disabled.
+## Activation gates
 
-Prior integrated evidence: build/lint/typecheck pass; 25 unit, 21 integration and 15 browser tests pass. See `M01_VERIFICATION.md` for exact limits. Do not treat these counts as evidence for subsequent edits.
+Both API intake commands and private database switch default off. Synthetic data only. No hosted migrations, real patient data, AI/capture or production deployment. Hosted identity/Storage/revocation, staging restore, installed-device PWA and real multi-connection contention remain unverified. Supabase MCP tools unavailable; do not retry unchanged blocker. Development may proceed independently under ADR-003.
 
-## Blocking dependencies
-
-- Supabase MCP authentication is saved but remote tools are not exposed in this session. No hosted migration has run.
-- Local Docker/Podman is absent; GitHub CI successfully runs the full local Supabase stack. Reuse it for changed migrations, not for repeated unchanged validation.
-- Hosted identity/Storage/revocation checks, installed-device PWA checks and staging restore evidence remain acceptance gates. Local emulation is not hosted verification.
-
-## Operating rules
-
-Assign at most three agents with disjoint file ownership. Review their changes and run relevant tests before integrating; do not parallelize dependent contract/schema changes blindly. Update this file with completed work, exact CI/commit identifiers, current owners and the next actionable step. Re-run checks only after related code changes, failures or new evidence. Report a repeated blocker once and wait for changed external state or user input; never invent progress or acceptance. Stop if the user pauses/cancels.
+Heartbeat recovery configured every ten minutes; back off when only external blockers remain. Never claim execution while the app/computer is unavailable. Prefer Git/CLI/API, keep credentials out of files/logs, respect pause/cancel.

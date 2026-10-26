@@ -116,6 +116,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/inquiries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Authorized manual inquiries, newest first; maximum 100 */
+        get: operations["IntakeController_list"];
+        put?: never;
+        /** Create a manual inquiry; commands disabled by default */
+        post: operations["IntakeController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -284,6 +302,203 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["PatientDto"];
                 };
+            };
+        };
+    };
+    IntakeController_list: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Items and explicit truncated flag */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            display_name: string;
+                            /** Format: email */
+                            contact_email: string | null;
+                            contact_phone: string | null;
+                            /** @enum {string} */
+                            source: "phone" | "website" | "whatsapp" | "instagram" | "email" | "google_business" | "walk_in" | "other";
+                            /** Format: date-time */
+                            follow_up_at: string | null;
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            clinic_id: string;
+                            /** Format: uuid */
+                            owner_user_id: string;
+                            /** @enum {string} */
+                            status: "new";
+                            /** Format: date-time */
+                            created_at: string;
+                        }[];
+                        truncated: boolean;
+                    };
+                };
+            };
+            /** @description Invalid input, unsupported query or missing/invalid idempotency key */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Identity missing, invalid or expired */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Active intake role and selected clinic required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Commands disabled or provider unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    IntakeController_create: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                /** @description UUID scoped to clinic and verified actor */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    display_name: string;
+                    /** Format: email */
+                    contact_email: string | null;
+                    contact_phone: string | null;
+                    /** @enum {string} */
+                    source: "phone" | "website" | "whatsapp" | "instagram" | "email" | "google_business" | "walk_in" | "other";
+                    /** Format: date-time */
+                    follow_up_at: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description Original inquiry returned on identical replay */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        item: {
+                            display_name: string;
+                            /** Format: email */
+                            contact_email: string | null;
+                            contact_phone: string | null;
+                            /** @enum {string} */
+                            source: "phone" | "website" | "whatsapp" | "instagram" | "email" | "google_business" | "walk_in" | "other";
+                            /** Format: date-time */
+                            follow_up_at: string | null;
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            clinic_id: string;
+                            /** Format: uuid */
+                            owner_user_id: string;
+                            /** @enum {string} */
+                            status: "new";
+                            /** Format: date-time */
+                            created_at: string;
+                        };
+                        replayed: boolean;
+                    };
+                };
+            };
+            /** @description New inquiry persisted atomically with audit and outbox */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        item: {
+                            display_name: string;
+                            /** Format: email */
+                            contact_email: string | null;
+                            contact_phone: string | null;
+                            /** @enum {string} */
+                            source: "phone" | "website" | "whatsapp" | "instagram" | "email" | "google_business" | "walk_in" | "other";
+                            /** Format: date-time */
+                            follow_up_at: string | null;
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            clinic_id: string;
+                            /** Format: uuid */
+                            owner_user_id: string;
+                            /** @enum {string} */
+                            status: "new";
+                            /** Format: date-time */
+                            created_at: string;
+                        };
+                        replayed: boolean;
+                    };
+                };
+            };
+            /** @description Invalid input, unsupported query or missing/invalid idempotency key */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Identity missing, invalid or expired */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Active intake role and selected clinic required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Idempotency key reused with different normalized input */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Commands disabled or provider unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

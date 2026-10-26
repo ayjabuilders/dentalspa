@@ -1,4 +1,5 @@
 import { z } from 'zod';
+export * from './intake';
 export const RoleSchema = z.enum(['dentist', 'reception', 'assistant', 'manager']);
 export type Role = z.infer<typeof RoleSchema>;
 export const IdSchema = z.string().uuid();

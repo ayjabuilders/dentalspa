@@ -5,6 +5,8 @@ import { createClient } from '@supabase/supabase-js';
 import { ShieldCheck, ArrowLeft, ArrowRight, LogOut, Eye, EyeOff, LoaderCircle, LockKeyhole, Users, AlertCircle } from 'lucide-react';
 import { Button } from '@dental/ui-clinic';
 import { IdSchema, PatientSummarySchema, WorkspaceSchema, type PatientSummary } from '@dental/contracts';
+import { IntakeWorkspace } from '../../components/intake/intake-workspace';
+import { createHttpIntakeTransport, type IntakeTransport } from '../../components/intake/transport';
 import './connection.css';
 
 const stages = ['Vérification de votre identité…', 'Vérification des accès au cabinet…', 'Chargement des fiches autorisées…'];
@@ -20,6 +22,9 @@ export default function Connection() {
   const [notice, setNotice] = useState('');
   const [records, setRecords] = useState<PatientSummary[] | null>(null);
   const [online, setOnline] = useState(true);
+  const [intakeTransport, setIntakeTransport] = useState<IntakeTransport | null>(null);
+  const [showIntake, setShowIntake] = useState(false);
+  const connectedIntake = useRef<IntakeTransport | null>(null);
   const active = useRef(true);
   const busy = useRef(false);
   const request = useRef<AbortController | null>(null);
@@ -51,6 +56,7 @@ export default function Connection() {
     return () => {
       active.current = false;
       request.current?.abort();
+      connectedIntake.current?.dispose?.();
       if (expiry.current) clearTimeout(expiry.current);
       window.removeEventListener('online', updateNetwork);
       window.removeEventListener('offline', updateNetwork);
@@ -66,6 +72,10 @@ export default function Connection() {
     if (expiry.current) clearTimeout(expiry.current);
     expiry.current = null;
     setRecords(null);
+    connectedIntake.current?.dispose?.();
+    connectedIntake.current = null;
+    setIntakeTransport(null);
+    setShowIntake(false);
     setPassword('');
     setVisiblePassword(false);
     try {
@@ -142,6 +152,9 @@ export default function Connection() {
       }
       if (!active.current) return;
       setRecords(authorized);
+      const transport = createHttpIntakeTransport({ api, token: data.session.access_token, clinicId: workspace.clinic_id, userId: workspace.user_id });
+      connectedIntake.current = transport;
+      setIntakeTransport(transport);
       expiry.current = setTimeout(() => {
         if (!active.current) return;
         setNotice('Votre session a expiré. Les fiches ont été retirées de cet écran.');
@@ -167,7 +180,7 @@ export default function Connection() {
     await clearSession();
   }
 
-  return <main className="connection-page connected-access">
+  return <main className={`connection-page connected-access ${showIntake ? 'intake-connected-page' : ''}`}>
     <section className="connection-card work-panel" aria-labelledby="connection-title">
       <Link href="/" className="access-back"><ArrowLeft size={16}/>Retour à l’aperçu</Link>
       <div className="access-emblem"><ShieldCheck size={28}/></div>
@@ -193,8 +206,10 @@ export default function Connection() {
         <div className="access-success"><ShieldCheck size={20}/><div><h2 id="access-result-title" tabIndex={-1} ref={resultHeading}>Accès au cabinet vérifié</h2><p>{records.length} fiche{records.length > 1 ? 's' : ''} autorisée{records.length > 1 ? 's' : ''}</p></div></div>
         {records.length ? <ul aria-label="Fiches autorisées">{records.map(record => <li key={record.id}><span>{record.display_name}</span><small>{record.reference}</small></li>)}</ul> : <div className="access-empty"><Users size={26}/><h3>Aucune fiche pour le moment</h3><p>Votre accès est valide. Aucune fiche patient n’est disponible dans ce cabinet.</p></div>}
         <Button type="button" onClick={disconnect}><LogOut size={17}/>Se déconnecter</Button>
+        {intakeTransport && <Button type="button" variant="primary" onClick={() => setShowIntake(value => !value)}>{showIntake ? 'Masquer les demandes' : 'Ouvrir les demandes du cabinet'}<ArrowRight size={17}/></Button>}
       </section>}
       <footer><LockKeyhole size={15}/><small>Session en mémoire uniquement. Aucun dossier n’est enregistré dans le navigateur par cette application.</small></footer>
     </section>
+    {records !== null && intakeTransport && showIntake && <div className="intake-connected-panel"><div className="intake-connected-controls"><p>Session vérifiée · demandes du cabinet actif uniquement</p><Button type="button" onClick={disconnect}><LogOut size={17}/>Se déconnecter</Button></div><IntakeWorkspace transport={intakeTransport} onSessionExpired={() => { setNotice('Votre session a expiré. Les demandes ont été retirées de cet écran.'); void clearSession(); }}/></div>}
   </main>;
 }
