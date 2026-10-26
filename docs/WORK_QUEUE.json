@@ -12,6 +12,17 @@
       "evidence": "PR #1 squash merged 88c9af5 after independent review and current-head CI40342606919 application/database success; no active hooks or deployments."
     },
     {
+      "id": "OUTBOX-CONTENTION-EVIDENCE",
+      "state": "in_progress",
+      "owner": "pwa_verification",
+      "depends_on": ["FOUNDATION-REVIEW"],
+      "branch": "codex/m01-outbox-contention",
+      "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/outbox-contention",
+      "base": "2f8e618",
+      "allowed_files": ["scripts/outbox-concurrency.mjs", "package.json", ".github/workflows/ci.yml", "tests/unit/outbox-concurrency*"],
+      "acceptance": "Use real independent local PostgreSQL sessions to prove disabled outbox worker claim/lease fencing, crash recovery, rollback and per-consumer idempotency; no hosted access or external delivery."
+    },
+    {
       "id": "INTAKE-CONTRACT",
       "state": "done",
       "owner": "coordinator",
@@ -168,12 +179,12 @@
     },
     {
       "id": "INQUIRY-OWNER-WORKLIST-INTEGRATE",
-      "state": "verification",
+      "state": "done",
       "owner": "coordinator",
       "depends_on": ["INQUIRY-OWNER-WORKLIST-API", "INQUIRY-OWNER-WORKLIST-UI"],
       "branch": "codex/m02-owner-worklist-contract",
       "acceptance": "Independent security/UX review, generated OpenAPI, combined focused checks, real PostgreSQL CI and no-deployment current-head merge; update owner-visible capability evidence only after verification.",
-      "evidence": "Combined lint, all typechecks, 29 focused unit/integration tests, full production build and nine focused demo/transport browser cases passed; six configured-session browser cases passed in isolated UI lanes and were skipped in unconfigured combined run. OpenAPI regenerated; security and UI reviews clear. PostgreSQL CI and merge pending."
+      "evidence": "PR #10 squash merged 2f8e618 after independent security/UI reviews, combined lint/typechecks, 29 focused unit/integration tests, full production build, nine combined browser cases, three Build Center cases and final-head CI40382143855 application/database success. Database reset, pgTAP, concurrency and lint steps passed; zero hooks/deployments. Six configured-session browser cases passed in isolated synthetic UI lanes."
     },
     {
       "id": "PATIENT-LOOKUP-CONTRACT",
