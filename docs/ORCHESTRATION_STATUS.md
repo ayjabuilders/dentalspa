@@ -8,16 +8,16 @@ M01 Foundation remains the active milestone. M02 is planned in `M02_DELIVERY_SEQ
 
 ## Active work
 
-- Integration lead: prepare the foundation Git branch and run GitHub CI to obtain full Docker/Supabase evidence, then fix concrete failures. Source PDF/DOCX files remain local and excluded from the public repository.
-- Database agent: pgTAP policy suite and embedded policy tests only; check real Supabase compatibility and add negative cases.
-- Worker agent: private, disabled-by-default outbox worker foundation with bounded leases/retries and idempotent consumption. No external side effects and no booking domain commands.
+- Integration lead: foundation pushed to `codex/m01-foundation`; first CI run `40337512461` passed both application and database jobs for commit `9eb5c2103bd751ed7b7e1fa64dab4655c86bb7ca`. Source PDF/DOCX files remain local and excluded from the public repository. Prepare draft review and verify subsequent worker commit.
+- Database agent complete: pgTAP expanded to 34 assertions; embedded policy suite to 12 tests. Full Supabase pgTAP and database lint passed in CI.
+- Worker agent complete: private, disabled-by-default outbox worker foundation with bounded leases/retries and idempotent consumption. No external side effects and no booking domain commands. Reviewed locally: 31 unit and 34 integration tests, lint, typecheck and API build pass; worker migration needs its own CI run.
 
 Prior integrated evidence: build/lint/typecheck pass; 25 unit, 21 integration and 15 browser tests pass. See `M01_VERIFICATION.md` for exact limits. Do not treat these counts as evidence for subsequent edits.
 
 ## Blocking dependencies
 
 - Supabase MCP authentication is saved but remote tools are not exposed in this session. No hosted migration has run.
-- Local Docker/Podman is absent. Use the repository's isolated GitHub CI database job rather than repeating local startup failures.
+- Local Docker/Podman is absent; GitHub CI successfully runs the full local Supabase stack. Reuse it for changed migrations, not for repeated unchanged validation.
 - Hosted identity/Storage/revocation checks, installed-device PWA checks and staging restore evidence remain acceptance gates. Local emulation is not hosted verification.
 
 ## Operating rules

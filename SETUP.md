@@ -50,7 +50,9 @@ Copy `.env.example` API values into `apps/dental-api/.env`, and its `NEXT_PUBLIC
 
 Clinic `/connection` signs in against Supabase and loads only the API-authorized minimal patient summaries. It keeps the session in memory, clears records on logout and performs `no-store` requests. The synthetic workspace is a separate preview; it does not impersonate this signed-in session. Patient Pass enrollment/login UI remains a later integration; its own-resource API boundary is implemented and tested.
 
-The user supplied cloud project is `dbnxfqjevdffgrkvczli` (DentalSpa V1, ayjabuilders's Org). MCP OAuth is configured locally, outside this repository. No hosted migration or cloud secrets are included in this foundation. GitHub remote: `https://github.com/ayjabuilders/dentalspa.git`.
+The user supplied cloud project is `dbnxfqjevdffgrkvczli` (DentalSpa V1, ayjabuilders's Org). MCP OAuth is configured locally, outside this repository. No hosted migration or cloud secrets are included in this foundation. GitHub remote: `https://github.com/ayjabuilders/dentalspa.git`. The foundation branch is `codex/m01-foundation`; GitHub CI can execute the full local Supabase stack on its isolated Linux runner without cloud secrets.
+
+The outbox worker foundation is intentionally unwired. It has no active process or connection credentials; `runOnce` requires an explicit transactional adapter and local SQL handler. See `apps/dental-api/src/audit/worker/README.md` before any activation. Do not run it inside an HTTP request or attach external messaging as a transactional handler.
 
 ## Checks
 

@@ -2,6 +2,14 @@
 
 Local foundation implemented; milestone acceptance remains pending the integration and release gates below. No hosted migration, deployment, GitHub push or PR has been performed.
 
+## CI and worker follow-up — 26 October 2026
+
+The previous no-push and unexecuted-CI statements describe the initial state. Foundation commit `9eb5c2103bd751ed7b7e1fa64dab4655c86bb7ca` is now pushed to `codex/m01-foundation`. GitHub Actions run [40337512461](https://github.com/ayjabuilders/dentalspa/actions/runs/40337512461) passed both application and database jobs. The latter started a full isolated Supabase stack, reset its local database, passed the expanded 34-assertion pgTAP suite, and passed database lint. This resolves full-local-stack evidence; it is not a hosted deployment or hosted identity/Storage test.
+
+Subsequent disabled outbox-worker code and its additive private migration passed local lint, full typechecking, API build, **31 unit tests and 34 integration tests**. Worker SQL tests cover atomic rollback, retry exhaustion, expired leases, fencing and per-consumer consumption. Full multi-connection contention, runtime adapter/role provisioning and process-crash tests remain required before activation. It is unwired and performs no external delivery. No UI changes were made in this follow-up, so the already passing 15-browser-test evidence remains applicable.
+
+A same-thread follow-up is active every 30 minutes; it resumes authorized unblocked work and suppresses unchanged-blocker noise. See `ORCHESTRATION_STATUS.md` for the current task ownership and next step.
+
 ## Parallel follow-up — 26 October 2026
 
 Three user-authorized agents independently improved connected authentication UI, identity adapter/policy verification, and PWA behavior. The integration pass added independent global/patient search state and a dedicated local help panel. No M02 business functionality was introduced; its dependency/ownership sequence is in `M02_DELIVERY_SEQUENCE.md`.
