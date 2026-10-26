@@ -36,6 +36,10 @@ const labels: Record<string, string> = {
   'TEAM-ROSTER-API': 'Annuaire sécurisé du cabinet',
   'TEAM-ROSTER-UI': 'Interface Équipe',
   'TEAM-ROSTER-INTEGRATE': 'Intégration de l’annuaire Équipe',
+  'TEAM-ACTIVITY-CONTRACT': 'Contrat de l’activité récente',
+  'TEAM-ACTIVITY-API': 'Activité récente sécurisée',
+  'TEAM-ACTIVITY-UI': 'Journal d’activité Équipe',
+  'TEAM-ACTIVITY-INTEGRATE': 'Intégration de l’activité Équipe',
   'PATIENT-LOOKUP-CONTRACT': 'Contrat de recherche patient',
   'PATIENT-LOOKUP-API': 'Recherche patient sécurisée',
   'PATIENT-LOOKUP-UI': 'Interface de recherche patient',
@@ -68,7 +72,7 @@ function phase(id: string) {
   if (id.startsWith('INTAKE') || id.startsWith('INQUIRY-FOLLOW-UP') || id.startsWith('INQUIRY-OWNER-WORKLIST')) return 'M02 · Demandes';
   if (id.startsWith('PATIENT-LOOKUP')) return 'M02 · Recherche patient';
   if (id.startsWith('PATIENT-SELECTION')) return 'M02 · Sélection patient';
-  if (id.startsWith('TEAM-ROSTER')) return 'M16 · Équipe et accès';
+  if (id.startsWith('TEAM-ROSTER') || id.startsWith('TEAM-ACTIVITY')) return 'M16 · Équipe et accès';
   if (id.startsWith('SCHEDULING') || id.startsWith('RESOURCE-RULES') || id.startsWith('APPOINTMENT')) return 'M02 · Planification';
   if (id.startsWith('PWA')) return 'Expérience installable';
   return 'À planifier';
@@ -89,6 +93,7 @@ function testLinks(id: string): TestLink[] {
   if (id.startsWith('INTAKE') || id.startsWith('INQUIRY-FOLLOW-UP') || id.startsWith('INQUIRY-OWNER-WORKLIST')) return [intakeTest];
   if (id.startsWith('PATIENT-LOOKUP')) return [connectionTest];
   if (id.startsWith('TEAM-ROSTER')) return [{ href: '/team', label: 'Tester l’annuaire Équipe', kind: 'demo', instruction: 'Annuaire fictif en lecture seule; les rôles d’accès ne prouvent ni qualification ni présence.' }, connectionTest];
+  if (id.startsWith('TEAM-ACTIVITY')) return [{ href: '/team', label: 'Tester l’activité Équipe', kind: 'demo', instruction: 'Journal synthétique borné à quatre actions déjà auditées; ni présence, ni performance, ni audit exhaustif.' }, connectionTest];
   if (id.startsWith('SCHEDULING')) return [schedulingTest];
   if (id === 'PWA-LOCAL-RUNTIME' || id === 'FOUNDATION-REVIEW') return [{ href: '/', label: 'Explorer Clinic OS', kind: 'demo', instruction: 'Tester la navigation, les thèmes, les notifications fictives et le guide d’installation.' }];
   return [];
