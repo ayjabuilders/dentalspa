@@ -5,6 +5,7 @@ import { Button, Modal } from '@dental/ui-clinic';
 import { CreateInquirySchema, IntakeSourceSchema, type CreateInquiry, type Inquiry, type InquiryList } from '@dental/contracts';
 import { createDemoIntakeTransport, inquiryAttempt, IntakeError, type IntakeAttempt, type IntakeFailure, type IntakeTransport } from './transport';
 import { InquiryFollowUp } from './inquiry-follow-up';
+import { OwnerWorklist } from './owner-worklist';
 import './intake.css';
 
 const sources: Record<CreateInquiry['source'], string> = { phone: 'Téléphone', website: 'Site web', whatsapp: 'WhatsApp', instagram: 'Instagram', email: 'E-mail', google_business: 'Google Business', walk_in: 'Sur place', other: 'Autre' };
@@ -34,6 +35,10 @@ export function IntakeWorkspace({ transport, onSessionExpired }: { transport: In
   const [query, setQuery] = useState('');
   const [source, setSource] = useState('all');
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [ownerDetail, setOwnerDetail] = useState<Inquiry | null>(null);
+  const [ownerSelection, setOwnerSelection] = useState(false);
+  const [selectionRevision, setSelectionRevision] = useState(0);
+  const detailFocus = useRef<HTMLElement>(null);
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState(initialDraft);
   const [saving, setSaving] = useState(false);
@@ -78,7 +83,8 @@ export function IntakeWorkspace({ transport, onSessionExpired }: { transport: In
   useEffect(() => { if (submitError) errorRef.current?.focus(); }, [submitError]);
 
   const visible = useMemo(() => (list?.items ?? []).filter(item => (source === 'all' || source === item.source) && `${item.display_name} ${item.contact_email ?? ''} ${item.contact_phone ?? ''}`.toLocaleLowerCase('fr').includes(query.trim().toLocaleLowerCase('fr'))), [list, source, query]);
-  const selected = visible.find(item => item.id === selectedId) ?? visible[0] ?? null;
+  const selected = ownerSelection ? ownerDetail : visible.find(item => item.id === selectedId) ?? visible[0] ?? null;
+  useEffect(() => { if (ownerDetail) detailFocus.current?.focus(); }, [ownerDetail]);
 
   function startInquiry() { setSuccess(''); setSubmitError(''); setFieldErrors({}); setOpen(true); }
   function closeDialog(value: boolean) { if (!savingRef.current) setOpen(value); }
@@ -110,7 +116,7 @@ export function IntakeWorkspace({ transport, onSessionExpired }: { transport: In
         const items = [result.item, ...(previous?.items ?? []).filter(item => item.id !== result.item.id)].sort((a, b) => b.created_at.localeCompare(a.created_at) || b.id.localeCompare(a.id));
         return { items: items.slice(0, 100), truncated: previous?.truncated === true || items.length > 100 };
       });
-      setSelectedId(result.item.id); setQuery(''); setSource('all'); setLoadError(null);
+      setOwnerSelection(false); setOwnerDetail(null); setSelectionRevision(value => value + 1); setSelectedId(result.item.id); setQuery(''); setSource('all'); setLoadError(null);
       setSuccess(transport.mode === 'demo' ? 'Demande ajoutée à cet aperçu uniquement. Elle disparaîtra au rechargement.' : result.replayed ? 'Enregistrement retrouvé. Aucune seconde demande n’a été créée.' : 'Demande enregistrée par le cabinet. Aucun rendez-vous n’est confirmé.');
       retry.current = null; setDraft(initialDraft); setOpen(false);
     } catch (error) {
@@ -125,15 +131,16 @@ export function IntakeWorkspace({ transport, onSessionExpired }: { transport: In
     <div className={`intake-context ${transport.mode === 'connected' ? 'connected' : ''}`}><ShieldCheck size={19}/><p><strong>{transport.mode === 'demo' ? 'Aperçu synthétique · mémoire temporaire' : 'Cabinet vérifié · accès connecté'}</strong><span>{transport.mode === 'demo' ? 'Aucune donnée n’est envoyée. Les demandes ajoutées disparaissent au rechargement.' : 'Seules les demandes autorisées par le cabinet sont affichées.'} Une demande n’est ni un dossier patient ni un rendez-vous.</span></p></div>
     {!online && <div className="intake-message" role="status"><AlertCircle size={18}/><p>{failures.offline}</p></div>}
     {success && <div className="intake-message intake-success" role="status"><Check size={18}/><p>{success}</p><button aria-label="Masquer la confirmation" onClick={() => setSuccess('')}><X size={17}/></button></div>}
+    <OwnerWorklist transport={transport} selectionRevision={selectionRevision} onSelectionStart={() => { setOwnerSelection(true); setOwnerDetail(null); }} onSelected={item => { setOwnerDetail(item); setOwnerSelection(true); }} onReset={() => setOwnerDetail(null)} onSessionExpired={() => { setList(null); setOwnerDetail(null); expiredCallback.current?.(); }}/>
     <div className="intake-grid">
       <section className="work-panel intake-master" aria-label="Liste des demandes">
         <div className="intake-list-heading"><div><Inbox size={19}/><h2>À prendre en charge</h2><span className="intake-count">{list?.items.length ?? '—'}</span></div><button className="icon-button" aria-label="Actualiser les demandes" onClick={() => void load()} disabled={loading || !online || saving}><RefreshCw size={18} className={loading ? 'intake-spin' : ''}/></button></div>
         <div className="intake-tools"><label className="search-field"><Search size={18}/><input aria-label="Rechercher une demande" placeholder="Un nom, un contact…" value={query} onChange={event => setQuery(event.target.value)}/>{query && <button aria-label="Effacer la recherche des demandes" onClick={() => setQuery('')}><X size={16}/></button>}</label><label className="intake-source-filter"><span className="sr-only">Filtrer par source</span><select aria-label="Filtrer par source" value={source} onChange={event => setSource(event.target.value)}><option value="all">Toutes les sources</option>{IntakeSourceSchema.options.map(value => <option key={value} value={value}>{sources[value]}</option>)}</select></label></div>
-        {loading ? <div className="intake-empty" role="status"><LoaderCircle className="intake-spin"/><h3>Vos demandes arrivent…</h3><p>Vérification de l’accès et du répertoire.</p></div> : loadError ? <div className="intake-empty" role="alert"><AlertCircle/><h3>{loadError === 'denied' ? 'Accès non autorisé' : 'Répertoire indisponible'}</h3><p>{loadError === 'disabled' ? 'Le service des demandes n’est pas disponible dans cet environnement.' : failures[loadError]}</p>{loadError !== 'denied' && loadError !== 'expired' && <Button onClick={() => void load()} disabled={!online}><RefreshCw size={17}/>Réessayer</Button>}</div> : visible.length ? <ul className="intake-list">{visible.map(item => <li key={item.id}><button aria-pressed={selected?.id === item.id} onClick={() => setSelectedId(item.id)} className="intake-row"><span className="intake-avatar" aria-hidden="true">{item.display_name.slice(0, 1).toLocaleUpperCase('fr')}</span><span className="intake-row-copy"><strong>{item.display_name}</strong><span>{sources[item.source]}<span aria-hidden="true"> · </span>{dateLabel(item.created_at)}</span></span><span className="intake-new">Nouvelle</span><ChevronRight size={17}/></button></li>)}</ul> : <div className="intake-empty"><Inbox/><h3>{query || source !== 'all' ? 'Aucune demande trouvée' : 'Une nouvelle relation commence ici.'}</h3><p>{query || source !== 'all' ? 'Essayez un autre nom ou une autre source.' : 'Enregistrez un premier contact pour le retrouver dans cet espace.'}</p>{query || source !== 'all' ? <Button onClick={() => { setQuery(''); setSource('all'); }}>Réinitialiser les filtres</Button> : <Button onClick={startInquiry}>Créer une demande<Plus size={17}/></Button>}</div>}
+        {loading ? <div className="intake-empty" role="status"><LoaderCircle className="intake-spin"/><h3>Vos demandes arrivent…</h3><p>Vérification de l’accès et du répertoire.</p></div> : loadError ? <div className="intake-empty" role="alert"><AlertCircle/><h3>{loadError === 'denied' ? 'Accès non autorisé' : 'Répertoire indisponible'}</h3><p>{loadError === 'disabled' ? 'Le service des demandes n’est pas disponible dans cet environnement.' : failures[loadError]}</p>{loadError !== 'denied' && loadError !== 'expired' && <Button onClick={() => void load()} disabled={!online}><RefreshCw size={17}/>Réessayer</Button>}</div> : visible.length ? <ul className="intake-list">{visible.map(item => <li key={item.id}><button aria-pressed={selected?.id === item.id} onClick={() => { setOwnerSelection(false); setOwnerDetail(null); setSelectionRevision(value => value + 1); setSelectedId(item.id); }} className="intake-row"><span className="intake-avatar" aria-hidden="true">{item.display_name.slice(0, 1).toLocaleUpperCase('fr')}</span><span className="intake-row-copy"><strong>{item.display_name}</strong><span>{sources[item.source]}<span aria-hidden="true"> · </span>{dateLabel(item.created_at)}</span></span><span className="intake-new">Nouvelle</span><ChevronRight size={17}/></button></li>)}</ul> : <div className="intake-empty"><Inbox/><h3>{query || source !== 'all' ? 'Aucune demande trouvée' : 'Une nouvelle relation commence ici.'}</h3><p>{query || source !== 'all' ? 'Essayez un autre nom ou une autre source.' : 'Enregistrez un premier contact pour le retrouver dans cet espace.'}</p>{query || source !== 'all' ? <Button onClick={() => { setQuery(''); setSource('all'); }}>Réinitialiser les filtres</Button> : <Button onClick={startInquiry}>Créer une demande<Plus size={17}/></Button>}</div>}
         {list?.truncated && <p className="intake-truncated" role="status">Seules les 100 demandes les plus récentes sont affichées. La recherche et les filtres s’appliquent à cette liste.</p>}
         {!loading && !loadError && <p className="intake-list-footer">{visible.length} demande{visible.length > 1 ? 's' : ''} affichée{visible.length > 1 ? 's' : ''} · attribution manuelle des sources</p>}
       </section>
-      <aside className="work-panel intake-detail" aria-label="Demande sélectionnée">{!loading && !loadError && selected ? <InquiryDetail inquiry={selected} transport={transport}/> : <div className="intake-empty"><ClipboardList/><h3>Chaque demande, son attention.</h3><p>Sélectionnez un premier contact pour retrouver ses coordonnées et son suivi.</p></div>}<InquiryFollowUp inquiry={!loading && !loadError ? selected : null} transport={transport} onSessionExpired={() => { setList(null); expiredCallback.current?.(); }}/></aside>
+      <aside ref={detailFocus} tabIndex={-1} className="work-panel intake-detail" aria-label="Demande sélectionnée">{selected && (ownerSelection || (!loading && !loadError)) ? <InquiryDetail inquiry={selected} transport={transport}/> : <div className="intake-empty"><ClipboardList/><h3>Chaque demande, son attention.</h3><p>Sélectionnez un premier contact pour retrouver ses coordonnées et son suivi.</p></div>}<InquiryFollowUp inquiry={ownerSelection || (!loading && !loadError) ? selected : null} transport={transport} onSessionExpired={() => { setList(null); expiredCallback.current?.(); }}/></aside>
     </div>
     <Modal open={open} onOpenChange={closeDialog} title="Un nouveau premier contact" description={transport.mode === 'demo' ? 'Démonstration locale : utilisez uniquement des informations fictives.' : 'Saisie manuelle dans le cabinet vérifié. Données synthétiques uniquement.'} wide>
       <form className="intake-form" onSubmit={submit} noValidate aria-busy={saving}>
