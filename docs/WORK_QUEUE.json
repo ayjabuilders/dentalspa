@@ -126,7 +126,7 @@
       "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/inquiry-schedule-api",
       "allowed_files": ["apps/dental-api/src/intake/**", "supabase/migrations/*inquiry_schedule*.sql", "supabase/tests/*inquiry_schedule*.sql", "tests/unit/inquiry-schedule*", "tests/integration/inquiry-schedule*"],
       "acceptance": "Current-owner tenant-safe compare-and-set update with atomic audit/outbox, exact idempotency, no-op semantics and adversarial SQL/API tests.",
-      "evidence": "Integrated 8b22177 after 23 focused API/adapter/PGlite tests, 12 intake regressions, build/typecheck/lint and independent security review. Added 22 pgTAP assertions; distinct-session harness aebe6ef awaits current-head database CI."
+      "evidence": "Integrated 8b22177 after 23 focused API/adapter/PGlite tests, 12 intake regressions, build/typecheck/lint and independent security review. Current-head CI40401770443 passed 22 pgTAP assertions plus the distinct-session competing-update and replay harness."
     },
     {
       "id": "INQUIRY-SCHEDULE-UI",
@@ -141,11 +141,52 @@
     },
     {
       "id": "INQUIRY-SCHEDULE-INTEGRATE",
-      "state": "verification",
+      "state": "done",
       "owner": "coordinator",
       "depends_on": ["INQUIRY-SCHEDULE-API", "INQUIRY-SCHEDULE-UI"],
       "branch": "codex/m01-inquiry-schedule-contract",
-      "acceptance": "Independent security/UI review, generated OpenAPI, focused local and real PostgreSQL CI, no-deployment merge and owner-visible evidence."
+      "acceptance": "Independent security/UI review, generated OpenAPI, focused local and real PostgreSQL CI, no-deployment merge and owner-visible evidence.",
+      "evidence": "PR #15 squash merged a351343 after exact-head CI40401770443 application/database success. The database job passed 22 pgTAP assertions plus independent-session competing-update and concurrent-replay scenarios; the configured UI lane passed all ten schedule cases. Zero hooks/deployments before merge."
+    },
+    {
+      "id": "INQUIRY-SCHEDULE-HISTORY-CONTRACT",
+      "state": "done",
+      "owner": "coordinator",
+      "depends_on": ["INQUIRY-SCHEDULE-INTEGRATE"],
+      "branch": "codex/m01-schedule-history-contract",
+      "acceptance": "Freeze a current-owner-only bounded read journal of that actor's immutable schedule receipts with no keys, contact data, other-owner activity or mutation.",
+      "evidence": "Independent security/domain and UX reviews found no blocker after 404/selection cleanup, historical-outcome and exact-key boundaries were made explicit. Five focused schema tests and contracts typecheck passed.",
+      "development_gate": "passed"
+    },
+    {
+      "id": "INQUIRY-SCHEDULE-HISTORY-API",
+      "state": "done",
+      "owner": "pwa_verification",
+      "depends_on": ["INQUIRY-SCHEDULE-HISTORY-CONTRACT"],
+      "branch": "codex/m01-schedule-history-api",
+      "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/inquiry-schedule-history-api",
+      "allowed_files": ["apps/dental-api/src/intake/**", "supabase/migrations/*schedule_history*.sql", "supabase/tests/*schedule_history*.sql", "tests/unit/inquiry-schedule-history*", "tests/integration/inquiry-schedule-history*"],
+      "acceptance": "Tenant-safe current-owner SQL/API projection with private tie-break ordering, 50/51 truncation, no-store and adversarial tests.",
+      "evidence": "Integrated 9f57d7a after independent security review. Nineteen focused API/adapter/PGlite tests, 12 schedule/worklist regressions, API build, root typecheck and scoped lint passed. Added 15 pgTAP assertions; real PostgreSQL CI remains required."
+    },
+    {
+      "id": "INQUIRY-SCHEDULE-HISTORY-UI",
+      "state": "done",
+      "owner": "connection_ui",
+      "depends_on": ["INQUIRY-SCHEDULE-HISTORY-CONTRACT"],
+      "branch": "codex/m01-schedule-history-ui",
+      "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/inquiry-schedule-history-ui",
+      "allowed_files": ["apps/clinic-os/components/intake/**", "tests/e2e/inquiry-schedule-history.spec.ts"],
+      "acceptance": "Polished on-demand deadline journal with truthful partial scope, strict cleanup, safe states and responsive browser evidence.",
+      "evidence": "Integrated 65b4318 and lifecycle/CI correction 00cae73 after independent review. Twenty-seven configured browser/transport cases, production build, typecheck and scoped lint passed; both themes were inspected at 1536/1280/768/390."
+    },
+    {
+      "id": "INQUIRY-SCHEDULE-HISTORY-INTEGRATE",
+      "state": "verification",
+      "owner": "coordinator",
+      "depends_on": ["INQUIRY-SCHEDULE-HISTORY-API", "INQUIRY-SCHEDULE-HISTORY-UI"],
+      "branch": "codex/m01-schedule-history-contract",
+      "acceptance": "Independent security/UI review, generated OpenAPI, focused local/PostgreSQL/browser checks, no-deployment merge and owner-visible evidence."
     },
     {
       "id": "INTAKE-CONTRACT",

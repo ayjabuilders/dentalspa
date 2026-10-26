@@ -49,9 +49,11 @@
           "INQUIRY-OWNER-WORKLIST-UI",
         "INQUIRY-OWNER-WORKLIST-INTEGRATE",
         "INQUIRY-SCHEDULE-API",
-        "INQUIRY-SCHEDULE-UI"
+        "INQUIRY-SCHEDULE-UI",
+        "INQUIRY-SCHEDULE-HISTORY-API",
+        "INQUIRY-SCHEDULE-HISTORY-UI"
           ],
-      "evidence": "PR #9–10 et slice de replanification: propriétaire initial, échéance, historique append-only, vue des échéances et commande bornée du propriétaire actuel pour replanifier/supprimer la date; réattribution et cycle complet des résultats restent à construire."
+      "evidence": "PR #9–10 et slices de replanification : propriétaire initial, échéance, historique append-only, vue des échéances, commande bornée du propriétaire actuel et journal personnel non exhaustif de ses résultats; réattribution et cycle complet des résultats restent à construire."
         },
         {
           "id": "M01-6",

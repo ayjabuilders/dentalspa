@@ -1,3 +1,4 @@
+import { InquiryScheduleHistorySchema, type InquiryScheduleHistory } from '@dental/contracts';
 import { SetInquiryScheduleSchema, InquiryScheduleResultSchema, type SetInquirySchedule, type InquiryScheduleResult } from '@dental/contracts';
 import { InquiryOwnerWorklistSchema, InquirySchema, type InquiryOwnerWorklist, type Inquiry } from '@dental/contracts';
 import { FollowUpListSchema, FollowUpRecordedSchema, RecordFollowUpSchema, type FollowUpList, type FollowUpRecorded, type RecordFollowUp } from '@dental/contracts';
@@ -23,6 +24,7 @@ function instant(value: string | null): string | null {
 }
 export interface IntakeTransport {
   scheduleActive: { current: boolean };
+  scheduleHistory(id: string, signal?: AbortSignal): Promise<InquiryScheduleHistory>;
   pendingSchedule: { current: ScheduleAttempt | null };
   onPrivateClear(listener: (kind: IntakeFailure) => void): () => void;
   clearPrivate(kind: IntakeFailure): void;
@@ -71,6 +73,14 @@ export function createDemoIntakeTransport(): IntakeTransport {
   const saved = new Map<string, { fingerprint: string; result: InquiryCreated }>();
   return {
     mode: 'demo', currentUserId: demoOwner, pendingFollowUp, ...privacy, clearPrivate(kind) { pendingFollowUp.current = null; privacy.clearPrivate(kind); },
+    async scheduleHistory(id, signal) {
+      authorize(id, signal);
+      const rows = [...scheduleReceipts.entries()].filter(([key]) => key.startsWith(id + ':')).sort(([keyA, a], [keyB, b]) => b.result.receipt.recorded_at.localeCompare(a.result.receipt.recorded_at) || keyB.localeCompare(keyA));
+      return InquiryScheduleHistorySchema.parse({ inquiry_id: id, truncated: rows.length > 50, items: rows.slice(0,50).map(([,entry]) => {
+        const { previous_follow_up_at, follow_up_at, changed, recorded_at, event_version } = entry.result.receipt;
+        return { previous_follow_up_at, follow_up_at, changed, recorded_at, event_version };
+      }) });
+    },
     async setSchedule(id, input, key, signal) {
       authorize(id, signal); const body = SetInquiryScheduleSchema.parse(input);
       const fingerprint = JSON.stringify([instant(body.expected_follow_up_at), instant(body.follow_up_at)]);
@@ -161,7 +171,7 @@ export function createHttpIntakeTransport(options: { api: string; token: string;
           disabled = typeof problem === 'object' && problem !== null && 'code' in problem && problem.code === 'intake_disabled';
         }
         const kind: IntakeFailure = response.status === 401 ? 'expired' : response.status === 403 ? 'denied' : response.status === 404 ? 'missing' : disabled ? 'disabled' : response.status === 409 ? 'conflict' : response.status === 400 ? 'invalid' : 'unavailable';
-        if ((privacy.scheduleActive.current || suffix.endsWith('/follow-up-schedule')) && (kind === 'expired' || kind === 'denied' || kind === 'missing')) clearPrivate(kind);
+        if ((privacy.scheduleActive.current || suffix.endsWith('/follow-up-schedule') || suffix.endsWith('/follow-up-schedule/history')) && (kind === 'expired' || kind === 'denied' || kind === 'missing')) clearPrivate(kind);
         throw new IntakeError(kind);
       }
       if (!token || revision !== privacyRevision) throw new IntakeError('expired');
@@ -178,6 +188,12 @@ export function createHttpIntakeTransport(options: { api: string; token: string;
   return {
     ...privacy, clearPrivate,
     mode: 'connected', currentUserId: userId, pendingFollowUp,
+    async scheduleHistory(id, signal) {
+      const parsed = InquiryScheduleHistorySchema.safeParse(await send('GET', undefined, undefined, signal, '/' + encodeURIComponent(id) + '/follow-up-schedule/history'));
+      if (!token) throw new IntakeError('expired');
+      if (!parsed.success || parsed.data.inquiry_id !== id) throw new IntakeError('unavailable');
+      return parsed.data;
+    },
     async setSchedule(id, input, key, signal) {
       const body = SetInquiryScheduleSchema.parse(input);
       const parsed = InquiryScheduleResultSchema.safeParse(await send('POST', body, key, signal, '/' + encodeURIComponent(id) + '/follow-up-schedule'));
