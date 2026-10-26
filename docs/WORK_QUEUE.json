@@ -100,11 +100,50 @@
     },
     {
       "id": "TEAM-ACTIVITY-INTEGRATE",
-      "state": "verification",
+      "state": "done",
       "owner": "coordinator",
       "depends_on": ["TEAM-ACTIVITY-API", "TEAM-ACTIVITY-UI"],
       "branch": "codex/m16-activity-journal-contract",
-      "acceptance": "Independent security/UI review, generated OpenAPI, focused local checks, real PostgreSQL CI and no-deployment current-head merge; update Build Center without claiming a complete security audit."
+      "acceptance": "Independent security/UI review, generated OpenAPI, focused local checks, real PostgreSQL CI and no-deployment current-head merge; update Build Center without claiming a complete security audit.",
+      "evidence": "PR #14 squash merged 82046ca after independent security/UI lifecycle reviews and current-head CI40395453836 application/database success, including 19 Team activity pgTAP assertions. Combined OpenAPI, 25 focused tests, root typecheck, scoped lint, full build and three Build Center tests passed; UI lane passed 16 browser tests. Zero hooks/deployments before merge."
+    },
+    {
+      "id": "INQUIRY-SCHEDULE-CONTRACT",
+      "state": "done",
+      "owner": "coordinator",
+      "depends_on": ["INQUIRY-OWNER-WORKLIST-INTEGRATE"],
+      "branch": "codex/m01-inquiry-schedule-contract",
+      "acceptance": "Freeze a current-owner-only compare-and-set command for one administrative follow-up timestamp with strict idempotency, no notification, reassignment, status or booking effect.",
+      "evidence": "Independent review corrected activation/replay ordering, immutable receipt semantics, microsecond/year boundaries and atomic event/recovery rules. Three focused contract tests and contracts typecheck passed.",
+      "development_gate": "passed"
+    },
+    {
+      "id": "INQUIRY-SCHEDULE-API",
+      "state": "ready",
+      "owner": "pwa_verification",
+      "depends_on": ["INQUIRY-SCHEDULE-CONTRACT"],
+      "branch": "codex/m01-inquiry-schedule-api",
+      "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/inquiry-schedule-api",
+      "allowed_files": ["apps/dental-api/src/intake/**", "supabase/migrations/*inquiry_schedule*.sql", "supabase/tests/*inquiry_schedule*.sql", "tests/unit/inquiry-schedule*", "tests/integration/inquiry-schedule*"],
+      "acceptance": "Current-owner tenant-safe compare-and-set update with atomic audit/outbox, exact idempotency, no-op semantics and adversarial SQL/API tests."
+    },
+    {
+      "id": "INQUIRY-SCHEDULE-UI",
+      "state": "ready",
+      "owner": "connection_ui",
+      "depends_on": ["INQUIRY-SCHEDULE-CONTRACT"],
+      "branch": "codex/m01-inquiry-schedule-ui",
+      "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/inquiry-schedule-ui",
+      "allowed_files": ["apps/clinic-os/components/intake/**", "tests/e2e/inquiry-schedule.spec.ts"],
+      "acceptance": "Dental Spa follow-up scheduling dialog with demo/connected recovery, fresh worklist/detail reconciliation and complete safe states."
+    },
+    {
+      "id": "INQUIRY-SCHEDULE-INTEGRATE",
+      "state": "planned",
+      "owner": "coordinator",
+      "depends_on": ["INQUIRY-SCHEDULE-API", "INQUIRY-SCHEDULE-UI"],
+      "branch": "codex/m01-inquiry-schedule-contract",
+      "acceptance": "Independent security/UI review, generated OpenAPI, focused local and real PostgreSQL CI, no-deployment merge and owner-visible evidence."
     },
     {
       "id": "INTAKE-CONTRACT",
