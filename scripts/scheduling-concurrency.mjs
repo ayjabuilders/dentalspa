@@ -190,6 +190,8 @@ test('local PostgreSQL scheduling concurrency acceptance',{timeout:150000},async
     await begin(f,f.a);const original=await create(f,f.a);await query(f.a,'commit');
     await query(f.observer,'begin');await query(f.observer,"select pg_advisory_xact_lock(hashtextextended('scheduling:'||$1::text,0))",[f.clinic]);
     await begin(f,f.a);await begin(f,f.b);
+    const contenderStarts=await Promise.all([f.a,f.b].map(async client=>(await query(client,'select transaction_timestamp() time')).rows[0].time));
+    assert.ok(contenderStarts.every(started=>+started<Date.parse(original.item.expires_at)),'both contenders began before the synthetic lease expired');
     let releasing,creating;
     if(firstCommand==='release') {releasing=launch(f,()=>release(f,f.a,original.item.id));await blocked(f,f.aPid,f.observerPid);creating=launch(f,()=>create(f,f.b));await blocked(f,f.bPid,f.observerPid);}
     else {creating=launch(f,()=>create(f,f.b));await blocked(f,f.bPid,f.observerPid);releasing=launch(f,()=>release(f,f.a,original.item.id));await blocked(f,f.aPid,f.observerPid);}
