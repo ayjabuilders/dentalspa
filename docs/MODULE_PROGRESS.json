@@ -745,9 +745,11 @@
           "label": "Permissions fines par module et action",
           "state": "partial",
           "taskIds": [
-            "FOUNDATION-REVIEW"
+          "FOUNDATION-REVIEW",
+          "TEAM-ROSTER-API",
+          "TEAM-ROSTER-UI"
           ],
-          "evidence": "PR #1 : gardes cabinet/rôle; pas encore les permissions de tous les modules."
+        "evidence": "PR #1 et travail Team roster vérifié localement : gardes cabinet/rôle, annuaire en lecture seule réservé aux Gestionnaires/Dentistes actifs; permissions fines pour tous les modules, rôles de qualification et validation hébergée restent à construire. PostgreSQL CI Team en attente."
         },
         {
           "id": "M16-2",

@@ -2,6 +2,7 @@ import { z } from 'zod';
 export * from './intake';
 export * from './intake-follow-up';
 export * from './inquiry-worklist';
+export * from './team-roster';
 export * from './patient-lookup';
 export * from './scheduling-hold';
 export const RoleSchema = z.enum(['dentist', 'reception', 'assistant', 'manager']);

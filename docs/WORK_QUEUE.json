@@ -13,14 +13,58 @@
     },
     {
       "id": "OUTBOX-CONTENTION-EVIDENCE",
-      "state": "in_progress",
+      "state": "done",
       "owner": "pwa_verification",
       "depends_on": ["FOUNDATION-REVIEW"],
       "branch": "codex/m01-outbox-contention",
       "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/outbox-contention",
       "base": "2f8e618",
       "allowed_files": ["scripts/outbox-concurrency.mjs", "package.json", ".github/workflows/ci.yml", "tests/unit/outbox-concurrency*"],
-      "acceptance": "Use real independent local PostgreSQL sessions to prove disabled outbox worker claim/lease fencing, crash recovery, rollback and per-consumer idempotency; no hosted access or external delivery."
+      "acceptance": "Use real independent local PostgreSQL sessions to prove disabled outbox worker claim/lease fencing, crash recovery, rollback and per-consumer idempotency; no hosted access or external delivery.",
+      "evidence": "PR #11 squash merged 14b21ab after independent review and current-head CI40384291590 application/database success. Five real PostgreSQL scenarios passed; no repository hooks/deployments. Worker remains disabled."
+    },
+    {
+      "id": "TEAM-ROSTER-CONTRACT",
+      "state": "done",
+      "owner": "coordinator",
+      "depends_on": ["FOUNDATION-REVIEW"],
+      "branch": "codex/m16-team-roster-contract",
+      "acceptance": "Freeze manager/dentist-only current-clinic active staff roster, profile completeness, deterministic ordering, bounded data and explicit non-qualification claims.",
+      "evidence": "Security and UI review findings resolved before parallel work. Strict Zod and OpenAPI schema validated; contracts typecheck/build passed at cca0345.",
+      "development_gate": "passed"
+    },
+    {
+      "id": "TEAM-ROSTER-API",
+      "state": "done",
+      "owner": "pwa_verification",
+      "depends_on": ["TEAM-ROSTER-CONTRACT"],
+      "branch": "codex/m16-team-roster-api",
+      "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/team-roster-api",
+      "base": "cca0345",
+      "allowed_files": ["apps/dental-api/src/team/**", "apps/dental-api/src/app.module.ts", "supabase/migrations/*team_roster*.sql", "supabase/tests/*team_roster*.sql", "tests/unit/team-roster*", "tests/integration/team-roster*"],
+      "acceptance": "Privileged SQL and API enforce active manager/dentist same-clinic roster, 100/101 truncation, profile completeness, no-store and adversarial tests.",
+      "evidence": "Integrated daa339a after 20 focused tests, seven HTTP regressions, API build/typecheck/lint and independent security review. Added 21 pgTAP assertions; real PostgreSQL CI pending."
+    },
+    {
+      "id": "TEAM-ROSTER-UI",
+      "state": "done",
+      "owner": "connection_ui",
+      "depends_on": ["TEAM-ROSTER-CONTRACT"],
+      "branch": "codex/m16-team-roster-ui",
+      "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/team-roster-ui",
+      "base": "cca0345",
+      "allowed_files": ["apps/clinic-os/components/team/**", "apps/clinic-os/app/connection/page.tsx", "apps/clinic-os/components/workspace.tsx", "tests/e2e/team-roster.spec.ts"],
+      "acceptance": "Dental Spa synthetic Team page and connected in-memory roster with truthful access-role language, session cleanup, complete safe states and responsive keyboard evidence.",
+      "evidence": "Integrated c845fa1. Seven lane browser/transport tests passed including configured synthetic session; root inspected pearl/navy desktop/mobile and connected partial-list screenshots."
+    },
+    {
+      "id": "TEAM-ROSTER-INTEGRATE",
+      "state": "verification",
+      "owner": "coordinator",
+      "depends_on": ["TEAM-ROSTER-API", "TEAM-ROSTER-UI"],
+      "branch": "codex/m16-team-roster-contract",
+      "acceptance": "Independent security/UI review, generated OpenAPI, combined checks, PostgreSQL pgTAP/current-head CI, no-deployment merge and Build Center evidence.",
+      "evidence": "Combined lint/typechecks, 20 focused unit/integration tests and full production build passed; four combined demo/transport browser cases passed and three configured-session cases passed in isolated UI lane. OpenAPI and schema hardening integrated. PostgreSQL CI and development merge pending."
     },
     {
       "id": "INTAKE-CONTRACT",

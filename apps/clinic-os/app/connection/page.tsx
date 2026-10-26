@@ -11,6 +11,8 @@ import { PatientLookup } from '../../components/patient-lookup/patient-lookup';
 import { createPatientLookupTransport, type PatientLookupTransport } from '../../components/patient-lookup/transport';
 import { SchedulingWorkspace } from '../../components/scheduling/scheduling-workspace';
 import { createSchedulingTransport, type SchedulingTransport } from '../../components/scheduling/transport';
+import { TeamRosterView } from '../../components/team/team-roster';
+import { createTeamTransport, type TeamTransport } from '../../components/team/transport';
 import './connection.css';
 
 const stages = ['Vérification de votre identité…', 'Vérification des accès au cabinet…'];
@@ -35,6 +37,9 @@ export default function Connection() {
   const [schedulingTransport, setSchedulingTransport] = useState<SchedulingTransport | null>(null);
   const [showScheduling, setShowScheduling] = useState(false);
   const connectedScheduling = useRef<SchedulingTransport | null>(null);
+  const [teamTransport, setTeamTransport] = useState<TeamTransport | null>(null);
+  const [showTeam, setShowTeam] = useState(false);
+  const connectedTeam = useRef<TeamTransport | null>(null);
   const active = useRef(true);
   const busy = useRef(false);
   const request = useRef<AbortController | null>(null);
@@ -69,6 +74,7 @@ export default function Connection() {
       connectedIntake.current?.dispose?.();
       connectedLookup.current?.dispose();
       connectedScheduling.current?.dispose();
+      connectedTeam.current?.dispose();
       if (expiry.current) clearTimeout(expiry.current);
       window.removeEventListener('online', updateNetwork);
       window.removeEventListener('offline', updateNetwork);
@@ -96,6 +102,10 @@ export default function Connection() {
     connectedScheduling.current = null;
     setSchedulingTransport(null);
     setShowScheduling(false);
+    connectedTeam.current?.dispose();
+    connectedTeam.current = null;
+    setTeamTransport(null);
+    setShowTeam(false);
     setPassword('');
     setVisiblePassword(false);
     try {
@@ -171,6 +181,9 @@ export default function Connection() {
       const scheduling = createSchedulingTransport({ api, token: data.session.access_token, clinicId: workspace.clinic_id });
       connectedScheduling.current = scheduling;
       setSchedulingTransport(scheduling);
+      const team = createTeamTransport({ api, token: data.session.access_token, clinicId: workspace.clinic_id });
+      connectedTeam.current = team;
+      setTeamTransport(team);
       expiry.current = setTimeout(() => {
         if (!active.current) return;
         setNotice('Votre session a expiré. Les recherches et les données consultées ont été effacées.');
@@ -196,7 +209,7 @@ export default function Connection() {
     await clearSession();
   }
 
-  return <main className={`connection-page connected-access ${showIntake ? 'intake-connected-page' : ''} ${showLookup ? 'patient-lookup-page' : ''} ${showScheduling ? 'scheduling-connected-page' : ''}`}>
+  return <main className={`connection-page connected-access ${showIntake ? 'intake-connected-page' : ''} ${showLookup ? 'patient-lookup-page' : ''} ${showScheduling ? 'scheduling-connected-page' : ''} ${showTeam ? 'team-connected-page' : ''}`}>
     <section className="connection-card work-panel" aria-labelledby="connection-title">
       <Link href="/" className="access-back"><ArrowLeft size={16}/>Retour à l’aperçu</Link>
       <div className="access-emblem"><ShieldCheck size={28}/></div>
@@ -221,14 +234,16 @@ export default function Connection() {
       </form> : <section className="access-records" aria-labelledby="access-result-title">
         <div className="access-success"><ShieldCheck size={20}/><div><h2 id="access-result-title" tabIndex={-1} ref={resultHeading}>Accès au cabinet vérifié</h2><p>Choisissez un outil pour poursuivre. Aucun registre patient n’est chargé automatiquement.</p></div></div>
         <Button type="button" onClick={disconnect}><LogOut size={17}/>Se déconnecter</Button>
-        {intakeTransport && <Button type="button" variant="primary" onClick={() => { setShowScheduling(false); setShowLookup(false); setShowIntake(value => !value); }}>{showIntake ? 'Masquer les demandes' : 'Ouvrir les demandes du cabinet'}<ArrowRight size={17}/></Button>}
-        {lookupTransport && <Button type="button" onClick={() => { setShowScheduling(false); setShowIntake(false); setShowLookup(value => !value); }}>{showLookup ? 'Masquer la recherche de patient' : 'Rechercher un patient du cabinet'}<Search size={17}/></Button>}
-        {schedulingTransport && <Button type="button" onClick={() => { setShowIntake(false); setShowLookup(false); setShowScheduling(value => !value); }}>{showScheduling ? 'Masquer la planification' : 'Planifier les ressources'}<ArrowRight size={17}/></Button>}
+        {intakeTransport && <Button type="button" variant="primary" onClick={() => { setShowTeam(false); setShowScheduling(false); setShowLookup(false); setShowIntake(value => !value); }}>{showIntake ? 'Masquer les demandes' : 'Ouvrir les demandes du cabinet'}<ArrowRight size={17}/></Button>}
+        {lookupTransport && <Button type="button" onClick={() => { setShowTeam(false); setShowScheduling(false); setShowIntake(false); setShowLookup(value => !value); }}>{showLookup ? 'Masquer la recherche de patient' : 'Rechercher un patient du cabinet'}<Search size={17}/></Button>}
+        {schedulingTransport && <Button type="button" onClick={() => { setShowTeam(false); setShowIntake(false); setShowLookup(false); setShowScheduling(value => !value); }}>{showScheduling ? 'Masquer la planification' : 'Planifier les ressources'}<ArrowRight size={17}/></Button>}
+        {teamTransport && <Button type="button" onClick={() => { setShowIntake(false); setShowLookup(false); setShowScheduling(false); setShowTeam(value => !value); }}>{showTeam ? 'Masquer les membres du cabinet' : 'Ouvrir les membres du cabinet'}<ArrowRight size={17}/></Button>}
       </section>}
       <footer><LockKeyhole size={15}/><small>Session en mémoire uniquement. Aucun dossier n’est enregistré dans le navigateur par cette application.</small></footer>
     </section>
     {verifiedWorkspace !== null && intakeTransport && showIntake && <div className="intake-connected-panel"><div className="intake-connected-controls"><p>Session vérifiée · demandes du cabinet actif uniquement</p><Button type="button" onClick={disconnect}><LogOut size={17}/>Se déconnecter</Button></div><IntakeWorkspace transport={intakeTransport} onSessionExpired={() => { setNotice('Votre session a expiré. Les demandes ont été retirées de cet écran.'); void clearSession(); }}/></div>}
     {verifiedWorkspace !== null && lookupTransport && showLookup && <div><div className="lookup-connected-controls"><Button type="button" onClick={disconnect}><LogOut size={17}/>Se déconnecter</Button></div><PatientLookup transport={lookupTransport} onSessionExpired={() => { setNotice('Votre session a expiré. La recherche et ses résultats ont été effacés.'); void clearSession(); }}/></div>}
     {verifiedWorkspace !== null && schedulingTransport && <div hidden={!showScheduling}><div className="schedule-connected-controls"><Button onClick={disconnect}><LogOut size={17}/>Se déconnecter</Button></div><SchedulingWorkspace transport={schedulingTransport} onSessionExpired={() => { setNotice('Votre session a expiré. Les données de planification ont été effacées.'); void clearSession(); }}/></div>}
+    {verifiedWorkspace !== null && teamTransport && showTeam && <div><div className="team-roster-connected-controls"><Button onClick={disconnect}><LogOut size={17}/>Se déconnecter</Button></div><TeamRosterView key={verifiedWorkspace.clinic_id} transport={teamTransport} onSessionExpired={() => { setNotice('Votre session a expiré. L’annuaire et la recherche ont été effacés.'); void clearSession(); }}/></div>}
   </main>;
 }
