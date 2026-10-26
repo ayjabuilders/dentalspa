@@ -22,8 +22,9 @@ export const TeamRosterSchema = z.object({
 }).strict().superRefine((value, context) => {
   const seen = new Set<string>();
   for (const [index, member] of value.members.entries()) {
-    if (seen.has(member.user_id)) context.addIssue({ code: 'custom', message: 'Duplicate roster member', path: ['members', index, 'user_id'] });
-    seen.add(member.user_id);
+    const key = member.user_id.toLowerCase();
+    if (seen.has(key)) context.addIssue({ code: 'custom', message: 'Duplicate roster member', path: ['members', index, 'user_id'] });
+    seen.add(key);
   }
 });
 export type TeamRoster = z.infer<typeof TeamRosterSchema>;
