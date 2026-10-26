@@ -51,6 +51,8 @@ jobs:
         timeout-minutes: 3
       - run: pnpm db:inquiry-communication-language-concurrency
         timeout-minutes: 3
+      - run: pnpm db:inquiry-communication-time-zone-concurrency
+        timeout-minutes: 3
       - run: pnpm db:concurrency
         timeout-minutes: 5
       - run: pnpm db:outbox-concurrency
