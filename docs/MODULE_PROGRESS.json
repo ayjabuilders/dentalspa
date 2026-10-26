@@ -44,9 +44,11 @@
           "label": "Gérer responsable, échéance, relances et résultat",
           "state": "partial",
           "taskIds": [
-            "INQUIRY-FOLLOW-UP-INTEGRATE"
+          "INQUIRY-FOLLOW-UP-INTEGRATE",
+          "INQUIRY-OWNER-WORKLIST-API",
+          "INQUIRY-OWNER-WORKLIST-UI"
           ],
-          "evidence": "PR #9 : propriétaire initial, échéance saisie et historique append-only des tentatives/échanges manuels; réattribution, prochaine échéance et cycle complet des résultats restent à construire."
+        "evidence": "PR #9 et travail local vérifié : propriétaire initial, échéance saisie, historique append-only des tentatives/échanges manuels et vue en lecture seule des échéances du propriétaire actuel; réattribution, prochaine échéance et cycle complet des résultats restent à construire. Intégration PostgreSQL CI en attente."
         },
         {
           "id": "M01-6",

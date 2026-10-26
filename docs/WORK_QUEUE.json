@@ -144,33 +144,36 @@
     },
     {
       "id": "INQUIRY-OWNER-WORKLIST-API",
-      "state": "in_progress",
+      "state": "done",
       "owner": "pwa_verification",
       "depends_on": ["INQUIRY-OWNER-WORKLIST-CONTRACT"],
       "branch": "codex/m02-owner-worklist-api",
       "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/owner-worklist-api",
       "base": "4040ce1",
       "allowed_files": ["apps/dental-api/src/intake/**", "supabase/migrations/*owner_worklist*.sql", "supabase/tests/*owner_worklist*.sql", "tests/unit/intake-owner-worklist*", "tests/integration/intake-owner-worklist*"],
-      "acceptance": "Active role, tenant and current-owner-only read projection and detail; one database clock, three deterministic buckets, 50+ truncation, negative API/SQL tests and no-store."
+      "acceptance": "Active role, tenant and current-owner-only read projection and detail; one database clock, three deterministic buckets, 50+ truncation, negative API/SQL tests and no-store.",
+      "evidence": "Integrated df2a298 after 23 new local tests, 13 intake/follow-up HTTP regressions, API build/typecheck/lint and independent security review. The 25 pgTAP assertions await current-head PostgreSQL CI."
     },
     {
       "id": "INQUIRY-OWNER-WORKLIST-UI",
-      "state": "in_progress",
+      "state": "done",
       "owner": "connection_ui",
       "depends_on": ["INQUIRY-OWNER-WORKLIST-CONTRACT"],
       "branch": "codex/m02-owner-worklist-ui",
       "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/owner-worklist-ui",
       "base": "4040ce1",
       "allowed_files": ["apps/clinic-os/components/intake/**", "tests/e2e/intake-owner-worklist.spec.ts"],
-      "acceptance": "Truthful owner due-worklist tabs and fresh detail load across synthetic and connected states; focus, responsive, denial, expiry and partial-result browser evidence."
+      "acceptance": "Truthful owner due-worklist tabs and fresh detail load across synthetic and connected states; focus, responsive, denial, expiry and partial-result browser evidence.",
+      "evidence": "Integrated 31d6a02. Twelve lane Playwright tests passed, including seven new worklist cases; parent reviewed responsive pearl/navy screenshots. Combined demo follow-up/worklist browser regression passed."
     },
     {
       "id": "INQUIRY-OWNER-WORKLIST-INTEGRATE",
-      "state": "pending",
+      "state": "verification",
       "owner": "coordinator",
       "depends_on": ["INQUIRY-OWNER-WORKLIST-API", "INQUIRY-OWNER-WORKLIST-UI"],
       "branch": "codex/m02-owner-worklist-contract",
-      "acceptance": "Independent security/UX review, generated OpenAPI, combined focused checks, real PostgreSQL CI and no-deployment current-head merge; update owner-visible capability evidence only after verification."
+      "acceptance": "Independent security/UX review, generated OpenAPI, combined focused checks, real PostgreSQL CI and no-deployment current-head merge; update owner-visible capability evidence only after verification.",
+      "evidence": "Combined lint, all typechecks, 29 focused unit/integration tests, full production build and nine focused demo/transport browser cases passed; six configured-session browser cases passed in isolated UI lanes and were skipped in unconfigured combined run. OpenAPI regenerated; security and UI reviews clear. PostgreSQL CI and merge pending."
     },
     {
       "id": "PATIENT-LOOKUP-CONTRACT",
