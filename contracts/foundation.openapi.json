@@ -1297,6 +1297,352 @@
         ]
       }
     },
+    "/api/v1/inquiries/{id}/communication-time-zone": {
+      "get": {
+        "operationId": "CommunicationTimeZoneController_get",
+        "parameters": [
+          {
+            "name": "X-Clinic-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "schema_version": {
+                      "type": "number",
+                      "enum": [
+                        1
+                      ]
+                    },
+                    "catalogue_version": {
+                      "type": "number",
+                      "enum": [
+                        1
+                      ]
+                    },
+                    "inquiry_id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "clinic_id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "owner_user_id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "time_zone": {
+                      "nullable": true,
+                      "type": "string",
+                      "enum": [
+                        "Africa/Casablanca",
+                        "Africa/Dakar",
+                        "America/New_York",
+                        "America/Sao_Paulo",
+                        "America/Toronto",
+                        "Asia/Dubai",
+                        "Asia/Riyadh",
+                        "Asia/Tokyo",
+                        "Australia/Sydney",
+                        "Etc/UTC",
+                        "Europe/London",
+                        "Europe/Paris"
+                      ]
+                    },
+                    "revision": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 2147483647
+                    },
+                    "updated_at": {
+                      "nullable": true,
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    }
+                  },
+                  "required": [
+                    "schema_version",
+                    "catalogue_version",
+                    "inquiry_id",
+                    "clinic_id",
+                    "owner_user_id",
+                    "time_zone",
+                    "revision",
+                    "updated_at"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid path/body/key or unsupported query"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Active intake role required"
+          },
+          "404": {
+            "description": "Absent, foreign or not current owner"
+          },
+          "503": {
+            "description": "Unavailable; intake_disabled only for disabled commands"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Current-owner stated time zone; not location or availability",
+        "tags": [
+          "intake"
+        ]
+      },
+      "post": {
+        "operationId": "CommunicationTimeZoneController_set",
+        "parameters": [
+          {
+            "name": "X-Clinic-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "expected_revision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483647
+                  },
+                  "time_zone": {
+                    "nullable": true,
+                    "type": "string",
+                    "enum": [
+                      "Africa/Casablanca",
+                      "Africa/Dakar",
+                      "America/New_York",
+                      "America/Sao_Paulo",
+                      "America/Toronto",
+                      "Asia/Dubai",
+                      "Asia/Riyadh",
+                      "Asia/Tokyo",
+                      "Australia/Sydney",
+                      "Etc/UTC",
+                      "Europe/London",
+                      "Europe/Paris"
+                    ]
+                  }
+                },
+                "required": [
+                  "expected_revision",
+                  "time_zone"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "receipt": {
+                      "type": "object",
+                      "properties": {
+                        "inquiry_id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "clinic_id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "owner_user_id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "catalogue_version": {
+                          "type": "number",
+                          "enum": [
+                            1
+                          ]
+                        },
+                        "previous_time_zone": {
+                          "nullable": true,
+                          "type": "string",
+                          "enum": [
+                            "Africa/Casablanca",
+                            "Africa/Dakar",
+                            "America/New_York",
+                            "America/Sao_Paulo",
+                            "America/Toronto",
+                            "Asia/Dubai",
+                            "Asia/Riyadh",
+                            "Asia/Tokyo",
+                            "Australia/Sydney",
+                            "Etc/UTC",
+                            "Europe/London",
+                            "Europe/Paris"
+                          ]
+                        },
+                        "time_zone": {
+                          "nullable": true,
+                          "type": "string",
+                          "enum": [
+                            "Africa/Casablanca",
+                            "Africa/Dakar",
+                            "America/New_York",
+                            "America/Sao_Paulo",
+                            "America/Toronto",
+                            "Asia/Dubai",
+                            "Asia/Riyadh",
+                            "Asia/Tokyo",
+                            "Australia/Sydney",
+                            "Etc/UTC",
+                            "Europe/London",
+                            "Europe/Paris"
+                          ]
+                        },
+                        "previous_revision": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 2147483647
+                        },
+                        "revision": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 2147483647
+                        },
+                        "changed": {
+                          "type": "boolean"
+                        },
+                        "recorded_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                        },
+                        "event_version": {
+                          "type": "number",
+                          "enum": [
+                            1
+                          ]
+                        }
+                      },
+                      "required": [
+                        "inquiry_id",
+                        "clinic_id",
+                        "owner_user_id",
+                        "catalogue_version",
+                        "previous_time_zone",
+                        "time_zone",
+                        "previous_revision",
+                        "revision",
+                        "changed",
+                        "recorded_at",
+                        "event_version"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "replayed": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "receipt",
+                    "replayed"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid path/body/key or unsupported query"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Active intake role required"
+          },
+          "404": {
+            "description": "Absent, foreign or not current owner"
+          },
+          "409": {
+            "description": "Stale revision, key conflict or revision exhaustion"
+          },
+          "503": {
+            "description": "Unavailable; intake_disabled only for disabled commands"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Record an explicitly stated time zone; no messaging effect",
+        "tags": [
+          "intake"
+        ]
+      }
+    },
     "/api/v1/inquiries/{id}/communication-language": {
       "get": {
         "operationId": "CommunicationLanguageController_get",
