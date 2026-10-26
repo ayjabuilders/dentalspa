@@ -75,7 +75,7 @@ export function InquiryContactPreference({ inquiry, transport }: { inquiry: Inqu
   const visible=state?.inquiry_id===inquiry?.id && owned?state:null;
   if(!owned && !pending && !error)return null;
   return <section className="contact-preference" aria-label="Préférence de contact déclarée">
-    <div className="contact-preference-heading"><MessageSquareText size={20}/><h3>Préférence de contact déclarée</h3></div>
+    <div className="contact-preference-heading"><MessageSquareText size={20}/><h3>Contact</h3></div>
     <p className="contact-preference-boundary">{boundary}</p>
     {loading && !open?<p role="status" className="contact-preference-status"><LoaderCircle size={17} className="intake-spin"/>Lecture de la préférence…</p>:error && !open?<div role="status" className="contact-preference-status"><p>{messages[error]}</p>{owned && !['offline','denied','expired','missing'].includes(error)&&<Button onClick={()=>inquiry && void read(inquiry,false)} disabled={!online}>Relire la préférence</Button>}</div>:visible?<div className="contact-preference-value"><span>État actuellement lu</span><strong>{label(visible.preference)}</strong>{visible.updated_at&&<small>Mis à jour le <time dateTime={visible.updated_at}>{timestamp(visible.updated_at)}</time> · {zone}</small>}</div>:null}
     {(owned || pending)&&<Button onClick={start} disabled={!online || saving}><MessageSquareText size={17}/>{pending?'Vérifier la préférence':'Consigner une préférence'}</Button>}
