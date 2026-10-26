@@ -6,13 +6,13 @@ This chat coordinates integration in `C:/Users/platf/Documents/Dental Spa`. ADR-
 
 - Foundation PR #1 merged as 88c9af5 after independent review and CI40342606919: application and full Supabase database both passed. No active repository hooks or deployments found.
 - `codex/m02-intake` rebased onto merged main. Backend1291ce6 and UI25bbf53 integrated. Shared schemas and generated OpenAPI included.
-- Integrated lint, typecheck, 55 unit tests, 52 integration tests and all application builds passed. All20 browser regressions passed before the CSS-only source-filter correction; focused layout verification follows. Added23pgTAP assertions await full Supabase CI; local Docker absent.
+- Integrated lint, typecheck, 55 unit tests, 52 integration tests and all application builds passed. All20 browser regressions passed; after the CSS-only correction, Clinic build and5focused intake tests also passed. Added23pgTAP assertions await full Supabase CI; local Docker absent.
 - Independent final review found no blocker, including UTC replay, Unicode validation, activation switches, tenant scope, atomic audit/outbox and memory-only UI. Development approval only.
-- Parent inspected1280px light list/detail and dark creation dialog. Source-select clipping corrected in0024789; final visual check pending. Full responsive visual approval remains pending.
+- Parent inspected1280px light list/detail and dark creation dialog. Source-select clipping corrected in0024789 and verified in the integrated preview. Parent also visually inspected390px dark/light layouts. Evidence:qa/screenshots/intake-desktop-light.png. Broader visual/installed-device approval remains pending.
 
 ## Next action
 
-Integrate CSS correction, finish browser regression, publish bounded intake PR and verify current-head CI before merge. Backend lane is preparing read-only patient-matching requirements for the next contract; do not implement automatic merge or booking before contract freeze.
+PR #2 https://github.com/ayjabuilders/dentalspa/pull/2 is open at b0464ff; CI40346382279 is running. Check results, fix actionable failures and merge only after current-code/base checks pass. Read-only lookup proposal reviewed and cherry-picked locally as27f67e0 in docs/PATIENT_MATCHING_NEXT_SLICE.md. Freeze its request/privacy/search semantics next; selection/creation policy remains explicit. Local evidence/proposal commits are not yet pushed and do not change the PR code under CI. No automatic merge or booking implementation.
 
 ## Activation gates
 

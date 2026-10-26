@@ -64,13 +64,14 @@
     },
     {
       "id": "INTAKE-INTEGRATE",
-      "state": "running",
+      "state": "verification",
       "owner": "coordinator",
       "depends_on": [
         "INTAKE-API",
         "INTAKE-UI"
       ],
-      "acceptance": "Contract/API/browser tests and independent review before bounded PR merge."
+      "acceptance": "Contract/API/browser tests and independent review before bounded PR merge.",
+      "evidence": "PR#2 b0464ff; independent review passed,55unit52integration20browser plus5post-CSS browser tests passed; CI40346382279 application success, database pending."
     },
     {
       "id": "BOOKING-CONTRACT",
@@ -79,7 +80,8 @@
       "depends_on": [
         "INTAKE-INTEGRATE"
       ],
-      "acceptance": "Resource-safe request/confirmation and patient matching decisions frozen from PRD before parallel implementation."
+      "acceptance": "Resource-safe request/confirmation and patient matching decisions frozen from PRD before parallel implementation.",
+      "next_action": "Review patient lookup proposal from pwa_verification; freeze read-only lookup before selection/create/booking policies."
     },
     {
       "id": "HOSTED-FOUNDATION",
