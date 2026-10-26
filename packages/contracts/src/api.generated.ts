@@ -213,6 +213,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/inquiries/owner-search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Literal search in current owner inquiries; read-only, maximum50; no write activation */
+        post: operations["OwnerSearchController_search"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/inquiries/{id}/follow-up-schedule/history": {
         parameters: {
             query?: never;
@@ -1119,6 +1136,80 @@ export interface operations {
                 content?: never;
             };
             /** @description scheduling_disabled */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OwnerSearchController_search: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    name: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        clinic_id: string;
+                        /** Format: uuid */
+                        owner_user_id: string;
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            display_name: string;
+                            /** @enum {string} */
+                            source: "phone" | "website" | "whatsapp" | "instagram" | "email" | "google_business" | "walk_in" | "other";
+                            /** @enum {string} */
+                            status: "new";
+                            /** Format: date-time */
+                            follow_up_at: string | null;
+                            /** Format: date-time */
+                            created_at: string;
+                        }[];
+                        truncated: boolean;
+                    };
+                };
+            };
+            /** @description Noncanonical body or unsupported query */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Active intake role required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unavailable or malformed trusted result */
             503: {
                 headers: {
                     [name: string]: unknown;
