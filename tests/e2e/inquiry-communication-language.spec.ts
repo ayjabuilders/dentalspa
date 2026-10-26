@@ -69,3 +69,23 @@ test('qualification uses one area and keeps contact recovery independent from la
  await page.getByRole('button',{name:'Consigner une préférence',exact:true}).click();await page.getByLabel('Préférence explicitement indiquée par le contact').selectOption('phone');await page.getByRole('button',{name:'Consigner la préférence',exact:true}).click();await expect(page.getByRole('dialog')).toContainText('Résultat à vérifier');await close(page);await open(page);await close(page);await expect(page.getByRole('button',{name:'Vérifier la préférence',exact:true})).toBeVisible();
  for(const theme of ['pearl','navy']){await page.evaluate(value=>{document.documentElement.dataset.theme=value==='navy'?'dark':'light';},theme);for(const width of [1536,390]){await page.setViewportSize({width,height:1100});await page.locator('.inquiry-qualification').evaluate(el=>el.scrollIntoView({block:'start'}));await page.screenshot({animations:'disabled',path:`test-results/qualification-${theme}-${width}.png`});}}
 });
+
+test('opening recovery aborts a delayed new-inquiry read without leaving verification disabled',async({page})=>{
+ test.skip(process.env.LANGUAGE_CONFIGURED!=='1','Requires isolated synthetic authentication build.');
+ let release!:()=>void;let saved=false;const posts:{url:string;body:unknown;key:string|undefined}[]=[];
+ await connected(page,async route=>{
+  const url=route.request().url();
+  if(route.request().method()==='GET'){
+   if(url.includes(other)){await new Promise<void>(resolve=>{release=resolve;});await route.fulfill({status:200,headers,json:{...initial,inquiry_id:other}}).catch(()=>undefined);return;}
+   return route.fulfill({status:200,headers,json:{...initial,language:saved?'en':null,revision:saved?1:0,updated_at:saved?stamp:null}});
+  }
+  posts.push({url,body:route.request().postDataJSON(),key:route.request().headers()['idempotency-key']});
+  if(posts.length===1)return route.abort('failed');saved=true;return route.fulfill({status:200,headers,json:{...receipt('en'),replayed:true}});
+ });
+ await open(page);await choose(page,'en');await expect(page.getByRole('dialog')).toContainText('Résultat à vérifier');await close(page);
+ await page.locator('.intake-row').filter({hasText:'Adam Synthétique'}).click();await expect.poll(()=>Boolean(release)).toBe(true);
+ await page.getByRole('button',{name:'Vérifier la langue',exact:true}).click();
+ await expect(page.getByRole('dialog').locator('form')).toHaveAttribute('aria-busy','false');await expect(page.getByRole('button',{name:'Vérifier l’enregistrement'})).toBeEnabled();await expect(page.locator('.communication-language-target')).toContainText('Lina Synthétique');
+ await page.getByRole('button',{name:'Vérifier l’enregistrement'}).click();await expect(page.getByRole('dialog')).toContainText('Langue consignée. État actuel relu : Anglais');expect(posts).toHaveLength(2);expect(posts[1]).toEqual(posts[0]);
+ release();await expect(page.getByRole('dialog')).toContainText('Anglais');await expect(page.locator('.communication-language-target')).toContainText('Lina Synthétique');
+});

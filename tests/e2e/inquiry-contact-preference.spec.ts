@@ -56,3 +56,23 @@ test('strict transport rejects scope, echo and malformed state/receipts; no-stor
 test('demo revision CAS, no-op and original replay are isolated from inquiry and schedule',async()=>{
  const demo=createDemoIntakeTransport();const before=await demo.inquiry(id);const first={expected_revision:0,preference:'phone' as const};const key=crypto.randomUUID();await demo.setContactPreference(id,first,key);const noop=await demo.setContactPreference(id,{expected_revision:1,preference:'phone'},crypto.randomUUID());expect(noop.receipt.changed).toBe(false);expect(noop.receipt.revision).toBe(1);await demo.setContactPreference(id,{expected_revision:1,preference:'email'},crypto.randomUUID());expect((await demo.setContactPreference(id,first,key)).receipt.revision).toBe(1);expect((await demo.contactPreference(id)).preference).toBe('email');await expect(demo.setContactPreference(id,{expected_revision:1,preference:null},crypto.randomUUID())).rejects.toMatchObject({kind:'conflict'});expect(await demo.inquiry(id)).toEqual(before);
 });
+
+test('opening recovery aborts a delayed new-inquiry read without leaving verification disabled',async({page})=>{
+ test.skip(process.env.PREFERENCE_CONFIGURED!=='1','Requires isolated synthetic authentication build.');
+ let release!:()=>void;let saved=false;const posts:{url:string;body:unknown;key:string|undefined}[]=[];
+ await connected(page,async route=>{
+  const url=route.request().url();
+  if(route.request().method()==='GET'){
+   if(url.includes(other)){await new Promise<void>(resolve=>{release=resolve;});await route.fulfill({status:200,headers,json:{...initial,inquiry_id:other}}).catch(()=>undefined);return;}
+   return route.fulfill({status:200,headers,json:{...initial,preference:saved?'email':null,revision:saved?1:0,updated_at:saved?stamp:null}});
+  }
+  posts.push({url,body:route.request().postDataJSON(),key:route.request().headers()['idempotency-key']});
+  if(posts.length===1)return route.abort('failed');saved=true;return route.fulfill({status:200,headers,json:{...receipt('email'),replayed:true}});
+ });
+ await open(page);await choose(page,'email');await expect(page.getByRole('dialog')).toContainText('Résultat à vérifier');await close(page);
+ await page.locator('.intake-row').filter({hasText:'Adam Synthétique'}).click();await expect.poll(()=>Boolean(release)).toBe(true);
+ await page.getByRole('button',{name:'Vérifier la préférence',exact:true}).click();
+ await expect(page.getByRole('dialog').locator('form')).toHaveAttribute('aria-busy','false');await expect(page.getByRole('button',{name:'Vérifier l’enregistrement'})).toBeEnabled();await expect(page.locator('.contact-preference-target')).toContainText('Lina Synthétique');
+ await page.getByRole('button',{name:'Vérifier l’enregistrement'}).click();await expect(page.getByRole('dialog')).toContainText('Préférence consignée. État actuel relu : E-mail');expect(posts).toHaveLength(2);expect(posts[1]).toEqual(posts[0]);
+ release();await expect(page.getByRole('dialog')).toContainText('E-mail');await expect(page.locator('.contact-preference-target')).toContainText('Lina Synthétique');
+});

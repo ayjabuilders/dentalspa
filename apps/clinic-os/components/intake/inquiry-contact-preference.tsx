@@ -49,7 +49,7 @@ export function InquiryContactPreference({ inquiry, transport }: { inquiry: Inqu
   useEffect(()=>{if(open && message)feedback.current?.focus();},[open,message]);
   function close(){request.current?.abort();setLoading(false);setOpen(false);resetDraft();if(inquiry && owned && !transport.pendingPreference.current && !state && navigator.onLine)void read(inquiry,false);}
   function start(){
-    request.current?.abort();resetDraft();setError(null);setOpen(true);const attempt=transport.pendingPreference.current;setPending(attempt);setTargetName(attempt?.displayName ?? inquiry?.display_name ?? 'Demande initiale');
+    request.current?.abort();setLoading(false);resetDraft();setError(null);setOpen(true);const attempt=transport.pendingPreference.current;setPending(attempt);setTargetName(attempt?.displayName ?? inquiry?.display_name ?? 'Demande initiale');
     if(attempt){setMessage('Résultat à vérifier pour la demande initiale. Seule la commande conservée peut être vérifiée.');return;}
     if(inquiry && owned)void read(inquiry,true);else setOpen(false);
   }
