@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "max_agents": 3,
   "tasks": [
     {
@@ -87,7 +87,7 @@
     },
     {
       "id": "PATIENT-LOOKUP-API",
-      "state": "verification",
+      "state": "done",
       "owner": "pwa_verification",
       "depends_on": [
         "PATIENT-LOOKUP-CONTRACT"
@@ -95,7 +95,7 @@
       "branch": "codex/patient-lookup-api",
       "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/patient-lookup-api",
       "acceptance": "JSON-body POST API and RPC enforce active role/tenant scope, literal bounded matching, full-register ordering/truncation and minimal no-store response.",
-      "evidence": "Integrated as 0c1e15b. 34 focused lookup checks and combined 70 unit/71 integration tests passed; 24 pgTAP assertions await CI.",
+      "evidence": "Merged through PR #3 as d4a432e. Combined 70 unit/71 integration tests passed; current-head CI40351974022 application and database jobs passed, including 24 pgTAP assertions.",
       "allowed_files": [
         "apps/dental-api/src/patients/**",
         "supabase/migrations/*patient_lookup*",
@@ -106,7 +106,7 @@
     },
     {
       "id": "PATIENT-LOOKUP-UI",
-      "state": "verification",
+      "state": "done",
       "owner": "connection_ui",
       "depends_on": [
         "PATIENT-LOOKUP-CONTRACT"
@@ -114,7 +114,7 @@
       "branch": "codex/patient-lookup-ui",
       "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/patient-lookup-ui",
       "acceptance": "Verified-session-only lookup with explicit search, read-only details, complete safe states and no browser persistence or stale response restoration.",
-      "evidence": "Integrated as 4c48cfa plus visual-fix 60d1567. Configured synthetic production build passed 8 focused cases; parent inspected light/dark desktop and mobile, saving qa/screenshots/patient-lookup-dark.png.",
+      "evidence": "Merged through PR #3 as d4a432e. Configured synthetic production build passed 8 focused cases; parent inspected light/dark desktop and mobile after correcting inherited radio sizing, saving qa/screenshots/patient-lookup-dark.png.",
       "allowed_files": [
         "apps/clinic-os/components/patient-lookup/**",
         "apps/clinic-os/app/connection/page.tsx",
@@ -123,24 +123,67 @@
     },
     {
       "id": "PATIENT-LOOKUP-INTEGRATE",
-      "state": "verification",
+      "state": "done",
       "owner": "coordinator",
       "depends_on": [
         "PATIENT-LOOKUP-API",
         "PATIENT-LOOKUP-UI"
       ],
       "acceptance": "Independent review, relevant contract/API/SQL/browser tests and current-head CI before bounded merge.",
-      "evidence": "Independent review found no blocker through 60d1567. Combined lint, typecheck, 70 unit, 71 integration and full production build pass. OpenAPI regenerated; PR/current-head CI pending."
+      "evidence": "PR #3 squash merged d4a432e after independent review and current-head CI40351974022 application/database success. No repository hooks or deployments were present before merge."
     },
     {
-      "id": "BOOKING-CONTRACT",
-      "state": "backlog",
-      "owner": null,
+      "id": "PATIENT-SELECTION-POLICY",
+      "state": "blocked",
+      "owner": "coordinator",
       "depends_on": [
         "PATIENT-LOOKUP-INTEGRATE"
       ],
-      "acceptance": "Resource-safe request/confirmation and patient matching decisions frozen from PRD before parallel implementation.",
-      "next_action": "After the lookup slice is verified, freeze explicit patient-selection policy and transactional booking independently."
+      "acceptance": "Freeze explicit identity evidence, correction, review freshness, duplicate override and reference-generation rules before a lookup result may become a patient selection.",
+      "blocker": "Clinic identity-check and duplicate-resolution policy is not approved. Patient lookup remains read-only and cannot authorize booking or account linkage.",
+      "unblocks_on": "Product and clinic owners approve the identity evidence, correction, freshness and duplicate override policy."
+    },
+    {
+      "id": "SCHEDULING-HOLD-CONTRACT",
+      "state": "done",
+      "owner": "coordinator",
+      "depends_on": [
+        "PATIENT-LOOKUP-INTEGRATE"
+      ],
+      "branch": "codex/m02-scheduling-contract",
+      "acceptance": "Freeze staff-only synthetic provider/chair availability and transactional hold schemas, errors, truth states, idempotency, concurrency, tenant/role and activation boundaries without patient association or appointment confirmation.",
+      "evidence": "Three independent boundary analyses converged on the smaller hold kernel. Privacy/security and UX re-reviews found no remaining blocker after revisions; strict shared schemas pass 15 focused contract checks and contracts-package typecheck.",
+      "development_gate": "passed"
+    },
+    {
+      "id": "SCHEDULING-HOLD-API",
+      "state": "ready",
+      "owner": "pwa_verification",
+      "depends_on": [
+        "SCHEDULING-HOLD-CONTRACT"
+      ],
+      "acceptance": "Tenant-safe informational availability and atomic provider/chair holds with real PostgreSQL exclusion constraints, clinic transaction locking, durable idempotency, audit/outbox and adversarial concurrency evidence."
+    },
+    {
+      "id": "SCHEDULING-HOLD-UI",
+      "state": "ready",
+      "owner": "connection_ui",
+      "depends_on": [
+        "SCHEDULING-HOLD-CONTRACT"
+      ],
+      "acceptance": "Dental Spa agenda and hold-review UI with synthetic fixtures, truthful proposed/observed/held/expired/conflict/unknown states, timezone clarity and no implied booking or patient selection."
+    },
+    {
+      "id": "APPOINTMENT-CONFIRMATION-CONTRACT",
+      "state": "blocked",
+      "owner": null,
+      "depends_on": [
+        "PATIENT-SELECTION-POLICY",
+        "SCHEDULING-HOLD-API"
+      ],
+      "acceptance": "Freeze atomic hold consumption, appointment confirmation, cancellation and rescheduling without conflating arrival, consultation or notification.",
+      "blocker": "Patient-selection policy and operational resource rules are unresolved.",
+      "unblocks_on": "PATIENT-SELECTION-POLICY and SCHEDULING-HOLD-API pass their development gates; clinic rules are approved for activation."
     },
     {
       "id": "HOSTED-FOUNDATION",
