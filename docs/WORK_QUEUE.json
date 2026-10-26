@@ -78,7 +78,7 @@
     },
     {
       "id": "TEAM-ACTIVITY-API",
-      "state": "ready",
+      "state": "active",
       "owner": "pwa_verification",
       "depends_on": ["TEAM-ACTIVITY-CONTRACT"],
       "branch": "codex/m16-team-activity-api",
@@ -88,7 +88,7 @@
     },
     {
       "id": "TEAM-ACTIVITY-UI",
-      "state": "ready",
+      "state": "active",
       "owner": "connection_ui",
       "depends_on": ["TEAM-ACTIVITY-CONTRACT"],
       "branch": "codex/m16-team-activity-ui",
