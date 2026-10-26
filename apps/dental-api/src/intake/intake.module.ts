@@ -23,5 +23,9 @@ import { OwnerSearchController } from './presentation/owner-search.controller';
 import { OwnerSearchService } from './application/owner-search.service';
 import { OWNER_SEARCH_REPOSITORY } from './domain/owner-search';
 import { SupabaseOwnerSearch } from './infrastructure/owner-search.repository';
-@Module({controllers:[OwnerSearchController,ScheduleHistoryController,InquiryScheduleController,IntakeController,FollowUpController,OwnerWorklistController],providers:[OwnerSearchService,{provide:OWNER_SEARCH_REPOSITORY,useClass:SupabaseOwnerSearch},ScheduleHistoryService,{provide:SCHEDULE_HISTORY_REPOSITORY,useClass:SupabaseScheduleHistory},InquiryScheduleService,{provide:INQUIRY_SCHEDULE_REPOSITORY,useClass:SupabaseInquirySchedule},IntakeService,{provide:INTAKE_REPOSITORY,useClass:SupabaseIntake},FollowUpService,{provide:FOLLOW_UP_REPOSITORY,useClass:SupabaseFollowUp},OwnerWorklistService,{provide:OWNER_WORKLIST_REPOSITORY,useClass:SupabaseOwnerWorklist}]})
+import { ContactPreferenceController } from './presentation/contact-preference.controller';
+import { ContactPreferenceService } from './application/contact-preference.service';
+import { CONTACT_PREFERENCE_REPOSITORY } from './domain/contact-preference';
+import { SupabaseContactPreference } from './infrastructure/contact-preference.repository';
+@Module({controllers:[ContactPreferenceController,OwnerSearchController,ScheduleHistoryController,InquiryScheduleController,IntakeController,FollowUpController,OwnerWorklistController],providers:[ContactPreferenceService,{provide:CONTACT_PREFERENCE_REPOSITORY,useClass:SupabaseContactPreference},OwnerSearchService,{provide:OWNER_SEARCH_REPOSITORY,useClass:SupabaseOwnerSearch},ScheduleHistoryService,{provide:SCHEDULE_HISTORY_REPOSITORY,useClass:SupabaseScheduleHistory},InquiryScheduleService,{provide:INQUIRY_SCHEDULE_REPOSITORY,useClass:SupabaseInquirySchedule},IntakeService,{provide:INTAKE_REPOSITORY,useClass:SupabaseIntake},FollowUpService,{provide:FOLLOW_UP_REPOSITORY,useClass:SupabaseFollowUp},OwnerWorklistService,{provide:OWNER_WORKLIST_REPOSITORY,useClass:SupabaseOwnerWorklist}]})
 export class IntakeModule {}
