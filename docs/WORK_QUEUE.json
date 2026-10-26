@@ -86,7 +86,7 @@
     },
     {
       "id": "INQUIRY-FOLLOW-UP-API",
-      "state": "running",
+      "state": "verification",
       "owner": "pwa_verification",
       "depends_on": [
         "INQUIRY-FOLLOW-UP-CONTRACT"
@@ -101,11 +101,12 @@
         "tests/unit/intake-follow-up*",
         "tests/integration/intake-follow-up*"
       ],
-      "acceptance": "Owner/role/tenant-safe bounded history and idempotent append-only follow-up RPC with atomic audit/outbox and negative PostgreSQL/API evidence."
+      "acceptance": "Owner/role/tenant-safe bounded history and idempotent append-only follow-up RPC with atomic audit/outbox and negative PostgreSQL/API evidence.",
+      "evidence": "API lane c828085 integrated; 68 relevant tests passed, including 26 new; independent security/domain review clear. Full PostgreSQL pgTAP CI remains pending."
     },
     {
       "id": "INQUIRY-FOLLOW-UP-UI",
-      "state": "running",
+      "state": "verification",
       "owner": "connection_ui",
       "depends_on": [
         "INQUIRY-FOLLOW-UP-CONTRACT"
@@ -117,17 +118,19 @@
         "apps/clinic-os/components/intake/**",
         "tests/e2e/intake-follow-up.spec.ts"
       ],
-      "acceptance": "Truthful synthetic and connected follow-up dialog/history with exact-key unknown-result recovery, session cleanup and focused browser coverage."
+      "acceptance": "Truthful synthetic and connected follow-up dialog/history with exact-key unknown-result recovery, session cleanup and focused browser coverage.",
+      "evidence": "UI lane 13d1ff6 integrated; 13 focused browser tests passed in isolated preview, including synthetic configured-session cases; independent UI review clear. Final integrated CI remains pending."
     },
     {
       "id": "INQUIRY-FOLLOW-UP-INTEGRATE",
-      "state": "queued",
+      "state": "running",
       "owner": "coordinator",
       "depends_on": [
         "INQUIRY-FOLLOW-UP-API",
         "INQUIRY-FOLLOW-UP-UI"
       ],
-      "acceptance": "Integrate API/UI, regenerate OpenAPI, review independently, verify relevant local/CI database and browser checks, then merge a bounded synthetic development PR without activating real follow-up."
+      "acceptance": "Integrate API/UI, regenerate OpenAPI, review independently, verify relevant local/CI database and browser checks, then merge a bounded synthetic development PR without activating real follow-up.",
+      "evidence": "Combined lint, all typechecks, 101 unit, 109 integration, production build and 13 focused browser tests passed locally; 3 configured-session browser tests were separately verified in the UI lane. CI and merge pending."
     },
     {
       "id": "PATIENT-LOOKUP-CONTRACT",
