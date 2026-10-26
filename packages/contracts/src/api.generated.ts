@@ -84,6 +84,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/patients/lookup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Read-only patient lookup: literal exact reference or name prefix; maximum 20 */
+        post: operations["PatientsController_lookup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/patients": {
         parameters: {
             query?: never;
@@ -254,6 +271,79 @@ export interface operations {
         requestBody?: never;
         responses: {
             200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PatientsController_lookup: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    mode: "reference_exact";
+                    query: string;
+                } | {
+                    /** @enum {string} */
+                    mode: "name_prefix";
+                    query: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            clinic_id: string;
+                            reference: string;
+                            display_name: string;
+                            /** @enum {string} */
+                            match_basis: "reference_exact" | "name_prefix";
+                        }[];
+                        truncated: boolean;
+                    };
+                };
+            };
+            /** @description Invalid input or unsupported query parameters */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Identity missing, invalid or expired */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Active reception/manager/dentist membership required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Provider or malformed result failure */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
