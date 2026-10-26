@@ -20,6 +20,7 @@
     "db:test": "supabase test db",
     "db:concurrency": "node --test scripts/scheduling-concurrency.mjs",
     "db:inquiry-schedule-concurrency": "node --test scripts/inquiry-schedule-concurrency.mjs",
+    "db:inquiry-contact-preference-concurrency": "node --test scripts/inquiry-contact-preference-concurrency.mjs",
     "db:outbox-concurrency": "node --experimental-transform-types --test scripts/outbox-concurrency.mjs",
     "contracts:generate": "pnpm --filter @dental/contracts build && pnpm --filter @dental/dental-api build && node scripts/openapi.mjs && openapi-typescript contracts/foundation.openapi.json -o packages/contracts/src/api.generated.ts"
   },

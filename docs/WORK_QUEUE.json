@@ -242,35 +242,35 @@
     },
     {
       "id": "INQUIRY-CONTACT-PREFERENCE-API",
-      "state": "active",
+      "state": "done",
       "owner": "pwa_verification",
       "depends_on": ["INQUIRY-CONTACT-PREFERENCE-CONTRACT"],
       "branch": "codex/m01-contact-preference-api",
       "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/inquiry-contact-preference-api",
       "base": "3742f6d",
       "allowed_files": ["apps/dental-api/src/intake/**", "supabase/migrations/*contact_preference*.sql", "supabase/tests/*contact_preference*.sql", "scripts/inquiry-contact-preference-concurrency.mjs", "tests/unit/inquiry-contact-preference-*", "tests/integration/inquiry-contact-preference-*"],
-      "acceptance": "Private current-owner state, idempotent revisioned command, minimal audit/outbox and adversarial SQL/API evidence."
+      "acceptance": "Private current-owner state, idempotent revisioned command, minimal audit/outbox and adversarial SQL/API evidence.",
+      "evidence": "Integrated 2f782e2 from isolated lane commit 63a9756. Thirty focused contract/adapter/API/PGlite tests, API typecheck and scoped lint passed; 34 pgTAP assertions and independent-session contention/replay await current-head database CI."
     },
     {
       "id": "INQUIRY-CONTACT-PREFERENCE-UI",
-      "state": "active",
+      "state": "done",
       "owner": "connection_ui",
       "depends_on": ["INQUIRY-CONTACT-PREFERENCE-CONTRACT"],
       "branch": "codex/m01-contact-preference-ui",
       "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/inquiry-contact-preference-ui",
       "base": "3742f6d",
       "allowed_files": ["apps/clinic-os/components/intake/**", "tests/e2e/inquiry-contact-preference.spec.ts"],
-      "acceptance": "Polished Dental Spa preference block/dialog with explicit choice, truthful consent boundary and complete connected recovery states."
+      "acceptance": "Polished Dental Spa preference block/dialog with explicit choice, truthful consent boundary and complete connected recovery states.",
+      "evidence": "Integrated 31e2fe4 from isolated lane commit 239a0d6. Thirteen focused demo/configured browser and transport cases, Clinic typecheck, scoped lint and production builds passed; pearl/navy screenshots at 1536/1280/768/390 were inspected."
     },
     {
       "id": "INQUIRY-CONTACT-PREFERENCE-INTEGRATE",
-      "state": "blocked",
+      "state": "verification",
       "owner": "coordinator",
       "depends_on": ["INQUIRY-CONTACT-PREFERENCE-API", "INQUIRY-CONTACT-PREFERENCE-UI"],
       "branch": "codex/m01-contact-preference-contract",
-      "acceptance": "Independent security/UI review, generated OpenAPI, focused local/PostgreSQL/browser checks, no-deployment merge and owner-visible evidence.",
-      "blocker": "API/database and UI implementations have not started.",
-      "unblocks_on": "Both implementation lanes are reviewed and integrated."
+      "acceptance": "Independent security/UI review, generated OpenAPI, focused local/PostgreSQL/browser checks, no-deployment merge and owner-visible evidence."
     },
     {
       "id": "INTAKE-CONTRACT",
