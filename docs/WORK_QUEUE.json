@@ -242,25 +242,27 @@
     },
     {
       "id": "INQUIRY-OWNER-SEARCH-PAGE-API",
-      "state": "running",
+      "state": "done",
       "owner": "pwa_verification",
       "depends_on": ["INQUIRY-OWNER-SEARCH-PAGE-CONTRACT"],
       "branch": "codex/m01-owner-search-page-api",
       "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/inquiry-owner-search-page-api",
       "base": "842f222",
       "allowed_files": ["apps/dental-api/src/intake/**", "supabase/migrations/*owner_search_page*.sql", "supabase/tests/*owner_search_page*.sql", "tests/unit/inquiry-owner-search-page-*", "tests/integration/inquiry-owner-search-page-*"],
-      "acceptance": "Current-owner keyset search with untrusted tuple bound, filter-before-bound/51, exact scope/query echoes, native precision, no-store and adversarial tests."
+      "acceptance": "Current-owner keyset search with untrusted tuple bound, filter-before-bound/51, exact scope/query echoes, native precision, no-store and adversarial tests.",
+      "evidence": "Integrated 74c9f7c from independently reviewed lane 22f251b. Twenty-eight new API/adapter/PGlite tests and 27 contract/v1 regressions passed in-lane; combined verification passed 61 focused tests. Added 32 pgTAP assertions pending exact-head database CI."
     },
     {
       "id": "INQUIRY-OWNER-SEARCH-PAGE-UI",
-      "state": "running",
+      "state": "done",
       "owner": "connection_ui",
       "depends_on": ["INQUIRY-OWNER-SEARCH-PAGE-CONTRACT"],
       "branch": "codex/m01-owner-search-page-ui",
       "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/inquiry-owner-search-page-ui",
       "base": "842f222",
       "allowed_files": ["apps/clinic-os/components/intake/**", "tests/e2e/inquiry-owner-search-page.spec.ts"],
-      "acceptance": "Explicit next/restart search-page controls with replacement, truthful fresh-observation states, safe cleanup/focus and responsive accessibility."
+      "acceptance": "Explicit next/restart search-page controls with replacement, truthful fresh-observation states, safe cleanup/focus and responsive accessibility.",
+      "evidence": "Integrated e0ef90a from independently reviewed lane 880be76. Lane passed 21 browser/transport cases and responsive pearl/navy inspection; combined configured verification passed all 28 paged and v1 search cases after updating the integration fixture. True physical 200% zoom remains a release gate."
     },
     {
       "id": "INQUIRY-OWNER-SEARCH-PAGE-INTEGRATE",
@@ -269,7 +271,8 @@
       "depends_on": ["INQUIRY-OWNER-SEARCH-PAGE-API", "INQUIRY-OWNER-SEARCH-PAGE-UI"],
       "branch": "codex/m01-owner-search-page-contract",
       "acceptance": "Independent security/UI review, generated OpenAPI, focused local/PostgreSQL/browser checks, no-deployment merge and owner-visible evidence.",
-      "next_action": "Integrate disjoint API/database and UI lanes, then require exact-head application/database CI before merge."
+      "evidence": "Independent API/security and UI/lifecycle reviews cleared both lanes. Generated OpenAPI, 61 focused contract/API/adapter/PGlite tests, all workspace typechecks, scoped lint, full production build and 28 configured browser cases passed. Real PostgreSQL migration/32 pgTAP assertions remain the exact-head CI gate.",
+      "next_action": "Open the bounded feature PR, verify zero hooks/deployments, require exact-head application/database CI, then squash merge and publish owner-visible Build Center evidence separately."
     },
     {
       "id": "INQUIRY-CONTACT-PREFERENCE-CONTRACT",
