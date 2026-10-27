@@ -213,6 +213,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/inquiries/owner-planned-actions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Current-owner recorded intentions; read-only, maximum 50; no write activation */
+        get: operations["PlannedActionWorklistController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/inquiries/{id}/planned-action": {
         parameters: {
             query?: never;
@@ -1208,6 +1225,77 @@ export interface operations {
                 content?: never;
             };
             /** @description scheduling_disabled */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlannedActionWorklistController_list: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {number} */
+                        schema_version: 1;
+                        /** Format: uuid */
+                        clinic_id: string;
+                        /** Format: uuid */
+                        owner_user_id: string;
+                        /** Format: date-time */
+                        observed_at: string;
+                        items: {
+                            /** Format: uuid */
+                            inquiry_id: string;
+                            display_name: string;
+                            /** @enum {number} */
+                            vocabulary_version: 1;
+                            /** @enum {string} */
+                            planned_action: "review_inquiry" | "review_follow_up";
+                            revision: number;
+                            /** Format: date-time */
+                            updated_at: string;
+                        }[];
+                        truncated: boolean;
+                    };
+                };
+            };
+            /** @description Unsupported query */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Active intake role required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unavailable or malformed trusted result */
             503: {
                 headers: {
                     [name: string]: unknown;
