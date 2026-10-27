@@ -364,6 +364,44 @@
       "evidence": "PR #20 squash merged 749fec2 after exact-head CI40422590299 application/database success. The database job passed 372 total pgTAP assertions, including all 48 time-zone assertions, and both independent-session CAS/replay scenarios; hooks and deployments were zero."
     },
     {
+      "id": "INQUIRY-PLANNED-ACTION-CONTRACT",
+      "state": "done",
+      "owner": "coordinator",
+      "depends_on": ["INQUIRY-COMMUNICATION-TIME-ZONE-INTEGRATE"],
+      "branch": "codex/m01-inquiry-planned-action-contract",
+      "acceptance": "Freeze a separate current-owner projection and compare-and-set command for a limited staff-entered administrative intention, without execution, task, contact, status, deadline, booking or clinical effects.",
+      "evidence": "Independent security/domain, UX and API/database reviews cleared the exact two-value versioned internal-review vocabulary, inquiry-level reassignment semantics, separate CAS/idempotency resource, minimized event and compact planning row. Three focused contract tests and contracts typecheck passed.",
+      "development_gate": "passed"
+    },
+    {
+      "id": "INQUIRY-PLANNED-ACTION-API",
+      "state": "ready",
+      "owner": "pwa_verification",
+      "depends_on": ["INQUIRY-PLANNED-ACTION-CONTRACT"],
+      "branch": "codex/m01-inquiry-planned-action-api",
+      "allowed_files": ["apps/dental-api/src/intake/**", "supabase/migrations/*planned_action*.sql", "supabase/tests/*planned_action*.sql", "scripts/inquiry-planned-action-concurrency.mjs", "tests/unit/inquiry-planned-action-*", "tests/integration/inquiry-planned-action-*"],
+      "acceptance": "Private current-owner state, revisioned idempotent command, exact versioned internal-review vocabulary, minimal audit/outbox and adversarial SQL/API evidence."
+    },
+    {
+      "id": "INQUIRY-PLANNED-ACTION-UI",
+      "state": "ready",
+      "owner": "connection_ui",
+      "depends_on": ["INQUIRY-PLANNED-ACTION-CONTRACT"],
+      "branch": "codex/m01-inquiry-planned-action-ui",
+      "allowed_files": ["apps/clinic-os/components/intake/**", "tests/e2e/inquiry-planned-action.spec.ts", "tests/e2e/inquiry-communication-time-zone.spec.ts", "tests/e2e/inquiry-communication-language.spec.ts", "tests/e2e/inquiry-contact-preference.spec.ts", "tests/e2e/inquiry-schedule.spec.ts", "tests/e2e/inquiry-follow-up.spec.ts"],
+      "acceptance": "Polished compact planning row with explicit internal-review intent, truthful limitations and isolated connected recovery states."
+    },
+    {
+      "id": "INQUIRY-PLANNED-ACTION-INTEGRATE",
+      "state": "blocked",
+      "owner": "coordinator",
+      "depends_on": ["INQUIRY-PLANNED-ACTION-API", "INQUIRY-PLANNED-ACTION-UI"],
+      "branch": "codex/m01-inquiry-planned-action-contract",
+      "acceptance": "Independent security/UI review, generated OpenAPI, focused local/PostgreSQL/browser checks, no-deployment merge and owner-visible evidence.",
+      "blocker": "The contract and implementation lanes are incomplete.",
+      "unblocks_on": "Both implementation lanes are reviewed and integrated."
+    },
+    {
       "id": "INTAKE-CONTRACT",
       "state": "done",
       "owner": "coordinator",
