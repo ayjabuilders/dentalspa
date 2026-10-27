@@ -9,6 +9,7 @@ import { InquiryOwnerSearchRequestSchema, InquiryOwnerSearchResultSchema, type I
 import { InquiryScheduleHistorySchema, type InquiryScheduleHistory } from '@dental/contracts';
 import { SetInquiryScheduleSchema, InquiryScheduleResultSchema, type SetInquirySchedule, type InquiryScheduleResult } from '@dental/contracts';
 import { InquiryOwnerWorklistSchema, InquirySchema, type InquiryOwnerWorklist, type Inquiry } from '@dental/contracts';
+import { InquiryOwnerOverduePageRequestSchema, InquiryOwnerOverduePageResultSchema, type InquiryOwnerOverdueCursor, type InquiryOwnerOverduePageResult } from '@dental/contracts';
 import { FollowUpListSchema, FollowUpRecordedSchema, RecordFollowUpSchema, type FollowUpList, type FollowUpRecorded, type RecordFollowUp } from '@dental/contracts';
 import { CreateInquirySchema, InquiryCreatedSchema, InquiryListSchema, type CreateInquiry, type InquiryCreated, type InquiryList } from '@dental/contracts';
 
@@ -66,6 +67,7 @@ export interface IntakeTransport {
   mode: 'demo' | 'connected';
   currentUserId: string;
   ownerWorklist(signal?: AbortSignal): Promise<InquiryOwnerWorklist>;
+  ownerOverduePage(after: InquiryOwnerOverdueCursor | null, signal?: AbortSignal): Promise<InquiryOwnerOverduePageResult>;
   inquiry(id: string, signal?: AbortSignal): Promise<Inquiry>;
   list(signal?: AbortSignal): Promise<InquiryList>;
   create(body: CreateInquiry, key: string, signal?: AbortSignal): Promise<InquiryCreated>;
@@ -223,6 +225,17 @@ export function createDemoIntakeTransport(): IntakeTransport {
         undated: bucket(minimal.filter(item => item.follow_up_at === null).sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at) || b.id.localeCompare(a.id))),
       });
     },
+    async ownerOverduePage(after, signal) {
+      signal?.throwIfAborted(); if (disposed) throw new IntakeError('expired');
+      const request = InquiryOwnerOverduePageRequestSchema.parse({ after });
+      const observed_at = new Date().toISOString(); const observed = Date.parse(observed_at);
+      const rows = items.filter(item => item.owner_user_id === demoOwner && item.follow_up_at !== null && Date.parse(item.follow_up_at) <= observed)
+        .sort((a, b) => Date.parse(a.follow_up_at!) - Date.parse(b.follow_up_at!) || a.id.toLowerCase().localeCompare(b.id.toLowerCase()))
+        .filter(item => request.after === null || Date.parse(item.follow_up_at!) > Date.parse(request.after.follow_up_at) || (Date.parse(item.follow_up_at!) === Date.parse(request.after.follow_up_at) && item.id.toLowerCase() > request.after.inquiry_id.toLowerCase()));
+      const page = rows.slice(0, 51); const visible = page.slice(0, 50).map(({ id, clinic_id, owner_user_id, display_name, source, status, follow_up_at, created_at }) => ({ id, clinic_id, owner_user_id, display_name, source, status, follow_up_at, created_at }));
+      const last = visible.at(-1);
+      return InquiryOwnerOverduePageResultSchema.parse({ clinic_id: demoClinic, owner_user_id: demoOwner, observed_at, after: request.after, items: visible, truncated: page.length > 50, next_after: page.length > 50 && last ? { follow_up_at: last.follow_up_at!, inquiry_id: last.id } : null });
+    },
     async inquiry(id, signal) { authorize(id, signal); return InquirySchema.parse(items.find(item => item.id === id)); },
     async followUps(id, signal) {
       authorize(id, signal);
@@ -270,7 +283,7 @@ export function createHttpIntakeTransport(options: { api: string; token: string;
   let privacyRevision = 0;
   const controllers = new Set<AbortController>();
   const fetcher = options.fetcher ?? fetch;
-  async function send(method: 'GET' | 'POST', body?: CreateInquiry | RecordFollowUp | SetInquirySchedule | InquiryOwnerSearchRequest | InquiryOwnerSearchPageRequest | SetInquiryContactPreference | SetInquiryCommunicationLanguage | SetInquiryCommunicationTimeZone | SetInquiryPlannedAction, key?: string, callerSignal?: AbortSignal, suffix = '') {
+  async function send(method: 'GET' | 'POST', body?: CreateInquiry | RecordFollowUp | SetInquirySchedule | InquiryOwnerSearchRequest | InquiryOwnerSearchPageRequest | InquiryOwnerOverduePageRequest | SetInquiryContactPreference | SetInquiryCommunicationLanguage | SetInquiryCommunicationTimeZone | SetInquiryPlannedAction, key?: string, callerSignal?: AbortSignal, suffix = '') {
     if (!token) throw new IntakeError('expired');
     const revision = privacyRevision;
     const controller = new AbortController();
@@ -407,6 +420,13 @@ export function createHttpIntakeTransport(options: { api: string; token: string;
       const parsed = InquiryOwnerWorklistSchema.safeParse(await send('GET', undefined, undefined, signal, '/owner-worklist'));
       if (!token) throw new IntakeError('expired');
       if (!parsed.success || [parsed.data.overdue, parsed.data.upcoming, parsed.data.undated].some(bucket => bucket.items.some(item => item.clinic_id !== clinicId || item.owner_user_id !== userId))) throw new IntakeError('unavailable');
+      return parsed.data;
+    },
+    async ownerOverduePage(after, signal) {
+      const body = InquiryOwnerOverduePageRequestSchema.parse({ after });
+      const parsed = InquiryOwnerOverduePageResultSchema.safeParse(await send('POST', body, undefined, signal, '/owner-overdue-page'));
+      if (!token) throw new IntakeError('expired');
+      if (!parsed.success || parsed.data.clinic_id !== clinicId || parsed.data.owner_user_id !== userId || JSON.stringify(parsed.data.after) !== JSON.stringify(body.after) || parsed.data.items.some(item => item.clinic_id !== clinicId || item.owner_user_id !== userId)) throw new IntakeError('unavailable');
       return parsed.data;
     },
     async inquiry(id, signal) {
