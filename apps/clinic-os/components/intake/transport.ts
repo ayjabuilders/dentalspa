@@ -9,7 +9,7 @@ import { InquiryOwnerSearchRequestSchema, InquiryOwnerSearchResultSchema, type I
 import { InquiryScheduleHistorySchema, type InquiryScheduleHistory } from '@dental/contracts';
 import { SetInquiryScheduleSchema, InquiryScheduleResultSchema, type SetInquirySchedule, type InquiryScheduleResult } from '@dental/contracts';
 import { InquiryOwnerWorklistSchema, InquirySchema, type InquiryOwnerWorklist, type Inquiry } from '@dental/contracts';
-import { InquiryOwnerOverduePageRequestSchema, InquiryOwnerOverduePageResultSchema, type InquiryOwnerOverdueCursor, type InquiryOwnerOverduePageResult } from '@dental/contracts';
+import { InquiryOwnerOverduePageRequestSchema, InquiryOwnerOverduePageResultSchema, type InquiryOwnerOverdueCursor, type InquiryOwnerOverduePageRequest, type InquiryOwnerOverduePageResult } from '@dental/contracts';
 import { FollowUpListSchema, FollowUpRecordedSchema, RecordFollowUpSchema, type FollowUpList, type FollowUpRecorded, type RecordFollowUp } from '@dental/contracts';
 import { CreateInquirySchema, InquiryCreatedSchema, InquiryListSchema, type CreateInquiry, type InquiryCreated, type InquiryList } from '@dental/contracts';
 
