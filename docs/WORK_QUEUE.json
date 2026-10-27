@@ -485,12 +485,12 @@
     },
     {
       "id": "INQUIRY-PLANNED-ACTION-HISTORY-INTEGRATE",
-      "state": "verification",
+      "state": "done",
       "owner": "coordinator",
       "depends_on": ["INQUIRY-PLANNED-ACTION-HISTORY-API", "INQUIRY-PLANNED-ACTION-HISTORY-UI"],
       "branch": "codex/m01-planned-action-history-contract",
       "acceptance": "Independent security/UI review, generated OpenAPI, focused local/PostgreSQL/browser checks, no-deployment merge and owner-visible evidence.",
-      "next_action": "Open the bounded development PR, require exact-head application/database CI and merge only with zero hooks/deployments."
+      "evidence": "PR #25 squash merged d524450 after exact-head CI40442770865 application/database success. The database job applied the additive history RPC and passed all 19 new pgTAP assertions; local integration passed 37 focused contract/API regressions, 18 configured browser cases, full build/typechecks/lint and independent reviews. Repository hooks and deployments were zero."
     },
     {
       "id": "INTAKE-CONTRACT",
