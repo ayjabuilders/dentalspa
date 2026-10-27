@@ -1,3 +1,4 @@
+import { InquiryPlannedActionHistorySchema, type InquiryPlannedActionHistory } from '@dental/contracts';
 import { InquiryPlannedActionWorklistSchema, type InquiryPlannedActionWorklist } from '@dental/contracts';
 import { InquiryPlannedActionStateSchema, InquiryPlannedActionResultSchema, SetInquiryPlannedActionSchema, type InquiryPlannedActionState, type InquiryPlannedActionResult, type SetInquiryPlannedAction } from '@dental/contracts';
 import { InquiryCommunicationTimeZoneStateSchema, InquiryCommunicationTimeZoneResultSchema, SetInquiryCommunicationTimeZoneSchema, type InquiryCommunicationTimeZoneState, type InquiryCommunicationTimeZoneResult, type SetInquiryCommunicationTimeZone } from '@dental/contracts';
@@ -39,6 +40,7 @@ function instant(value: string | null): string | null {
 export interface IntakeTransport {
   ownerPlannedActions(signal?: AbortSignal): Promise<InquiryPlannedActionWorklist>;
   pendingPlannedAction: { current: PlannedActionAttempt | null };
+  plannedActionHistory(id: string, signal?: AbortSignal): Promise<InquiryPlannedActionHistory>;
   plannedAction(id: string, signal?: AbortSignal): Promise<InquiryPlannedActionState>;
   setPlannedAction(id: string, body: SetInquiryPlannedAction, key: string, signal?: AbortSignal): Promise<InquiryPlannedActionResult>;
   pendingTimeZone: { current: TimeZoneAttempt | null };
@@ -117,6 +119,14 @@ export function createDemoIntakeTransport(): IntakeTransport {
       signal?.throwIfAborted(); if (disposed) throw new IntakeError('expired');
       const rows = items.filter(item => item.owner_user_id === demoOwner).flatMap(item => { const state = plannedActionState(item.id); return state.planned_action === null || state.updated_at === null ? [] : [{ inquiry_id: item.id, display_name: item.display_name, vocabulary_version: 1 as const, planned_action: state.planned_action, revision: state.revision, updated_at: state.updated_at }]; }).sort((a,b) => b.updated_at.localeCompare(a.updated_at) || (a.inquiry_id === b.inquiry_id ? 0 : a.inquiry_id < b.inquiry_id ? 1 : -1));
       return InquiryPlannedActionWorklistSchema.parse({ schema_version: 1, clinic_id: demoClinic, owner_user_id: demoOwner, observed_at: new Date().toISOString(), items: rows.slice(0,50), truncated: rows.length > 50 });
+    },
+    async plannedActionHistory(id, signal) {
+      authorize(id, signal);
+      const rows = [...plannedActionReceipts.entries()].filter(([key]) => key.startsWith(id + ':')).sort(([a,x],[b,y]) => y.result.receipt.recorded_at.localeCompare(x.result.receipt.recorded_at) || b.localeCompare(a));
+      return InquiryPlannedActionHistorySchema.parse({ inquiry_id:id, truncated:rows.length>50, items:rows.slice(0,50).map(([,entry])=>{
+        const { vocabulary_version, previous_planned_action, planned_action, previous_revision, revision, changed, recorded_at, event_version }=entry.result.receipt;
+        return { vocabulary_version, previous_planned_action, planned_action, previous_revision, revision, changed, recorded_at, event_version };
+      }) });
     },
     async plannedAction(id, signal) { authorize(id, signal); return InquiryPlannedActionStateSchema.parse(plannedActionState(id)); },
     async setPlannedAction(id, input, key, signal) {
@@ -270,7 +280,7 @@ export function createHttpIntakeTransport(options: { api: string; token: string;
           disabled = typeof problem === 'object' && problem !== null && 'code' in problem && problem.code === 'intake_disabled';
         }
         const kind: IntakeFailure = response.status === 401 ? 'expired' : response.status === 403 ? 'denied' : response.status === 404 ? 'missing' : disabled ? 'disabled' : response.status === 409 ? 'conflict' : response.status === 400 ? 'invalid' : 'unavailable';
-        if ((privacy.pendingPlannedAction.current !== null || privacy.pendingTimeZone.current !== null || privacy.pendingLanguage.current !== null || privacy.pendingPreference.current !== null || privacy.scheduleActive.current || suffix.endsWith('/follow-up-schedule') || suffix.endsWith('/follow-up-schedule/history') || suffix === '/owner-search' || suffix === '/owner-planned-actions' || suffix.endsWith('/contact-preference') || suffix.endsWith('/communication-language') || suffix.endsWith('/communication-time-zone') || suffix.endsWith('/planned-action')) && (kind === 'expired' || kind === 'denied' || kind === 'missing')) clearPrivate(kind);
+        if ((privacy.pendingPlannedAction.current !== null || privacy.pendingTimeZone.current !== null || privacy.pendingLanguage.current !== null || privacy.pendingPreference.current !== null || privacy.scheduleActive.current || suffix.endsWith('/follow-up-schedule') || suffix.endsWith('/follow-up-schedule/history') || suffix === '/owner-search' || suffix === '/owner-planned-actions' || suffix.endsWith('/contact-preference') || suffix.endsWith('/communication-language') || suffix.endsWith('/communication-time-zone') || suffix.endsWith('/planned-action') || suffix.endsWith('/planned-action/history')) && (kind === 'expired' || kind === 'denied' || kind === 'missing')) clearPrivate(kind);
         throw new IntakeError(kind);
       }
       if (!token || revision !== privacyRevision) throw new IntakeError('expired');
@@ -291,6 +301,12 @@ export function createHttpIntakeTransport(options: { api: string; token: string;
       const parsed = InquiryPlannedActionWorklistSchema.safeParse(await send('GET', undefined, undefined, signal, '/owner-planned-actions'));
       if (!token) throw new IntakeError('expired');
       if (!parsed.success || parsed.data.clinic_id.toLowerCase() !== clinicId.toLowerCase() || parsed.data.owner_user_id.toLowerCase() !== userId.toLowerCase()) throw new IntakeError('unavailable');
+      return parsed.data;
+    },
+    async plannedActionHistory(id, signal) {
+      const parsed=InquiryPlannedActionHistorySchema.safeParse(await send('GET',undefined,undefined,signal,'/'+encodeURIComponent(id)+'/planned-action/history'));
+      if(!token)throw new IntakeError('expired');
+      if(!parsed.success || parsed.data.inquiry_id.toLowerCase()!==id.toLowerCase())throw new IntakeError('unavailable');
       return parsed.data;
     },
     async plannedAction(id, signal) {

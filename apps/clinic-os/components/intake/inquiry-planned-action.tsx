@@ -1,4 +1,5 @@
 'use client';
+import { InquiryPlannedActionHistory } from './inquiry-planned-action-history';
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { Button, Modal } from '@dental/ui-clinic';
 import { LoaderCircle, ListTodo, RefreshCw, ShieldCheck } from 'lucide-react';
@@ -20,6 +21,7 @@ const messages: Record<IntakeFailure,string> = {
 };
 const timestamp = (value:string) => new Intl.DateTimeFormat('fr-MA',{dateStyle:'medium',timeStyle:'medium'}).format(new Date(value));
 export function InquiryPlannedAction({ inquiry, transport, readRevision=0 }: { inquiry: Inquiry|null; transport: IntakeTransport; readRevision?: number }) {
+  const [historyRevision,setHistoryRevision]=useState(0);
   const id = useId(); const [state,setState] = useState<InquiryPlannedActionState|null>(null); const [fresh,setFresh] = useState<InquiryPlannedActionState|null>(null);
   const [targetName,setTargetName] = useState(''); const [open,setOpen] = useState(false); const [choice,setChoice] = useState(''); const [clearing,setClearing] = useState(false);
   const [pending,setPending] = useState<PlannedActionAttempt|null>(transport.pendingPlannedAction.current); const [loading,setLoading] = useState(false); const [saving,setSaving] = useState(false);
@@ -63,7 +65,7 @@ export function InquiryPlannedAction({ inquiry, transport, readRevision=0 }: { i
       if(current.revision<result.receipt.revision)throw new IntakeError('unavailable');
       if(!active.current || controller.signal.aborted)return;
       transport.pendingPlannedAction.current=null;setPending(null);setFresh(null);setChoice('');setClearing(false);
-      if(selected.current?.id===command.id)setState(current);
+      if(selected.current?.id===command.id){setState(current);setHistoryRevision(value=>value+1);}
       setMessage(`${result.receipt.changed?'Intention enregistrée.':'Aucun changement nécessaire.'} État actuel relu : ${label(current.planned_action)}. ${transport.mode==='demo'?'Simulation locale uniquement.':''}`);
     }catch(failure){
       if(!active.current || controller.signal.aborted)return;const kind=failure instanceof IntakeError?failure.kind:'unavailable';
@@ -79,6 +81,7 @@ export function InquiryPlannedAction({ inquiry, transport, readRevision=0 }: { i
     <p className="planned-action-boundary">{boundary}</p>
     {loading && !open?<p role="status" className="planned-action-status"><LoaderCircle size={17} className="intake-spin"/>Lecture de l’intention…</p>:error && !open?<div role="status" className="planned-action-status"><p>{messages[error]}</p>{owned && !['offline','denied','expired','missing'].includes(error)&&<Button onClick={()=>inquiry && void read(inquiry,false)} disabled={!online}>Relire l’intention</Button>}</div>:visible?<div className="planned-action-value"><span>État actuellement lu</span><strong>{label(visible.planned_action)}</strong>{visible.updated_at&&<small>Mis à jour le <time dateTime={visible.updated_at}>{timestamp(visible.updated_at)}</time> · {zone}</small>}</div>:null}
     {(owned || pending)&&<Button onClick={start} disabled={!online || saving}><ListTodo size={17}/>{pending?'Vérifier l’action prévue':visible?.planned_action?'Modifier l’action prévue':'Renseigner l’action prévue'}</Button>}
+    <InquiryPlannedActionHistory inquiry={inquiry} transport={transport} revision={historyRevision}/>
     <Modal open={open} onOpenChange={next=>{if(!busy.current && !next)close();}} title="Renseigner l’action prévue" description={boundary}>
       <form className="planned-action-form" onSubmit={submit} aria-busy={loading || saving}>
         <div className="planned-action-target"><ShieldCheck size={21}/><div><strong>{targetName}</strong><small>{transport.mode==='demo'?'Simulation synthétique · mémoire temporaire':'Responsable actuel · cabinet vérifié'}</small></div></div>
