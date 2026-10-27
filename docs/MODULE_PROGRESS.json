@@ -58,9 +58,10 @@
         "INQUIRY-OWNER-SEARCH-API",
         "INQUIRY-OWNER-SEARCH-UI",
         "INQUIRY-PLANNED-ACTION-INTEGRATE",
-        "INQUIRY-PLANNED-ACTION-WORKLIST-INTEGRATE"
+        "INQUIRY-PLANNED-ACTION-WORKLIST-INTEGRATE",
+        "INQUIRY-PLANNED-ACTION-HISTORY-INTEGRATE"
           ],
-      "evidence": "PR #9–10, #15–17, #21 et #23 : propriétaire initial, recherche serveur de ses anciennes demandes, échéance, historique append-only, vue des échéances, commande bornée du propriétaire actuel, journal personnel non exhaustif, prochaine intention administrative sans exécution et liste privée de ces intentions; réattribution et cycle complet des résultats restent à construire."
+      "evidence": "PR #9–10, #15–17, #21, #23 et #25 : propriétaire initial, recherche serveur de ses anciennes demandes, échéance, historique append-only, vue des échéances, commande bornée du propriétaire actuel, journaux personnels non exhaustifs, prochaine intention administrative sans exécution, liste privée de ces intentions et historique personnel de leurs commandes; réattribution et cycle complet des résultats restent à construire."
         },
         {
           "id": "M01-6",
