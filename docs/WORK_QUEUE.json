@@ -383,7 +383,7 @@
       "base": "3bfe4bd",
       "allowed_files": ["apps/dental-api/src/intake/**", "supabase/migrations/*planned_action*.sql", "supabase/tests/*planned_action*.sql", "scripts/inquiry-planned-action-concurrency.mjs", "tests/unit/inquiry-planned-action-*", "tests/integration/inquiry-planned-action-*"],
       "acceptance": "Private current-owner state, revisioned idempotent command, exact versioned internal-review vocabulary, minimal audit/outbox and adversarial SQL/API evidence.",
-      "evidence": "Commit 0b63c04 integrated after independent security review. Thirty-two new focused tests plus twenty-one access/time-zone/follow-up regressions passed; 53 pgTAP assertions and the independent-session CAS/replay harness await current-head CI.",
+      "evidence": "Commit 0b63c04 integrated after independent security review. Thirty-two new focused tests plus twenty-one access/time-zone/follow-up regressions passed. Exact-head CI40428097384 passed all 53 planned-action pgTAP assertions and the independent-session competing-revision/replay harness.",
       "development_gate": "passed"
     },
     {
@@ -401,12 +401,12 @@
     },
     {
       "id": "INQUIRY-PLANNED-ACTION-INTEGRATE",
-      "state": "verification",
+      "state": "done",
       "owner": "coordinator",
       "depends_on": ["INQUIRY-PLANNED-ACTION-API", "INQUIRY-PLANNED-ACTION-UI"],
       "branch": "codex/m01-inquiry-planned-action-contract",
       "acceptance": "Independent security/UI review, generated OpenAPI, focused local/PostgreSQL/browser checks, no-deployment merge and owner-visible evidence.",
-      "next_action": "Generate OpenAPI/types, run combined checks and exact-head PostgreSQL CI, then merge only with zero hooks/deployments."
+      "evidence": "PR #21 squash merged 2cea7ea after exact-head CI40428097384 application/database success. The database job passed 425 total pgTAP assertions, including all 53 planned-action assertions, plus the independent-session CAS/replay harness. Local combined checks and 67 configured browser cases passed; repository hooks and deployments were zero."
     },
     {
       "id": "INTAKE-CONTRACT",
