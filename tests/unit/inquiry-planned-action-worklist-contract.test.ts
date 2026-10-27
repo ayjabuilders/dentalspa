@@ -68,8 +68,10 @@ describe('inquiry planned-action worklist v1 contract', () => {
     const valid = InquiryPlannedActionWorklistSchema.parse(result([]));
     expect(valid.clinic_id).toBe(clinic);
     expect(valid.owner_user_id).toBe(owner);
-    const { clinic_id: _clinicId, ...missingClinic } = result([]);
-    const { owner_user_id: _ownerId, ...missingOwner } = result([]);
+    const missingClinic: Record<string, unknown> = { ...result([]) };
+    const missingOwner: Record<string, unknown> = { ...result([]) };
+    delete missingClinic.clinic_id;
+    delete missingOwner.owner_user_id;
     expect(InquiryPlannedActionWorklistSchema.safeParse(missingClinic).success).toBe(false);
     expect(InquiryPlannedActionWorklistSchema.safeParse(missingOwner).success).toBe(false);
   });

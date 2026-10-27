@@ -1,6 +1,6 @@
 # Inquiry planned-action worklist v1 — recorded intentions only
 
-Status: draft for bounded synthetic M01 development. This contract projects recorded administrative intentions for the current owner. It is not a task queue, priority model, completion system, contact permission, deadline, booking step, clinical decision or AI recommendation.
+Status: frozen and independently reviewed for bounded synthetic M01 development. This contract projects recorded administrative intentions for the current owner. It is not a task queue, priority model, completion system, contact permission, deadline, booking step, clinical decision or AI recommendation.
 
 ## Meaning and source boundary
 

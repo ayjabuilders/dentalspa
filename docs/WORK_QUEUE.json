@@ -420,23 +420,25 @@
     },
     {
       "id": "INQUIRY-PLANNED-ACTION-WORKLIST-API",
-      "state": "running",
+      "state": "done",
       "owner": "pwa_verification",
       "depends_on": ["INQUIRY-PLANNED-ACTION-WORKLIST-CONTRACT"],
       "branch": "codex/m01-planned-action-worklist-api",
       "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/inquiry-planned-action-worklist-api",
       "allowed_files": ["apps/dental-api/src/intake/**", "supabase/migrations/*planned_action_worklist*.sql", "supabase/tests/*planned_action_worklist*.sql", "tests/unit/inquiry-planned-action-worklist-*", "tests/integration/inquiry-planned-action-worklist-*"],
-      "acceptance": "Tenant-safe current-owner SQL/API projection with filter-before-limit, 50/51 truncation, exact scope echo, no-store and adversarial tests."
+      "acceptance": "Tenant-safe current-owner SQL/API projection with filter-before-limit, 50/51 truncation, exact scope echo, no-store and adversarial tests.",
+      "evidence": "Integrated commit 21b603a after independent security review. Nineteen new API/adapter/PGlite tests plus twenty-one access/owner-worklist/planned-action regressions passed; API build, root typecheck and scoped lint passed. Twenty-five pgTAP assertions await exact-head CI."
     },
     {
       "id": "INQUIRY-PLANNED-ACTION-WORKLIST-UI",
-      "state": "running",
+      "state": "done",
       "owner": "connection_ui",
       "depends_on": ["INQUIRY-PLANNED-ACTION-WORKLIST-CONTRACT"],
       "branch": "codex/m01-planned-action-worklist-ui",
       "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/inquiry-planned-action-worklist-ui",
       "allowed_files": ["apps/clinic-os/components/intake/**", "tests/e2e/inquiry-planned-action-worklist.spec.ts"],
-      "acceptance": "Polished Intentions view inside the existing worklist with fresh selection, truthful snapshot semantics, strict cleanup and complete responsive safe states."
+      "acceptance": "Polished Intentions view inside the existing worklist with fresh selection, truthful snapshot semantics, strict cleanup and complete responsive safe states.",
+      "evidence": "Integrated commits 686f0e5 and 1ff6587 after independent review found and the lane fixed stale deadline-snapshot replay across view changes. Seventeen configured integrated browser cases, production build, typecheck and scoped lint passed; both themes were inspected at 1536, 1280, 768 and 390 pixels."
     },
     {
       "id": "INQUIRY-PLANNED-ACTION-WORKLIST-INTEGRATE",
@@ -445,7 +447,7 @@
       "depends_on": ["INQUIRY-PLANNED-ACTION-WORKLIST-API", "INQUIRY-PLANNED-ACTION-WORKLIST-UI"],
       "branch": "codex/m01-planned-action-worklist-contract",
       "acceptance": "Independent security/UI review, generated OpenAPI, focused local/PostgreSQL/browser checks, no-deployment merge and owner-visible evidence.",
-      "next_action": "Integrate the disjoint API/database and UI lanes, then run combined and exact-head CI verification."
+      "next_action": "Open the bounded development PR, require exact-head application/database CI and merge only with zero hooks/deployments."
     },
     {
       "id": "INTAKE-CONTRACT",
