@@ -131,3 +131,5 @@ PR #25 squash merged as `d524450` after exact-head CI40442770865 application/dat
 ## Local integration — 27 October 2026
 
 Paged current-owner inquiry search is integrated on local main through commits 637a976–2cead34. Existing recorded independent API and UI reviews and lane verification are retained; 32 new pgTAP assertions are pending real PostgreSQL validation. The overdue-page contract branch (8440951) is already reviewed and its implementation is now ready; hosted/real-data activation remains separate. Policy-only commit 8fa0c57 precedes this functional batch. No remote push, hosted migration or deployment was made.
+
+The overdue-owner-page contract is integrated locally at 6ae9eac with the existing independent reviews and seven contract tests recorded from its source lane. API/database and UI implementation are active in disjoint worktrees from this base. Real PostgreSQL remains a delivery gate.
