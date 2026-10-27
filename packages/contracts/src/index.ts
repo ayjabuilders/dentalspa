@@ -5,6 +5,7 @@ export * from './inquiry-worklist';
 export * from './inquiry-schedule';
 export * from './inquiry-schedule-history';
 export * from './inquiry-owner-search';
+export * from './inquiry-owner-search-page';
 export * from './inquiry-contact-preference';
 export * from './inquiry-communication-language';
 export * from './inquiry-communication-time-zone';
