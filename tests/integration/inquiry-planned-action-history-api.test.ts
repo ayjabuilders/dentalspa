@@ -1,0 +1,22 @@
+import { afterAll,beforeAll,beforeEach,describe,expect,it,vi } from 'vitest';
+import { Test } from '@nestjs/testing';
+import { NotFoundException,type INestApplication } from '@nestjs/common';
+import request from 'supertest';
+import { AppModule } from '../../apps/dental-api/src/app.module';
+import { IDENTITY,type IdentityPort,type StaffRole } from '../../apps/dental-api/src/identity/domain/access';
+import { PLANNED_ACTION_HISTORY_REPOSITORY,type PlannedActionHistoryRepository } from '../../apps/dental-api/src/intake/domain/planned-action-history';
+import { A,B,STAFF,PATIENT,P1,P2 } from '../fixtures';
+const item={vocabulary_version:1 as const,previous_planned_action:null,planned_action:null,previous_revision:0,revision:0,changed:false,recorded_at:'2026-10-26T20:00:00.123456Z',event_version:1 as const};
+const result={inquiry_id:P1,items:[item],truncated:false};
+const identity:IdentityPort={verify:async token=>token==='patient'?PATIENT:['reception','manager','dentist','assistant','inactive'].includes(token)?STAFF:null,memberships:async token=>token==='patient'?[]:[{clinic_id:A,user_id:STAFF,role:(token==='inactive'?'reception':token) as StaffRole,active:token!=='inactive'}],patientLinks:async()=>[]};
+describe('planned action history HTTP privacy',()=>{
+ let app:INestApplication;const list=vi.fn<PlannedActionHistoryRepository['list']>();
+ beforeAll(async()=>{const module=await Test.createTestingModule({imports:[AppModule]}).overrideProvider(IDENTITY).useValue(identity).overrideProvider(PLANNED_ACTION_HISTORY_REPOSITORY).useValue({list}).compile();app=module.createNestApplication({logger:false});app.setGlobalPrefix('api/v1');await app.init();});
+ afterAll(async()=>{await app?.close();vi.unstubAllEnvs();});
+ beforeEach(()=>{vi.stubEnv('ENABLE_INTAKE_COMMANDS','false');list.mockReset().mockResolvedValue(result);});
+ const get=(token='reception',id=P1,clinic=A)=>request(app.getHttpServer()).get(`/api/v1/inquiries/${id}/planned-action/history`).set('Authorization',`Bearer ${token}`).set('X-Clinic-Id',clinic);
+ it('allows permitted roles with writes disabled, no-store, empty and50+ results',async()=>{for(const role of ['reception','manager','dentist']){const response=await get(role).expect(200);expect(response.body).toEqual(result);expect(response.headers['cache-control']).toBe('no-store');}list.mockResolvedValueOnce({...result,items:[]});expect((await get().expect(200)).body.items).toEqual([]);list.mockResolvedValueOnce({...result,items:Array.from({length:50},()=>item),truncated:true});expect((await get().expect(200)).body.truncated).toBe(true);});
+ it('denies absent identity, inactive/assistant and foreign clinic',async()=>{expect((await get('expired').expect(401)).headers['cache-control']).toBe('no-store');for(const role of ['patient','inactive','assistant'])await get(role).expect(403);await get('reception',P1,B).expect(403);expect(list).not.toHaveBeenCalled();});
+ it('rejects path/query before provider and sanitizes not-found/provider errors',async()=>{await get('reception','invalid').expect(400);await get().query({actor_id:P2}).expect(400);expect(list).not.toHaveBeenCalled();list.mockRejectedValueOnce(new NotFoundException('private previous owner'));expect((await get().expect(404)).text).not.toContain('private');list.mockRejectedValueOnce(new Error('private contact'));const response=await get().expect(503);expect(response.headers['cache-control']).toBe('no-store');expect(response.body).toEqual({statusCode:503,message:'Planned action history unavailable'});});
+ it('rejects wrong target, private fields, invalid changed flag, ascending microseconds and impossible partial',async()=>{for(const payload of [{...result,inquiry_id:undefined},{...result,inquiry_id:P2},{...result,items:[{...item,vocabulary_version:2}]},{...result,items:[{...item,revision:1}]},{...result,actor_id:STAFF},{...result,items:[{...item,request_key:P2}]},{...result,items:[{...item,changed:true}]},{...result,truncated:true},{...result,items:[item,{...item,recorded_at:'2026-10-26T20:00:00.123457Z'}]}]){list.mockResolvedValueOnce(payload as never);expect((await get().expect(503)).body).toEqual({statusCode:503,message:'Planned action history unavailable'});}});
+});
