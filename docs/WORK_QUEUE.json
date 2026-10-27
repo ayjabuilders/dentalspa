@@ -231,6 +231,47 @@
       "evidence": "PR #17 squash merged 2529260 after exact-head CI40410311718 application/database success, including 20 owner-search pgTAP assertions. Independent reviews and combined local checks passed; zero hooks/deployments before merge."
     },
     {
+      "id": "INQUIRY-OWNER-SEARCH-PAGE-CONTRACT",
+      "state": "done",
+      "owner": "coordinator",
+      "depends_on": ["INQUIRY-OWNER-SEARCH-INTEGRATE"],
+      "branch": "codex/m01-owner-search-page-contract",
+      "acceptance": "Freeze an explicit keyset continuation read for older current-owner literal-name matches without totals, snapshot claims, source filtering or expanded authority.",
+      "evidence": "Independent product, security/database and UX reviews selected owner-search keyset pagination over mutable overdue pagination and low-value source filtering. Review constrained cursors/results to PostgreSQL microseconds and UTC years 0001–9999, clarified first-page routing and selection/restart cleanup. Five focused schema tests, contracts typecheck and scoped lint passed.",
+      "development_gate": "passed"
+    },
+    {
+      "id": "INQUIRY-OWNER-SEARCH-PAGE-API",
+      "state": "running",
+      "owner": "pwa_verification",
+      "depends_on": ["INQUIRY-OWNER-SEARCH-PAGE-CONTRACT"],
+      "branch": "codex/m01-owner-search-page-api",
+      "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/inquiry-owner-search-page-api",
+      "base": "842f222",
+      "allowed_files": ["apps/dental-api/src/intake/**", "supabase/migrations/*owner_search_page*.sql", "supabase/tests/*owner_search_page*.sql", "tests/unit/inquiry-owner-search-page-*", "tests/integration/inquiry-owner-search-page-*"],
+      "acceptance": "Current-owner keyset search with untrusted tuple bound, filter-before-bound/51, exact scope/query echoes, native precision, no-store and adversarial tests."
+    },
+    {
+      "id": "INQUIRY-OWNER-SEARCH-PAGE-UI",
+      "state": "running",
+      "owner": "connection_ui",
+      "depends_on": ["INQUIRY-OWNER-SEARCH-PAGE-CONTRACT"],
+      "branch": "codex/m01-owner-search-page-ui",
+      "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/inquiry-owner-search-page-ui",
+      "base": "842f222",
+      "allowed_files": ["apps/clinic-os/components/intake/**", "tests/e2e/inquiry-owner-search-page.spec.ts"],
+      "acceptance": "Explicit next/restart search-page controls with replacement, truthful fresh-observation states, safe cleanup/focus and responsive accessibility."
+    },
+    {
+      "id": "INQUIRY-OWNER-SEARCH-PAGE-INTEGRATE",
+      "state": "verification",
+      "owner": "coordinator",
+      "depends_on": ["INQUIRY-OWNER-SEARCH-PAGE-API", "INQUIRY-OWNER-SEARCH-PAGE-UI"],
+      "branch": "codex/m01-owner-search-page-contract",
+      "acceptance": "Independent security/UI review, generated OpenAPI, focused local/PostgreSQL/browser checks, no-deployment merge and owner-visible evidence.",
+      "next_action": "Integrate disjoint API/database and UI lanes, then require exact-head application/database CI before merge."
+    },
+    {
       "id": "INQUIRY-CONTACT-PREFERENCE-CONTRACT",
       "state": "done",
       "owner": "coordinator",
