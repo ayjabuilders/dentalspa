@@ -657,6 +657,45 @@
       "evidence": "PR #10 squash merged 2f8e618 after independent security/UI reviews, combined lint/typechecks, 29 focused unit/integration tests, full production build, nine combined browser cases, three Build Center cases and final-head CI40382143855 application/database success. Database reset, pgTAP, concurrency and lint steps passed; zero hooks/deployments. Six configured-session browser cases passed in isolated synthetic UI lanes."
     },
     {
+      "id": "INQUIRY-OWNER-OVERDUE-PAGE-CONTRACT",
+      "state": "done",
+      "owner": "coordinator",
+      "depends_on": ["INQUIRY-OWNER-WORKLIST-INTEGRATE"],
+      "branch": "codex/m01-owner-overdue-page-contract",
+      "acceptance": "Freeze fresh-observation continuation of the current owner's overdue administrative deadlines without totals, stable traversal, urgency, completion, contact or expanded authority.",
+      "evidence": "Three independent audits selected overdue continuation over exact source filtering and declaration histories. Product/domain, security/database and UX reviews resolved same-traversal repeats/omissions, exact restricted RPC grants, locale-independent UUID ordering, fresh restart/reschedule behavior and separate page observation/count semantics. Seven schema tests, contracts typecheck and scoped lint passed.",
+      "development_gate": "passed"
+    },
+    {
+      "id": "INQUIRY-OWNER-OVERDUE-PAGE-API",
+      "state": "blocked",
+      "owner": null,
+      "depends_on": ["INQUIRY-OWNER-OVERDUE-PAGE-CONTRACT", "INQUIRY-OWNER-SEARCH-PAGE-INTEGRATE"],
+      "branch": "codex/m01-owner-overdue-page-api",
+      "allowed_files": ["apps/dental-api/src/intake/**", "supabase/migrations/*owner_overdue_page*.sql", "supabase/tests/*owner_overdue_page*.sql", "tests/unit/inquiry-owner-overdue-page-*", "tests/integration/inquiry-owner-overdue-page-*"],
+      "acceptance": "Current-owner overdue keyset read with authoritative observation time, mutable-page semantics, restricted POST RPC and adversarial SQL/API tests.",
+      "blocker": "Wait for the paged owner-search feature to merge so the next stacked migration and shared Intake integration base are current."
+    },
+    {
+      "id": "INQUIRY-OWNER-OVERDUE-PAGE-UI",
+      "state": "blocked",
+      "owner": null,
+      "depends_on": ["INQUIRY-OWNER-OVERDUE-PAGE-CONTRACT", "INQUIRY-OWNER-SEARCH-PAGE-INTEGRATE"],
+      "branch": "codex/m01-owner-overdue-page-ui",
+      "allowed_files": ["apps/clinic-os/components/intake/**", "tests/e2e/inquiry-owner-overdue-page.spec.ts"],
+      "acceptance": "Compact overdue next/restart flow with page-specific observation, truthful mutable-data copy, safe reschedule/detail cleanup and responsive accessibility.",
+      "blocker": "Wait for the paged owner-search feature to merge because both slices modify the shared Intake transport and search/worklist lifecycle."
+    },
+    {
+      "id": "INQUIRY-OWNER-OVERDUE-PAGE-INTEGRATE",
+      "state": "blocked",
+      "owner": "coordinator",
+      "depends_on": ["INQUIRY-OWNER-OVERDUE-PAGE-API", "INQUIRY-OWNER-OVERDUE-PAGE-UI"],
+      "branch": "codex/m01-owner-overdue-page-contract",
+      "acceptance": "Independent security/UI review, generated OpenAPI, focused local/PostgreSQL/browser checks, no-deployment merge and owner-visible evidence.",
+      "blocker": "Implementation lanes remain closed until INQUIRY-OWNER-SEARCH-PAGE-INTEGRATE is merged."
+    },
+    {
       "id": "PATIENT-LOOKUP-CONTRACT",
       "state": "done",
       "owner": "coordinator",
