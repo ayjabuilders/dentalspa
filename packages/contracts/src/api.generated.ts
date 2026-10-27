@@ -213,6 +213,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/inquiries/{id}/planned-action/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Current owner own planned-action receipts; newest first, maximum 50; no write activation required */
+        get: operations["PlannedActionHistoryController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/inquiries/owner-planned-actions": {
         parameters: {
             query?: never;
@@ -1225,6 +1242,83 @@ export interface operations {
                 content?: never;
             };
             /** @description scheduling_disabled */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlannedActionHistoryController_list: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        inquiry_id: string;
+                        items: {
+                            /** @enum {number} */
+                            vocabulary_version: 1;
+                            /** @enum {string|null} */
+                            previous_planned_action: "review_inquiry" | "review_follow_up" | null;
+                            /** @enum {string|null} */
+                            planned_action: "review_inquiry" | "review_follow_up" | null;
+                            previous_revision: number;
+                            revision: number;
+                            changed: boolean;
+                            /** Format: date-time */
+                            recorded_at: string;
+                            /** @enum {number} */
+                            event_version: 1;
+                        }[];
+                        truncated: boolean;
+                    };
+                };
+            };
+            /** @description Invalid path or unsupported query */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Active intake role required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Absent, foreign or not currently owned */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unavailable or malformed trusted result */
             503: {
                 headers: {
                     [name: string]: unknown;
