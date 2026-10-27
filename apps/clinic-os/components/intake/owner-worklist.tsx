@@ -52,7 +52,8 @@ export function OwnerWorklist({ transport, freshData, selectionRevision, onSelec
     return () => { unsubscribe(); active.current = false; listRequest.current?.abort(); detailRequest.current?.abort(); window.removeEventListener('online', network); window.removeEventListener('offline', network); };
   }, [transport,view]);
   useEffect(() => { detailRequest.current?.abort(); setOpening(null); setOpened(null); setRetryId(null); setDetailError(''); }, [selectionRevision]);
-  useEffect(() => { if (view === 'deadlines' && freshData) { listRequest.current?.abort(); setData(freshData); setLoading(false); setError(''); } }, [freshData,view]);
+  const consumedFreshData = useRef<InquiryOwnerWorklist | null | undefined>(undefined);
+  useEffect(() => { if (freshData === consumedFreshData.current) return; consumedFreshData.current = freshData; if (view === 'deadlines' && freshData) { listRequest.current?.abort(); setData(freshData); setLoading(false); setError(''); } }, [freshData,view]);
   function change(value: Bucket) { detailRequest.current?.abort(); setBucket(value); setOpening(null); setOpened(null); setRetryId(null); setDetailError(''); callbacks.current.onReset(); }
   function switchView(next: 'deadlines'|'intentions'){if(next===view)return;listRequest.current?.abort();detailRequest.current?.abort();callbacks.current.onReset();setOpening(null);setDetailError('');setView(next);}
   const current = data?.[bucket];
