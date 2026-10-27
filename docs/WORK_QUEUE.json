@@ -442,12 +442,12 @@
     },
     {
       "id": "INQUIRY-PLANNED-ACTION-WORKLIST-INTEGRATE",
-      "state": "verification",
+      "state": "done",
       "owner": "coordinator",
       "depends_on": ["INQUIRY-PLANNED-ACTION-WORKLIST-API", "INQUIRY-PLANNED-ACTION-WORKLIST-UI"],
       "branch": "codex/m01-planned-action-worklist-contract",
       "acceptance": "Independent security/UI review, generated OpenAPI, focused local/PostgreSQL/browser checks, no-deployment merge and owner-visible evidence.",
-      "next_action": "Open the bounded development PR, require exact-head application/database CI and merge only with zero hooks/deployments."
+      "evidence": "PR #23 squash merged 43f0439 after exact-head CI40433515956 application/database success. The database job applied the additive RPC migration and passed all 25 new pgTAP assertions; local integration passed 37 focused contract/API regressions, 17 configured browser cases, full build/typechecks/lint and independent reviews. Repository hooks and deployments were zero."
     },
     {
       "id": "INTAKE-CONTRACT",
