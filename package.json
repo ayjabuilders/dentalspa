@@ -23,6 +23,7 @@
     "db:inquiry-contact-preference-concurrency": "node --test scripts/inquiry-contact-preference-concurrency.mjs",
     "db:inquiry-communication-language-concurrency": "node --test scripts/inquiry-communication-language-concurrency.mjs",
     "db:inquiry-communication-time-zone-concurrency": "node --test scripts/inquiry-communication-time-zone-concurrency.mjs",
+    "db:inquiry-planned-action-concurrency": "node --test scripts/inquiry-planned-action-concurrency.mjs",
     "db:outbox-concurrency": "node --experimental-transform-types --test scripts/outbox-concurrency.mjs",
     "contracts:generate": "pnpm --filter @dental/contracts build && pnpm --filter @dental/dental-api build && node scripts/openapi.mjs && openapi-typescript contracts/foundation.openapi.json -o packages/contracts/src/api.generated.ts"
   },

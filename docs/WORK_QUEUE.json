@@ -375,35 +375,38 @@
     },
     {
       "id": "INQUIRY-PLANNED-ACTION-API",
-      "state": "active",
+      "state": "done",
       "owner": "pwa_verification",
       "depends_on": ["INQUIRY-PLANNED-ACTION-CONTRACT"],
       "branch": "codex/m01-inquiry-planned-action-api",
       "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/inquiry-planned-action-api",
       "base": "3bfe4bd",
       "allowed_files": ["apps/dental-api/src/intake/**", "supabase/migrations/*planned_action*.sql", "supabase/tests/*planned_action*.sql", "scripts/inquiry-planned-action-concurrency.mjs", "tests/unit/inquiry-planned-action-*", "tests/integration/inquiry-planned-action-*"],
-      "acceptance": "Private current-owner state, revisioned idempotent command, exact versioned internal-review vocabulary, minimal audit/outbox and adversarial SQL/API evidence."
+      "acceptance": "Private current-owner state, revisioned idempotent command, exact versioned internal-review vocabulary, minimal audit/outbox and adversarial SQL/API evidence.",
+      "evidence": "Commit 0b63c04 integrated after independent security review. Thirty-two new focused tests plus twenty-one access/time-zone/follow-up regressions passed; 53 pgTAP assertions and the independent-session CAS/replay harness await current-head CI.",
+      "development_gate": "passed"
     },
     {
       "id": "INQUIRY-PLANNED-ACTION-UI",
-      "state": "active",
+      "state": "done",
       "owner": "connection_ui",
       "depends_on": ["INQUIRY-PLANNED-ACTION-CONTRACT"],
       "branch": "codex/m01-inquiry-planned-action-ui",
       "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/inquiry-planned-action-ui",
       "base": "3bfe4bd",
       "allowed_files": ["apps/clinic-os/components/intake/**", "tests/e2e/inquiry-planned-action.spec.ts", "tests/e2e/inquiry-communication-time-zone.spec.ts", "tests/e2e/inquiry-communication-language.spec.ts", "tests/e2e/inquiry-contact-preference.spec.ts", "tests/e2e/inquiry-schedule.spec.ts", "tests/e2e/inquiry-follow-up.spec.ts"],
-      "acceptance": "Polished compact planning row with explicit internal-review intent, truthful limitations and isolated connected recovery states."
+      "acceptance": "Polished compact planning row with explicit internal-review intent, truthful limitations and isolated connected recovery states.",
+      "evidence": "Commit 438ecea integrated after independent lifecycle review. Production build, typecheck, scoped lint and 67 configured browser cases passed; pearl/navy layouts were inspected at 1536, 1280, 768 and 390 pixels.",
+      "development_gate": "passed"
     },
     {
       "id": "INQUIRY-PLANNED-ACTION-INTEGRATE",
-      "state": "blocked",
+      "state": "verification",
       "owner": "coordinator",
       "depends_on": ["INQUIRY-PLANNED-ACTION-API", "INQUIRY-PLANNED-ACTION-UI"],
       "branch": "codex/m01-inquiry-planned-action-contract",
       "acceptance": "Independent security/UI review, generated OpenAPI, focused local/PostgreSQL/browser checks, no-deployment merge and owner-visible evidence.",
-      "blocker": "The contract and implementation lanes are incomplete.",
-      "unblocks_on": "Both implementation lanes are reviewed and integrated."
+      "next_action": "Generate OpenAPI/types, run combined checks and exact-head PostgreSQL CI, then merge only with zero hooks/deployments."
     },
     {
       "id": "INTAKE-CONTRACT",
