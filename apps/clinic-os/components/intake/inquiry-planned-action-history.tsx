@@ -22,13 +22,14 @@ export function InquiryPlannedActionHistory({inquiry,transport,revision}:{inquir
   const controller=new AbortController();request.current=controller;setLoading(true);
   try{const result=await transport.plannedActionHistory(item.id,controller.signal);if(active.current&&!controller.signal.aborted&&opened.current&&target.current?.id===item.id)setData(result);}
   catch(failure){if(!active.current||controller.signal.aborted)return;const kind=failure instanceof IntakeError?failure.kind:'unavailable';setError(kind);if(['expired','denied','missing','offline'].includes(kind))transport.clearPrivate(kind);}
-  finally{if(active.current&&request.current===controller&&!controller.signal.aborted)setLoading(false);}
+  finally{if(active.current&&request.current===controller&&!controller.signal.aborted){setLoading(false);if(focusLease.current&&document.activeElement===document.body&&opened.current&&target.current?.id===item.id)opener.current?.focus();focusLease.current=false;}}
  }
  useEffect(()=>{
   active.current=true;setZone(Intl.DateTimeFormat().resolvedOptions().timeZone);
   const off=transport.onPrivateClear(kind=>{safeFocus();clear();setError(kind);opened.current=false;setOpen(false);});
   const network=()=>{if(!navigator.onLine)transport.clearPrivate('offline');};window.addEventListener('offline',network);
-  return()=>{safeFocus();active.current=false;request.current?.abort();off();window.removeEventListener('offline',network);};
+  const moved=(event:FocusEvent)=>{if(event.target instanceof Node&&event.target!==document.body&&!root.current?.contains(event.target))focusLease.current=false;};document.addEventListener('focusin',moved);
+  return()=>{safeFocus();active.current=false;request.current?.abort();off();window.removeEventListener('offline',network);document.removeEventListener('focusin',moved);};
  },[transport]);
  useEffect(()=>{clear();setError(null);opened.current=false;setOpen(false);},[inquiry?.id,inquiry?.owner_user_id,transport]);
  const previousRevision=useRef(revision);
