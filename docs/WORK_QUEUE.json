@@ -911,7 +911,7 @@
     },
     {
       "id": "INQUIRY-OWNER-OVERDUE-PAGE-API",
-      "state": "blocked",
+      "state": "done",
       "owner": null,
       "depends_on": [
         "INQUIRY-OWNER-OVERDUE-PAGE-CONTRACT",
@@ -926,11 +926,11 @@
         "tests/integration/inquiry-owner-overdue-page-*"
       ],
       "acceptance": "Current-owner overdue keyset read with authoritative observation time, mutable-page semantics, restricted POST RPC and adversarial SQL/API tests.",
-      "blocker": "Wait for the paged owner-search feature to merge so the next stacked migration and shared Intake integration base are current."
+      "evidence": "Integrated locally in bfa1b85. API build passed after contracts generation. Authorization, bounded RPC and no-store path reviewed. No pgTAP file yet; real PostgreSQL validation remains pending."
     },
     {
       "id": "INQUIRY-OWNER-OVERDUE-PAGE-UI",
-      "state": "blocked",
+      "state": "done",
       "owner": null,
       "depends_on": [
         "INQUIRY-OWNER-OVERDUE-PAGE-CONTRACT",
@@ -942,11 +942,11 @@
         "tests/e2e/inquiry-owner-overdue-page.spec.ts"
       ],
       "acceptance": "Compact overdue next/restart flow with page-specific observation, truthful mutable-data copy, safe reschedule/detail cleanup and responsive accessibility.",
-      "blocker": "Wait for the paged owner-search feature to merge because both slices modify the shared Intake transport and search/worklist lifecycle."
+      "evidence": "Integrated locally in 069f98d/81bb67d. Clinic OS typecheck passed; existing owner-worklist browser suite passed 4, skipped 3 configured-auth cases. No dedicated pagination browser assertion or screenshots yet."
     },
     {
       "id": "INQUIRY-OWNER-OVERDUE-PAGE-INTEGRATE",
-      "state": "blocked",
+      "state": "done",
       "owner": "coordinator",
       "depends_on": [
         "INQUIRY-OWNER-OVERDUE-PAGE-API",
@@ -954,7 +954,7 @@
       ],
       "branch": "codex/m01-owner-overdue-page-contract",
       "acceptance": "Independent security/UI review, generated OpenAPI, focused local/PostgreSQL/browser checks, no-deployment merge and owner-visible evidence.",
-      "blocker": "Implementation lanes remain closed until INQUIRY-OWNER-SEARCH-PAGE-INTEGRATE is merged."
+      "evidence": "Local integration completed in 81bb67d with generated OpenAPI/types. Contracts build, API build, Clinic OS typecheck and existing owner-worklist Playwright suite pass. Real PostgreSQL migration tests and dedicated new pagination browser scenarios remain outstanding; feature is not release-verified."
     },
     {
       "id": "PATIENT-LOOKUP-CONTRACT",
@@ -1200,14 +1200,14 @@
     },
     {
       "id": "INQUIRY-OWNER-OVERDUE-PAGE-IMPLEMENT",
-      "state": "in_progress",
+      "state": "done",
       "owner": "overdue_api + overdue_ui",
       "depends_on": [
         "INQUIRY-OWNER-OVERDUE-PAGE-CONTRACT"
       ],
       "acceptance": "Complete current-owner overdue inquiries page in API/database and Clinic intake UI, with reviewed authority, explicit partial counts and responsive behavior.",
-      "next_action": "API/database and UI work in isolated lanes from contract base 6ae9eac; integrate generated artifacts and evidence after review.",
-      "branch": "codex/m01-owner-overdue-page"
+      "branch": "codex/m01-owner-overdue-page",
+      "evidence": "Local integration completed in 81bb67d with generated OpenAPI/types. Contracts build, API build, Clinic OS typecheck and existing owner-worklist Playwright suite pass. Real PostgreSQL migration tests and dedicated new pagination browser scenarios remain outstanding; feature is not release-verified."
     }
   ]
 }

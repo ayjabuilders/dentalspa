@@ -213,6 +213,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/inquiries/owner-overdue-page": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Read a bounded current-owner overdue inquiry page */
+        post: operations["OwnerOverduePageController_page"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/inquiries/owner-search-page": {
         parameters: {
             query?: never;
@@ -1259,6 +1276,103 @@ export interface operations {
                 content?: never;
             };
             /** @description scheduling_disabled */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OwnerOverduePageController_page: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    after: {
+                        /** Format: date-time */
+                        follow_up_at: string;
+                        /** Format: uuid */
+                        inquiry_id: string;
+                    } | null;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        clinic_id: string;
+                        /** Format: uuid */
+                        owner_user_id: string;
+                        /** Format: date-time */
+                        observed_at: string;
+                        after: {
+                            /** Format: date-time */
+                            follow_up_at: string;
+                            /** Format: uuid */
+                            inquiry_id: string;
+                        } | null;
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            clinic_id: string;
+                            /** Format: uuid */
+                            owner_user_id: string;
+                            display_name: string;
+                            /** @enum {string} */
+                            source: "phone" | "website" | "whatsapp" | "instagram" | "email" | "google_business" | "walk_in" | "other";
+                            /** @enum {string} */
+                            status: "new";
+                            /** Format: date-time */
+                            follow_up_at: string;
+                            /** Format: date-time */
+                            created_at: string;
+                        }[];
+                        truncated: boolean;
+                        next_after: {
+                            /** Format: date-time */
+                            follow_up_at: string;
+                            /** Format: uuid */
+                            inquiry_id: string;
+                        } | null;
+                    };
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Active intake role required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unavailable or malformed trusted result */
             503: {
                 headers: {
                     [name: string]: unknown;

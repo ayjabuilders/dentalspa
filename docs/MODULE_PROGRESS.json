@@ -47,21 +47,22 @@
           "label": "Gérer responsable, échéance, relances et résultat",
           "state": "partial",
           "taskIds": [
-          "INQUIRY-FOLLOW-UP-INTEGRATE",
-          "INQUIRY-OWNER-WORKLIST-API",
-          "INQUIRY-OWNER-WORKLIST-UI",
-        "INQUIRY-OWNER-WORKLIST-INTEGRATE",
-        "INQUIRY-SCHEDULE-API",
-        "INQUIRY-SCHEDULE-UI",
-        "INQUIRY-SCHEDULE-HISTORY-API",
-        "INQUIRY-SCHEDULE-HISTORY-UI",
-        "INQUIRY-OWNER-SEARCH-API",
-        "INQUIRY-OWNER-SEARCH-UI",
-        "INQUIRY-PLANNED-ACTION-INTEGRATE",
-        "INQUIRY-PLANNED-ACTION-WORKLIST-INTEGRATE",
-        "INQUIRY-PLANNED-ACTION-HISTORY-INTEGRATE"
+            "INQUIRY-FOLLOW-UP-INTEGRATE",
+            "INQUIRY-OWNER-WORKLIST-API",
+            "INQUIRY-OWNER-WORKLIST-UI",
+            "INQUIRY-OWNER-WORKLIST-INTEGRATE",
+            "INQUIRY-SCHEDULE-API",
+            "INQUIRY-SCHEDULE-UI",
+            "INQUIRY-SCHEDULE-HISTORY-API",
+            "INQUIRY-SCHEDULE-HISTORY-UI",
+            "INQUIRY-OWNER-SEARCH-API",
+            "INQUIRY-OWNER-SEARCH-UI",
+            "INQUIRY-PLANNED-ACTION-INTEGRATE",
+            "INQUIRY-PLANNED-ACTION-WORKLIST-INTEGRATE",
+            "INQUIRY-PLANNED-ACTION-HISTORY-INTEGRATE",
+            "INQUIRY-OWNER-OVERDUE-PAGE-INTEGRATE"
           ],
-      "evidence": "PR #9–10, #15–17, #21, #23 et #25 : propriétaire initial, recherche serveur de ses anciennes demandes, échéance, historique append-only, vue des échéances, commande bornée du propriétaire actuel, journaux personnels non exhaustifs, prochaine intention administrative sans exécution, liste privée de ces intentions et historique personnel de leurs commandes; réattribution et cycle complet des résultats restent à construire."
+          "evidence": "PR #9–10, #15–17, #21, #23 et #25 : propriétaire initial, recherche serveur de ses anciennes demandes, échéance, historique append-only, vue des échéances, commande bornée du propriétaire actuel, journaux personnels non exhaustifs, prochaine intention administrative sans exécution, liste privée de ces intentions et historique personnel de leurs commandes; réattribution et cycle complet des résultats restent à construire. The overdue list now supports bounded continuation with clear partial results; real PostgreSQL validation is pending and the criterion remains partial."
         },
         {
           "id": "M01-6",
@@ -757,12 +758,12 @@
           "label": "Permissions fines par module et action",
           "state": "partial",
           "taskIds": [
-          "FOUNDATION-REVIEW",
-          "TEAM-ROSTER-API",
-          "TEAM-ROSTER-UI",
-          "TEAM-ROSTER-INTEGRATE"
+            "FOUNDATION-REVIEW",
+            "TEAM-ROSTER-API",
+            "TEAM-ROSTER-UI",
+            "TEAM-ROSTER-INTEGRATE"
           ],
-        "evidence": "PR #1 et #12 : gardes cabinet/rôle, annuaire en lecture seule réservé aux Gestionnaires/Dentistes actifs, 21 assertions PostgreSQL; permissions fines pour tous les modules, qualification et validation hébergée restent à construire."
+          "evidence": "PR #1 et #12 : gardes cabinet/rôle, annuaire en lecture seule réservé aux Gestionnaires/Dentistes actifs, 21 assertions PostgreSQL; permissions fines pour tous les modules, qualification et validation hébergée restent à construire."
         },
         {
           "id": "M16-2",
