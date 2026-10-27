@@ -450,6 +450,47 @@
       "evidence": "PR #23 squash merged 43f0439 after exact-head CI40433515956 application/database success. The database job applied the additive RPC migration and passed all 25 new pgTAP assertions; local integration passed 37 focused contract/API regressions, 17 configured browser cases, full build/typechecks/lint and independent reviews. Repository hooks and deployments were zero."
     },
     {
+      "id": "INQUIRY-PLANNED-ACTION-HISTORY-CONTRACT",
+      "state": "done",
+      "owner": "coordinator",
+      "depends_on": ["INQUIRY-PLANNED-ACTION-INTEGRATE"],
+      "branch": "codex/m01-planned-action-history-contract",
+      "acceptance": "Freeze a bounded on-demand journal of the current owner's own planned-action command outcomes without exposing other owners or implying current state, execution or task completion.",
+      "evidence": "Independent product/domain, security/database and UX reviews reconciled A→B→A actor-based visibility, outcome-label precedence, 200% zoom and focus cleanup. Five focused schema tests and contracts typecheck passed.",
+      "development_gate": "passed"
+    },
+    {
+      "id": "INQUIRY-PLANNED-ACTION-HISTORY-API",
+      "state": "running",
+      "owner": "pwa_verification",
+      "depends_on": ["INQUIRY-PLANNED-ACTION-HISTORY-CONTRACT"],
+      "branch": "codex/m01-planned-action-history-api",
+      "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/inquiry-planned-action-history-api",
+      "base": "f8bb3fb",
+      "allowed_files": ["apps/dental-api/src/intake/**", "supabase/migrations/*planned_action_history*.sql", "supabase/tests/*planned_action_history*.sql", "tests/unit/inquiry-planned-action-history-*", "tests/integration/inquiry-planned-action-history-*"],
+      "acceptance": "Tenant-safe current-owner own-receipt SQL/API journal with actor/command filtering before 50/51, private tie-break ordering, no-store and adversarial tests."
+    },
+    {
+      "id": "INQUIRY-PLANNED-ACTION-HISTORY-UI",
+      "state": "running",
+      "owner": "connection_ui",
+      "depends_on": ["INQUIRY-PLANNED-ACTION-HISTORY-CONTRACT"],
+      "branch": "codex/m01-planned-action-history-ui",
+      "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/inquiry-planned-action-history-ui",
+      "base": "f8bb3fb",
+      "allowed_files": ["apps/clinic-os/components/intake/**", "tests/e2e/inquiry-planned-action-history.spec.ts"],
+      "acceptance": "On-demand personal intention history disclosure with truthful past/current boundaries, safe cleanup, uncertain-command isolation and responsive accessibility."
+    },
+    {
+      "id": "INQUIRY-PLANNED-ACTION-HISTORY-INTEGRATE",
+      "state": "verification",
+      "owner": "coordinator",
+      "depends_on": ["INQUIRY-PLANNED-ACTION-HISTORY-API", "INQUIRY-PLANNED-ACTION-HISTORY-UI"],
+      "branch": "codex/m01-planned-action-history-contract",
+      "acceptance": "Independent security/UI review, generated OpenAPI, focused local/PostgreSQL/browser checks, no-deployment merge and owner-visible evidence.",
+      "next_action": "Integrate the disjoint API/database and UI lanes, then require exact-head application/database CI before merge."
+    },
+    {
       "id": "INTAKE-CONTRACT",
       "state": "done",
       "owner": "coordinator",
