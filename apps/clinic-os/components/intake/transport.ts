@@ -1,3 +1,4 @@
+import { InquiryPlannedActionWorklistSchema, type InquiryPlannedActionWorklist } from '@dental/contracts';
 import { InquiryPlannedActionStateSchema, InquiryPlannedActionResultSchema, SetInquiryPlannedActionSchema, type InquiryPlannedActionState, type InquiryPlannedActionResult, type SetInquiryPlannedAction } from '@dental/contracts';
 import { InquiryCommunicationTimeZoneStateSchema, InquiryCommunicationTimeZoneResultSchema, SetInquiryCommunicationTimeZoneSchema, type InquiryCommunicationTimeZoneState, type InquiryCommunicationTimeZoneResult, type SetInquiryCommunicationTimeZone } from '@dental/contracts';
 import { InquiryCommunicationLanguageStateSchema, InquiryCommunicationLanguageResultSchema, SetInquiryCommunicationLanguageSchema, type InquiryCommunicationLanguageState, type InquiryCommunicationLanguageResult, type SetInquiryCommunicationLanguage } from '@dental/contracts';
@@ -36,6 +37,7 @@ function instant(value: string | null): string | null {
   return new Date(value).toISOString().slice(0,19) + '.' + fraction.padEnd(6,'0');
 }
 export interface IntakeTransport {
+  ownerPlannedActions(signal?: AbortSignal): Promise<InquiryPlannedActionWorklist>;
   pendingPlannedAction: { current: PlannedActionAttempt | null };
   plannedAction(id: string, signal?: AbortSignal): Promise<InquiryPlannedActionState>;
   setPlannedAction(id: string, body: SetInquiryPlannedAction, key: string, signal?: AbortSignal): Promise<InquiryPlannedActionResult>;
@@ -111,6 +113,11 @@ export function createDemoIntakeTransport(): IntakeTransport {
   const saved = new Map<string, { fingerprint: string; result: InquiryCreated }>();
   return {
     mode: 'demo', currentUserId: demoOwner, pendingFollowUp, ...privacy, clearPrivate(kind) { pendingFollowUp.current = null; privacy.clearPrivate(kind); },
+    async ownerPlannedActions(signal) {
+      signal?.throwIfAborted(); if (disposed) throw new IntakeError('expired');
+      const rows = items.filter(item => item.owner_user_id === demoOwner).flatMap(item => { const state = plannedActionState(item.id); return state.planned_action === null || state.updated_at === null ? [] : [{ inquiry_id: item.id, display_name: item.display_name, vocabulary_version: 1 as const, planned_action: state.planned_action, revision: state.revision, updated_at: state.updated_at }]; }).sort((a,b) => b.updated_at.localeCompare(a.updated_at) || (a.inquiry_id === b.inquiry_id ? 0 : a.inquiry_id < b.inquiry_id ? 1 : -1));
+      return InquiryPlannedActionWorklistSchema.parse({ schema_version: 1, clinic_id: demoClinic, owner_user_id: demoOwner, observed_at: new Date().toISOString(), items: rows.slice(0,50), truncated: rows.length > 50 });
+    },
     async plannedAction(id, signal) { authorize(id, signal); return InquiryPlannedActionStateSchema.parse(plannedActionState(id)); },
     async setPlannedAction(id, input, key, signal) {
       authorize(id, signal); const body = SetInquiryPlannedActionSchema.parse(input); const fingerprint = JSON.stringify(body);
@@ -263,7 +270,7 @@ export function createHttpIntakeTransport(options: { api: string; token: string;
           disabled = typeof problem === 'object' && problem !== null && 'code' in problem && problem.code === 'intake_disabled';
         }
         const kind: IntakeFailure = response.status === 401 ? 'expired' : response.status === 403 ? 'denied' : response.status === 404 ? 'missing' : disabled ? 'disabled' : response.status === 409 ? 'conflict' : response.status === 400 ? 'invalid' : 'unavailable';
-        if ((privacy.pendingPlannedAction.current !== null || privacy.pendingTimeZone.current !== null || privacy.pendingLanguage.current !== null || privacy.pendingPreference.current !== null || privacy.scheduleActive.current || suffix.endsWith('/follow-up-schedule') || suffix.endsWith('/follow-up-schedule/history') || suffix === '/owner-search' || suffix.endsWith('/contact-preference') || suffix.endsWith('/communication-language') || suffix.endsWith('/communication-time-zone') || suffix.endsWith('/planned-action')) && (kind === 'expired' || kind === 'denied' || kind === 'missing')) clearPrivate(kind);
+        if ((privacy.pendingPlannedAction.current !== null || privacy.pendingTimeZone.current !== null || privacy.pendingLanguage.current !== null || privacy.pendingPreference.current !== null || privacy.scheduleActive.current || suffix.endsWith('/follow-up-schedule') || suffix.endsWith('/follow-up-schedule/history') || suffix === '/owner-search' || suffix === '/owner-planned-actions' || suffix.endsWith('/contact-preference') || suffix.endsWith('/communication-language') || suffix.endsWith('/communication-time-zone') || suffix.endsWith('/planned-action')) && (kind === 'expired' || kind === 'denied' || kind === 'missing')) clearPrivate(kind);
         throw new IntakeError(kind);
       }
       if (!token || revision !== privacyRevision) throw new IntakeError('expired');
@@ -280,6 +287,12 @@ export function createHttpIntakeTransport(options: { api: string; token: string;
   return {
     ...privacy, clearPrivate,
     mode: 'connected', currentUserId: userId, pendingFollowUp,
+    async ownerPlannedActions(signal) {
+      const parsed = InquiryPlannedActionWorklistSchema.safeParse(await send('GET', undefined, undefined, signal, '/owner-planned-actions'));
+      if (!token) throw new IntakeError('expired');
+      if (!parsed.success || parsed.data.clinic_id.toLowerCase() !== clinicId.toLowerCase() || parsed.data.owner_user_id.toLowerCase() !== userId.toLowerCase()) throw new IntakeError('unavailable');
+      return parsed.data;
+    },
     async plannedAction(id, signal) {
       const parsed = InquiryPlannedActionStateSchema.safeParse(await send('GET', undefined, undefined, signal, '/' + encodeURIComponent(id) + '/planned-action'));
       if (!token) throw new IntakeError('expired');

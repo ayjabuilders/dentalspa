@@ -19,7 +19,7 @@ const messages: Record<IntakeFailure,string> = {
   conflict:'La modification ne peut pas être appliquée. Relisez l’état actuel avant une nouvelle décision.',
 };
 const timestamp = (value:string) => new Intl.DateTimeFormat('fr-MA',{dateStyle:'medium',timeStyle:'medium'}).format(new Date(value));
-export function InquiryPlannedAction({ inquiry, transport }: { inquiry: Inquiry|null; transport: IntakeTransport }) {
+export function InquiryPlannedAction({ inquiry, transport, readRevision=0 }: { inquiry: Inquiry|null; transport: IntakeTransport; readRevision?: number }) {
   const id = useId(); const [state,setState] = useState<InquiryPlannedActionState|null>(null); const [fresh,setFresh] = useState<InquiryPlannedActionState|null>(null);
   const [targetName,setTargetName] = useState(''); const [open,setOpen] = useState(false); const [choice,setChoice] = useState(''); const [clearing,setClearing] = useState(false);
   const [pending,setPending] = useState<PlannedActionAttempt|null>(transport.pendingPlannedAction.current); const [loading,setLoading] = useState(false); const [saving,setSaving] = useState(false);
@@ -45,7 +45,7 @@ export function InquiryPlannedAction({ inquiry, transport }: { inquiry: Inquiry|
     request.current?.abort();busy.current=false;setSaving(false);setLoading(false);setOpen(false);setState(null);resetDraft();setPending(transport.pendingPlannedAction.current);
     if(invalidated.current && !inquiry)return; invalidated.current=false;setError(null);
     if(inquiry?.owner_user_id===transport.currentUserId && navigator.onLine)void read(inquiry,false);
-  },[inquiry?.id,inquiry?.owner_user_id,transport]);
+  },[inquiry?.id,inquiry?.owner_user_id,transport,readRevision]);
   useEffect(()=>{if(open && message)feedback.current?.focus();},[open,message]);
   function close(){request.current?.abort();setLoading(false);setOpen(false);resetDraft();if(inquiry && owned && !transport.pendingPlannedAction.current && !state && navigator.onLine)void read(inquiry,false);}
   function start(){

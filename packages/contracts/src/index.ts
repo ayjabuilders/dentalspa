@@ -9,6 +9,7 @@ export * from './inquiry-contact-preference';
 export * from './inquiry-communication-language';
 export * from './inquiry-communication-time-zone';
 export * from './inquiry-planned-action';
+export * from './inquiry-planned-action-worklist';
 export * from './team-roster';
 export * from './team-activity';
 export * from './patient-lookup';
