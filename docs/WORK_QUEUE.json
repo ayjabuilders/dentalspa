@@ -409,6 +409,45 @@
       "evidence": "PR #21 squash merged 2cea7ea after exact-head CI40428097384 application/database success. The database job passed 425 total pgTAP assertions, including all 53 planned-action assertions, plus the independent-session CAS/replay harness. Local combined checks and 67 configured browser cases passed; repository hooks and deployments were zero."
     },
     {
+      "id": "INQUIRY-PLANNED-ACTION-WORKLIST-CONTRACT",
+      "state": "done",
+      "owner": "coordinator",
+      "depends_on": ["INQUIRY-PLANNED-ACTION-INTEGRATE", "INQUIRY-OWNER-WORKLIST-INTEGRATE"],
+      "branch": "codex/m01-planned-action-worklist-contract",
+      "acceptance": "Freeze a bounded current-owner read projection of recorded administrative intentions without changing deadline-worklist, task, completion, contact or priority semantics.",
+      "evidence": "Independent product/domain, security/database and UX reviews cleared the separate read contract after scope-echo, repeated-selection, stale-read and responsive-state clarifications. Six focused schema tests and contracts typecheck passed.",
+      "development_gate": "passed"
+    },
+    {
+      "id": "INQUIRY-PLANNED-ACTION-WORKLIST-API",
+      "state": "running",
+      "owner": "pwa_verification",
+      "depends_on": ["INQUIRY-PLANNED-ACTION-WORKLIST-CONTRACT"],
+      "branch": "codex/m01-planned-action-worklist-api",
+      "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/inquiry-planned-action-worklist-api",
+      "allowed_files": ["apps/dental-api/src/intake/**", "supabase/migrations/*planned_action_worklist*.sql", "supabase/tests/*planned_action_worklist*.sql", "tests/unit/inquiry-planned-action-worklist-*", "tests/integration/inquiry-planned-action-worklist-*"],
+      "acceptance": "Tenant-safe current-owner SQL/API projection with filter-before-limit, 50/51 truncation, exact scope echo, no-store and adversarial tests."
+    },
+    {
+      "id": "INQUIRY-PLANNED-ACTION-WORKLIST-UI",
+      "state": "running",
+      "owner": "connection_ui",
+      "depends_on": ["INQUIRY-PLANNED-ACTION-WORKLIST-CONTRACT"],
+      "branch": "codex/m01-planned-action-worklist-ui",
+      "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/inquiry-planned-action-worklist-ui",
+      "allowed_files": ["apps/clinic-os/components/intake/**", "tests/e2e/inquiry-planned-action-worklist.spec.ts"],
+      "acceptance": "Polished Intentions view inside the existing worklist with fresh selection, truthful snapshot semantics, strict cleanup and complete responsive safe states."
+    },
+    {
+      "id": "INQUIRY-PLANNED-ACTION-WORKLIST-INTEGRATE",
+      "state": "verification",
+      "owner": "coordinator",
+      "depends_on": ["INQUIRY-PLANNED-ACTION-WORKLIST-API", "INQUIRY-PLANNED-ACTION-WORKLIST-UI"],
+      "branch": "codex/m01-planned-action-worklist-contract",
+      "acceptance": "Independent security/UI review, generated OpenAPI, focused local/PostgreSQL/browser checks, no-deployment merge and owner-visible evidence.",
+      "next_action": "Integrate the disjoint API/database and UI lanes, then run combined and exact-head CI verification."
+    },
+    {
       "id": "INTAKE-CONTRACT",
       "state": "done",
       "owner": "coordinator",
