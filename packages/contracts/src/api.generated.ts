@@ -213,6 +213,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/inquiries/{id}/planned-action": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Current-owner planned administrative intention; no execution or completion */
+        get: operations["PlannedActionController_get"];
+        put?: never;
+        /** Record a planned administrative intention; no task or messaging effect */
+        post: operations["PlannedActionController_set"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/inquiries/{id}/communication-time-zone": {
         parameters: {
             query?: never;
@@ -1190,6 +1208,177 @@ export interface operations {
                 content?: never;
             };
             /** @description scheduling_disabled */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlannedActionController_get: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {number} */
+                        schema_version: 1;
+                        /** @enum {number} */
+                        vocabulary_version: 1;
+                        /** Format: uuid */
+                        inquiry_id: string;
+                        /** Format: uuid */
+                        clinic_id: string;
+                        /** Format: uuid */
+                        owner_user_id: string;
+                        /** @enum {string|null} */
+                        planned_action: "review_inquiry" | "review_follow_up" | null;
+                        revision: number;
+                        /** Format: date-time */
+                        updated_at: string | null;
+                    };
+                };
+            };
+            /** @description Invalid path/body/key or unsupported query */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Active intake role required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Absent, foreign or not current owner */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unavailable; intake_disabled only for disabled commands */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlannedActionController_set: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    expected_revision: number;
+                    /** @enum {string|null} */
+                    planned_action: "review_inquiry" | "review_follow_up" | null;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        receipt: {
+                            /** Format: uuid */
+                            inquiry_id: string;
+                            /** Format: uuid */
+                            clinic_id: string;
+                            /** Format: uuid */
+                            owner_user_id: string;
+                            /** @enum {number} */
+                            vocabulary_version: 1;
+                            /** @enum {string|null} */
+                            previous_planned_action: "review_inquiry" | "review_follow_up" | null;
+                            /** @enum {string|null} */
+                            planned_action: "review_inquiry" | "review_follow_up" | null;
+                            previous_revision: number;
+                            revision: number;
+                            changed: boolean;
+                            /** Format: date-time */
+                            recorded_at: string;
+                            /** @enum {number} */
+                            event_version: 1;
+                        };
+                        replayed: boolean;
+                    };
+                };
+            };
+            /** @description Invalid path/body/key or unsupported query */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Active intake role required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Absent, foreign or not current owner */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Stale revision, key conflict or revision exhaustion */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unavailable; intake_disabled only for disabled commands */
             503: {
                 headers: {
                     [name: string]: unknown;

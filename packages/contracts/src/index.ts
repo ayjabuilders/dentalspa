@@ -8,6 +8,7 @@ export * from './inquiry-owner-search';
 export * from './inquiry-contact-preference';
 export * from './inquiry-communication-language';
 export * from './inquiry-communication-time-zone';
+export * from './inquiry-planned-action';
 export * from './team-roster';
 export * from './team-activity';
 export * from './patient-lookup';

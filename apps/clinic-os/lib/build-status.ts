@@ -56,6 +56,10 @@ const labels: Record<string, string> = {
   'INQUIRY-COMMUNICATION-TIME-ZONE-API': 'Fuseau déclaré sécurisé',
   'INQUIRY-COMMUNICATION-TIME-ZONE-UI': 'Interface du fuseau déclaré',
   'INQUIRY-COMMUNICATION-TIME-ZONE-INTEGRATE': 'Intégration du fuseau déclaré',
+  'INQUIRY-PLANNED-ACTION-CONTRACT': 'Contrat de l’action prévue',
+  'INQUIRY-PLANNED-ACTION-API': 'Action prévue sécurisée',
+  'INQUIRY-PLANNED-ACTION-UI': 'Interface de l’action prévue',
+  'INQUIRY-PLANNED-ACTION-INTEGRATE': 'Intégration de l’action prévue',
   'TEAM-ROSTER-CONTRACT': 'Contrat de l’annuaire Équipe',
   'TEAM-ROSTER-API': 'Annuaire sécurisé du cabinet',
   'TEAM-ROSTER-UI': 'Interface Équipe',
@@ -93,7 +97,7 @@ const milestones: BuildMilestone[] = [
 
 function phase(id: string) {
   if (id.startsWith('FOUNDATION') || id === 'HOSTED-FOUNDATION') return 'M01 · Fondation';
-  if (id.startsWith('INTAKE') || id.startsWith('INQUIRY-FOLLOW-UP') || id.startsWith('INQUIRY-OWNER-WORKLIST') || id.startsWith('INQUIRY-SCHEDULE') || id.startsWith('INQUIRY-OWNER-SEARCH') || id.startsWith('INQUIRY-CONTACT-PREFERENCE') || id.startsWith('INQUIRY-COMMUNICATION-LANGUAGE') || id.startsWith('INQUIRY-COMMUNICATION-TIME-ZONE')) return 'M02 · Demandes';
+  if (id.startsWith('INTAKE') || id.startsWith('INQUIRY-FOLLOW-UP') || id.startsWith('INQUIRY-OWNER-WORKLIST') || id.startsWith('INQUIRY-SCHEDULE') || id.startsWith('INQUIRY-OWNER-SEARCH') || id.startsWith('INQUIRY-CONTACT-PREFERENCE') || id.startsWith('INQUIRY-COMMUNICATION-LANGUAGE') || id.startsWith('INQUIRY-COMMUNICATION-TIME-ZONE') || id.startsWith('INQUIRY-PLANNED-ACTION')) return 'M02 · Demandes';
   if (id.startsWith('PATIENT-LOOKUP')) return 'M02 · Recherche patient';
   if (id.startsWith('PATIENT-SELECTION')) return 'M02 · Sélection patient';
   if (id.startsWith('TEAM-ROSTER') || id.startsWith('TEAM-ACTIVITY')) return 'M16 · Équipe et accès';
@@ -114,7 +118,7 @@ function titleFromId(id: string) {
 }
 
 function testLinks(id: string): TestLink[] {
-  if (id.startsWith('INTAKE') || id.startsWith('INQUIRY-FOLLOW-UP') || id.startsWith('INQUIRY-OWNER-WORKLIST') || id.startsWith('INQUIRY-SCHEDULE') || id.startsWith('INQUIRY-OWNER-SEARCH') || id.startsWith('INQUIRY-CONTACT-PREFERENCE') || id.startsWith('INQUIRY-COMMUNICATION-LANGUAGE') || id.startsWith('INQUIRY-COMMUNICATION-TIME-ZONE')) return [intakeTest];
+  if (id.startsWith('INTAKE') || id.startsWith('INQUIRY-FOLLOW-UP') || id.startsWith('INQUIRY-OWNER-WORKLIST') || id.startsWith('INQUIRY-SCHEDULE') || id.startsWith('INQUIRY-OWNER-SEARCH') || id.startsWith('INQUIRY-CONTACT-PREFERENCE') || id.startsWith('INQUIRY-COMMUNICATION-LANGUAGE') || id.startsWith('INQUIRY-COMMUNICATION-TIME-ZONE') || id.startsWith('INQUIRY-PLANNED-ACTION')) return [intakeTest];
   if (id.startsWith('PATIENT-LOOKUP')) return [connectionTest];
   if (id.startsWith('TEAM-ROSTER')) return [{ href: '/team', label: 'Tester l’annuaire Équipe', kind: 'demo', instruction: 'Annuaire fictif en lecture seule; les rôles d’accès ne prouvent ni qualification ni présence.' }, connectionTest];
   if (id.startsWith('TEAM-ACTIVITY')) return [{ href: '/team', label: 'Tester l’activité Équipe', kind: 'demo', instruction: 'Journal synthétique borné à quatre actions déjà auditées; ni présence, ni performance, ni audit exhaustif.' }, connectionTest];
