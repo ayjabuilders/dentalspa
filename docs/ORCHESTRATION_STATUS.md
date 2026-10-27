@@ -1,6 +1,12 @@
 # Dental Spa orchestration
 
-This chat coordinates integration in `C:/Users/platf/Documents/Dental Spa`. ADR-003 authorizes bounded autonomous development merges after independent review and current-head CI. Queue: `WORK_QUEUE.json`. Maximum three agents, isolated worktrees and disjoint ownership.
+This chat coordinates integration in `C:/Users/platf/Documents/Dental Spa`. Amended ADR-003 authorizes reviewed local development integration with checks proportionate to changed code; remote CI is a checkpoint/release tool. Queue: `WORK_QUEUE.json`. Maximum three agents, isolated worktrees and disjoint ownership.
+
+## Current working policy — 27 October 2026
+
+The owner authorized removing redundant delivery ceremony while preserving PRD coverage, maintenance and scaling foundations. Use coherent local feature batches and commits; combine feature and Build Center evidence, avoid status-only PRs, repeated planning audits and unchanged passing tests. Retain risk-based independent review, tenant/clinical invariants, migration compatibility and targeted regression checks. Push at coherent backup/checkpoint boundaries; deployment remains separate and unauthorized.
+
+The reviewed owner-search pagination branch `codex/m01-owner-search-page-contract` at `2c702d2` is eligible for local integration based on its recorded 61 focused tests, typechecks, lint, build and 28 configured browser cases. Its 32 new real-PostgreSQL pgTAP assertions remain pending; no database/hosted/device acceptance is implied. The historical GitHub PR-creation blocker no longer blocks local development. Next: integrate that reviewed batch locally, preserve its pending database evidence, then reassess the ready PRD work without repeating completed reviews. No application code or database was changed by this policy amendment.
 
 ## Current evidence — 26 October 2026
 

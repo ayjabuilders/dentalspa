@@ -1,5 +1,7 @@
 # Formal QA & Operational Release Gates
 
+These are activation/release acceptance gates, not a requirement to stop independent local development. Under amended ADR-003, review and relevant local checks permit local integration while unavailable hosted, real PostgreSQL or device checks remain explicitly pending. Before activation/release, validate the integrated candidate, including affected migrations, policies and concurrency on real PostgreSQL. Do not treat mocks, compilation or a local commit as release approval. Production deployment remains unauthorized.
+
 ## Gate M01 — Foundation
 - [ ] Separate apps start locally and retain separate UX
 - [ ] Correct Supabase auth and deny-by-default clinic membership guard

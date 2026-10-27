@@ -1,7 +1,7 @@
 # Start Here — Codex orchestration
 
 ## Prime directive
-Start from **Milestone 01 Foundation**, then follow the dependency-driven queue and ADR-003. Do not build a full dental practice-management product in one PR. The product owner authorized parallel synthetic development after technical dependencies pass, with separate activation/release gates.
+Start from **Milestone 01 Foundation**, then follow the dependency-driven queue and ADR-003. Deliver usable PRD capabilities in reviewable local batches, with parallel synthetic development where dependencies permit. GitHub PRs are checkpoint/release tools, not a prerequisite for each local slice. Activation/release gates remain separate.
 
 ## Task hierarchy
 1. Source/requirements traceability → document unresolved facts (no fabricated clinic rules).
@@ -16,7 +16,7 @@ Start from **Milestone 01 Foundation**, then follow the dependency-driven queue 
 - Build runs locally on safe development environment, setup documented.
 - No real user data or credentials in git or fixtures.
 - No cross-tenant accesses through direct API, signed links or files.
-- Full test output and known limitations reported.
+- Concise verification evidence with reproducible commands and known limitations; retain detailed failure output when needed, without duplicating passing logs.
 - Future domain boundaries can grow independently; do not prematurely deploy microservices.
 
 ## Explicit instructions

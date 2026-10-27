@@ -3,7 +3,7 @@
 You are implementing a healthcare-adjacent operations system for a Moroccan dental cabinet. Optimize for **clinical safety, patient privacy, correct state transitions, excellent UX and maintainability**; not maximum feature count.
 
 ## Scope discipline
-- Follow `codex/00_START_HERE.md`, ADR-003 and the coordinator's current slice queue. Development dependencies gate implementation; operational/clinical gates still block activation and release. Make small reviewable PRs. Never claim unimplemented functionality is production-ready.
+- Follow `codex/00_START_HERE.md`, ADR-003 and the current queue. Develop and integrate reviewable functional batches locally; GitHub PRs are not required per slice. Development dependencies gate implementation; operational/clinical gates still block activation and release. Never claim unimplemented or unverified functionality is production-ready.
 - Do not change locked stack (Next.js, NestJS, Supabase, Vercel) without documenting an ADR and approval.
 - Source-derived process steps in specs are *organizational reference*, not automatically approved clinical protocols. Flag unknowns in `docs/02_CLINIC_DISCOVERY.md`.
 - Never create diagnoses, prescriptions, drug advice or mandatory clinical steps by inference.
@@ -36,5 +36,9 @@ You are implementing a healthcare-adjacent operations system for a Moroccan dent
 - Test authentication, isolation, booking concurrency, state transitions, event idempotency, role-specific release and non-retention.
 - Keep the owner-visible Build Center current: when a verified delivery changes module coverage, update `docs/MODULE_PROGRESS.json` with criterion state, evidence and linked queue tasks, plus the built/remaining descriptions in `apps/clinic-os/lib/product-roadmap.ts`. A successful build publishes these records automatically; it does not itself justify marking a capability complete. Use the package build command so failed builds never replace the last successful snapshot.
 
-## Before every PR
-List the acceptance criteria being satisfied, commands run, tests passed/failed, privacy risks, schema changes, manual test steps, and items blocked by clinical or legal sign-off.
+## Local delivery and proportional verification
+- Prioritize a usable PRD capability over additional orchestration tooling or repeated tiny refinements. Keep modular boundaries, shared contracts and database invariants; do not add speculative scaling infrastructure.
+- Use local Git commits for recovery and isolated worktrees for independent parallel work (at most three agents). Coordinate only shared interfaces and overlapping files; do not duplicate assignments or require multiple planning audits for routine work.
+- Review each batch and run checks justified by its changes. Independent review is required for authorization, tenant isolation, clinical state, migrations, transactions and consequential writes; ordinary presentation changes need proportionate review. Do not rerun passing checks on unchanged code/base without a new reason.
+- Record concise acceptance evidence and remaining risks once, with the feature's Build Center update in the same batch. A separate status-only PR is not required. Existing evidence is reusable when relevant code and dependencies are unchanged.
+- Push at coherent checkpoints for backup and collaboration; use a consolidated PR/CI run for release candidates or when remote verification adds necessary evidence. A push is not permission to deploy. Missing real PostgreSQL, hosted or device evidence remains an explicit release gate; mocks/PGlite do not replace it.
