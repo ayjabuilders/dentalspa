@@ -272,7 +272,8 @@
       "branch": "codex/m01-owner-search-page-contract",
       "acceptance": "Independent security/UI review, generated OpenAPI, focused local/PostgreSQL/browser checks, no-deployment merge and owner-visible evidence.",
       "evidence": "Independent API/security and UI/lifecycle reviews cleared both lanes. Generated OpenAPI, 61 focused contract/API/adapter/PGlite tests, all workspace typechecks, scoped lint, full production build and 28 configured browser cases passed. Real PostgreSQL migration/32 pgTAP assertions remain the exact-head CI gate.",
-      "next_action": "Open the bounded feature PR, verify zero hooks/deployments, require exact-head application/database CI, then squash merge and publish owner-visible Build Center evidence separately."
+      "blocker": "The branch is pushed, but this environment cannot create the PR: GitHub CLI is unavailable, the connected GitHub integration returned 403 Resource not accessible by integration, and Windows browser control stopped because it could not determine the browser URL safely.",
+      "next_action": "Create the PR from the pushed compare URL, then verify zero hooks/deployments and exact-head application/database CI before squash merge and separate Build Center publication."
     },
     {
       "id": "INQUIRY-CONTACT-PREFERENCE-CONTRACT",
