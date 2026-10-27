@@ -56,9 +56,10 @@
         "INQUIRY-SCHEDULE-HISTORY-API",
         "INQUIRY-SCHEDULE-HISTORY-UI",
         "INQUIRY-OWNER-SEARCH-API",
-        "INQUIRY-OWNER-SEARCH-UI"
+        "INQUIRY-OWNER-SEARCH-UI",
+        "INQUIRY-PLANNED-ACTION-INTEGRATE"
           ],
-      "evidence": "PR #9–10 et slices suivantes : propriétaire initial, recherche serveur de ses anciennes demandes, échéance, historique append-only, vue des échéances, commande bornée du propriétaire actuel et journal personnel non exhaustif; réattribution et cycle complet des résultats restent à construire."
+      "evidence": "PR #9–10, #15–17 et #21 : propriétaire initial, recherche serveur de ses anciennes demandes, échéance, historique append-only, vue des échéances, commande bornée du propriétaire actuel, journal personnel non exhaustif et prochaine intention administrative sans exécution; réattribution et cycle complet des résultats restent à construire."
         },
         {
           "id": "M01-6",
