@@ -926,7 +926,7 @@
         "tests/integration/inquiry-owner-overdue-page-*"
       ],
       "acceptance": "Current-owner overdue keyset read with authoritative observation time, mutable-page semantics, restricted POST RPC and adversarial SQL/API tests.",
-      "evidence": "Integrated locally in bfa1b85. API build passed after contracts generation. Authorization, bounded RPC and no-store path reviewed. No pgTAP file yet; real PostgreSQL validation remains pending."
+      "evidence": "Integrated locally in bfa1b85. API build passed after contracts generation. Authorization, bounded RPC and no-store path reviewed. No pgTAP file yet; real PostgreSQL validation remains pending. Added 17 pgTAP assertions for bounded paging, tenant/owner scope, method, role, inactive membership and read-only behavior; Docker is unavailable so these assertions were not executed locally."
     },
     {
       "id": "INQUIRY-OWNER-OVERDUE-PAGE-UI",
@@ -939,10 +939,10 @@
       "branch": "codex/m01-owner-overdue-page-ui",
       "allowed_files": [
         "apps/clinic-os/components/intake/**",
-        "tests/e2e/inquiry-owner-overdue-page.spec.ts"
+        "tests/e2e/intake-owner-worklist.spec.ts"
       ],
       "acceptance": "Compact overdue next/restart flow with page-specific observation, truthful mutable-data copy, safe reschedule/detail cleanup and responsive accessibility.",
-      "evidence": "Integrated locally in 069f98d/81bb67d. Clinic OS typecheck passed; existing owner-worklist browser suite passed 4, skipped 3 configured-auth cases. No dedicated pagination browser assertion or screenshots yet."
+      "evidence": "Integrated locally in 069f98d/81bb67d. Clinic OS typecheck passed; existing owner-worklist browser suite passed 4, skipped 3 configured-auth cases. No dedicated pagination browser assertion or screenshots yet. Added dedicated continuation/restart browser scenario, but local execution timed out in synthetic sign-in before reaching intake; keep browser verification pending."
     },
     {
       "id": "INQUIRY-OWNER-OVERDUE-PAGE-INTEGRATE",
@@ -954,7 +954,7 @@
       ],
       "branch": "codex/m01-owner-overdue-page-contract",
       "acceptance": "Independent security/UI review, generated OpenAPI, focused local/PostgreSQL/browser checks, no-deployment merge and owner-visible evidence.",
-      "evidence": "Local integration completed in 81bb67d with generated OpenAPI/types. Contracts build, API build, Clinic OS typecheck and existing owner-worklist Playwright suite pass. Real PostgreSQL migration tests and dedicated new pagination browser scenarios remain outstanding; feature is not release-verified."
+      "evidence": "Local integration completed in 81bb67d with generated OpenAPI/types. Contracts build, API build, Clinic OS typecheck and existing owner-worklist Playwright suite pass. Real PostgreSQL migration tests and dedicated new pagination browser scenarios remain outstanding; feature is not release-verified. Follow-up: contract unit tests pass (7); dedicated browser test could not pass login fixture; PostgreSQL unavailable because Docker is not installed."
     },
     {
       "id": "PATIENT-LOOKUP-CONTRACT",
@@ -1207,7 +1207,7 @@
       ],
       "acceptance": "Complete current-owner overdue inquiries page in API/database and Clinic intake UI, with reviewed authority, explicit partial counts and responsive behavior.",
       "branch": "codex/m01-owner-overdue-page",
-      "evidence": "Local integration completed in 81bb67d with generated OpenAPI/types. Contracts build, API build, Clinic OS typecheck and existing owner-worklist Playwright suite pass. Real PostgreSQL migration tests and dedicated new pagination browser scenarios remain outstanding; feature is not release-verified."
+      "evidence": "Local integration completed in 81bb67d with generated OpenAPI/types. Contracts build, API build, Clinic OS typecheck and existing owner-worklist Playwright suite pass. Real PostgreSQL migration tests and dedicated new pagination browser scenarios remain outstanding; feature is not release-verified. Follow-up: contract unit tests pass (7); dedicated browser test could not pass login fixture; PostgreSQL unavailable because Docker is not installed."
     }
   ]
 }

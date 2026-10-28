@@ -59,6 +59,36 @@ test('responsive pearl/navy tabs support keyboard and do not overflow', async ({
 });
 test.describe('verified owner worklist', () => {
   test.skip(process.env.OWNER_WORKLIST_CONFIGURED !== '1', 'Requires isolated synthetic authentication build.');
+  test('overdue continuation advances by the exact cursor and restart begins at the first page', async ({ page }) => {
+    const firstItems = Array.from({ length: 50 }, (_, index) => ({ ...item, id: `20000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`, display_name: `Demande ancienne ${index + 1}`, follow_up_at: new Date(Date.UTC(2026, 0, 1, 9, index)).toISOString() }));
+    const observedAt = '2026-10-27T09:00:00Z';
+    const cursor = { follow_up_at: firstItems.at(-1)!.follow_up_at, inquiry_id: firstItems.at(-1)!.id };
+    const pageOne = { clinic_id: clinic, owner_user_id: user, observed_at: observedAt, after: null, items: firstItems, truncated: true, next_after: cursor };
+    const secondItem = { ...item, id: '20000000-0000-4000-8000-000000000099', display_name: 'Dernière demande ancienne', follow_up_at: '2026-02-01T09:00:00Z' };
+    const pageTwo = { clinic_id: clinic, owner_user_id: user, observed_at: observedAt, after: cursor, items: [secondItem], truncated: false, next_after: null };
+    const bounds: unknown[] = [];
+    await verified(page, async route => {
+      const request = route.request();
+      if (request.url().endsWith('/owner-overdue-page')) {
+        const body = request.postDataJSON() as { after: unknown };
+        bounds.push(body.after);
+        return route.fulfill({ status: 200, headers, json: body.after === null ? pageOne : pageTwo });
+      }
+      return route.fulfill({ status: 200, headers, json: detail });
+    });
+    const list = page.locator('.owner-worklist');
+    await list.getByRole('tab', { name: /Échéances passées/ }).click();
+    await expect(list.getByText('Demande ancienne 1')).toBeVisible();
+    await expect(list.getByText(/Page partielle : 50 demandes affichées/)).toBeVisible();
+    await expect(list.getByRole('tab', { name: /Échéances passées/ })).not.toContainText('50');
+    await list.getByRole('button', { name: 'Voir la suite' }).click();
+    await expect(list.getByText('Dernière demande ancienne')).toBeVisible();
+    await expect(list.getByText('Demande ancienne 1')).toHaveCount(0);
+    await expect(list.getByText(/Aucune demande supplémentaire/)).toHaveCount(0);
+    await list.getByRole('button', { name: 'Revenir au début' }).click();
+    await expect(list.getByText('Demande ancienne 1')).toBeVisible();
+    expect(bounds).toEqual([null, cursor, null]);
+  });
   test('partial server bucket and old inquiry fetch do not depend on newest-100 or browser clock', async ({ page }) => {
     const requests: string[] = [];
     await verified(page, async route => {
