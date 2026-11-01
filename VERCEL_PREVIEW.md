@@ -108,3 +108,22 @@ One labelled fictitious verification request remains visible to staff. This is
 a request awaiting staff review, not a confirmed appointment. Frontend browser
 verification confirms visit choices load and next-day slot navigation works.
 Other module gates and outstanding release criteria remain unchanged.
+
+## Owner access audit — 2026-11-01
+
+An authenticated audit of the deployed API found that the first owner's Auth
+account and membership existed, but `public.profiles` was missing. The roster
+correctly failed closed with 503. Added only that account's profile, with display
+name `Administrateur Dental Spa`; no role or cross-clinic access changed.
+Recheck: workspaces, patient list, team roster, agenda settings and booking
+requests return 200. Team account management and finance catalogue still return
+503 (deployment gates disabled); the local Salma fixture ID returns 404 on the
+hosted patient hub. Therefore local fixture availability must not be inferred
+from a successful hosted login or list response.
+
+Owner bootstrap acceptance must check all three: Auth account, profile, and
+active clinic membership. Auth provisioning alone is not complete. Diagnostic
+sessions now log out with `scope=local`, so checks do not revoke the owner's
+other phone/browser sessions. Evidence: ignored
+`.local/qa/deployed-owner-module-access.json`. These checks establish route
+availability only, not complete module functionality or real-patient readiness.
