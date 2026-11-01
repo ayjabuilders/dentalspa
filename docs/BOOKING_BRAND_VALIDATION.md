@@ -67,3 +67,23 @@ not a durable unread-notification inbox, push delivery or external email.
 
 The release remains a validation environment with synthetic booking data. The
 design is an implementation of the reference direction, not owner visual sign-off.
+
+Full deployed browser lifecycle (2026-11-01): actual mobile public submission,
+owner inbox receipt, staff confirmation, agenda visibility and cancellation all
+passed without mocked writes. Only synthetic contact data was submitted. Evidence:
+ignored `.local/qa/check-deployed-booking-lifecycle.mjs`,
+`.local/qa/deployed-booking-lifecycle.json` and
+`.local/qa/deployed-booking-lifecycle-admin.png`. A subsequent read-only hosted
+database check verified the test appointment is cancelled at version 2 with zero
+active resource occupancy rows. This proves the validation pipeline, not approval
+to accept real contacts. Opening hours, public visit types and real-contact
+activation remain outstanding.
+
+Deployed contention check: two distinct synthetic requests targeted the same
+available slot for a visit with exactly one configured provider/chair pair.
+Concurrent staff confirmations returned one 201 and one 409. The occupied slot
+disappeared from public availability. The successful test appointment was then
+cancelled, and a fresh public availability read showed the slot available again.
+Evidence: ignored `.local/check-deployed-booking-concurrency.mjs` and
+`.local/qa/deployed-booking-concurrency.json`. The unsuccessful request remains
+pending; no real contact was created or notified.
