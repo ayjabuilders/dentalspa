@@ -1,7 +1,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 set search_path=public,extensions;
-select plan(26);
+select plan(31);
 
 insert into public.clinics(id,name) values('b1000000-0000-4000-8000-000000000001','Synthetic Team Access');
 insert into auth.users(id,email,raw_app_meta_data) values
@@ -73,5 +73,21 @@ select throws_ok($$select public.update_team_access_member('b1000000-0000-4000-8
 reset role;
 select is((select count(*)::int from private.audit_events where clinic_id='b1000000-0000-4000-8000-000000000001' and action='team.member.access_updated'),1,'successful update writes one audit event');
 select is((select count(*)::int from private.outbox_events where clinic_id='b1000000-0000-4000-8000-000000000001' and event_type='TeamMemberAccessUpdated'),1,'successful update writes one outbox event');
+set local role authenticated;
+select is((public.list_team_access_members('b1000000-0000-4000-8000-000000000001','new.user@example.test',null,'team-local-test')->'items'->0->>'active')::boolean,true,'active membership and aggregate show active');
+reset role;
+update public.clinic_memberships set active=false where user_id='b2000000-0000-4000-8000-000000000004';
+set local role authenticated;
+select is((public.list_team_access_members('b1000000-0000-4000-8000-000000000001','new.user@example.test',null,'team-local-test')->'items'->0->>'active')::boolean,false,'revoked memberships override stale active aggregate');
+select is((public.list_team_access_members('b1000000-0000-4000-8000-000000000001','new.user@example.test',null,'team-local-test')->'items'->0->>'version')::integer,2,'read does not mutate command version');
+reset role;
+update public.clinic_memberships set active=true where user_id='b2000000-0000-4000-8000-000000000004' and role='assistant';
+set local role authenticated;
+select is((public.list_team_access_members('b1000000-0000-4000-8000-000000000001','new.user@example.test',null,'team-local-test')->'items'->0->>'active')::boolean,true,'one remaining active membership still grants some cabinet access');
+reset role;
+update private.team_access_member_state set active=false where user_id='b2000000-0000-4000-8000-000000000004';
+set local role authenticated;
+select is((public.list_team_access_members('b1000000-0000-4000-8000-000000000001','new.user@example.test',null,'team-local-test')->'items'->0->>'active')::boolean,false,'disabled aggregate also remains disabled');
+reset role;
 select * from finish();
 rollback;

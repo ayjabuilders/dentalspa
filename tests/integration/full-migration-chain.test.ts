@@ -106,8 +106,8 @@ describe('full synthetic migration chain on embedded PostgreSQL', () => {
   });
 
   it('applies every migration in filename order and the synthetic clinic seed', async () => {
-    expect(migrationFiles).toHaveLength(85);
-    expect(migrationFiles.at(-1)).toBe('20261101060921_team_access_business_conflict.sql');
+    expect(migrationFiles).toHaveLength(86);
+    expect(migrationFiles.at(-1)).toBe('20261101072911_team_effective_access_status.sql');
     const clinics = await db.query<{ name: string }>('select name from public.clinics order by name');
     expect(clinics.rows.map(row => row.name)).toEqual([
       'Cabinet Dentaire Atlas - Casablanca (FICTIF)',

@@ -143,3 +143,20 @@ stale-version 409, deactivation and existing-session denial, and search showing
 the disabled account. Test accounts were disabled/banned and sessions revoked;
 audit-linked fixtures remain. This does not prove browser UX, clinical authority,
 invitations, or the remaining fine-grained permissions. Finance remains gated.
+
+## Team status projection correction — 2026-11-01
+
+Browser review found three historical test accounts whose command aggregate said
+active after their actual memberships had been disabled during cleanup. Access
+was denied correctly, but the directory showed a misleading Active label.
+Migration `20261101072911_team_effective_access_status.sql` makes the directory
+require both a non-disabled command state and at least one active membership.
+It changes no roles, memberships, versions, audit events or access policies.
+
+Validation: 31/31 native PostgreSQL assertions including revoked memberships,
+partial membership activity, disabled aggregate and unchanged version; full
+migration-chain integration passed. Migration applied to approved hosted Dev;
+deployed API search verifies all five matched verifier members are inactive.
+Evidence: `.local/qa/team-effective-status-pgtap.log`,
+`.local/qa/team-status-chain.log`. Local native test ran transactionally and
+rolled back; the local app still needs the normal migration apply step.
