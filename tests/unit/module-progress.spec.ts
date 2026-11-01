@@ -10,9 +10,10 @@ describe('module progress evidence', () => {
     const result = calculateProgress(ledger, queue.tasks, ids);
     expect(Object.keys(result)).toHaveLength(21);
     expect(result.M01?.percent).toBe(33);
-    // Public configured booking is still active, so its dependent criterion
-    // must remain awaiting rather than receiving partial delivery credit.
-    expect(result.M02?.percent).toBe(42);
+    // The first-real-booking goal is now explicitly linked to M02-1 and remains
+    // active. Synthetic delivery/pagination must not credit its real-use gate.
+    expect(result.M02?.percent).toBe(33);
+    expect(result.M02?.criteria.find(item => item.id === 'M02-1')?.state).toBe('awaiting');
     expect(result.M02?.criteria.find(item => item.id === 'M02-3')?.state).toBe('awaiting');
     expect(result.M16?.percent).toBe(50);
     // Catalogue and recorded local payments each earn partial credit;

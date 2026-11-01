@@ -26,6 +26,11 @@ export class BookingRequestsController {
     return this.requests.configuredList(request.actor);
   }
 
+  @Get('configured/page') @Header('Cache-Control','no-store') @Access('staff') @ApiBearerAuth()
+  configuredPage(@Req() request:AuthorizedRequest) {
+    return this.requests.configuredPage(request.actor,request.query);
+  }
+
   @Get('demo-status') @Header('Cache-Control', 'no-store') @Access('public')
   demoStatus() {
     return this.requests.demoStatus();

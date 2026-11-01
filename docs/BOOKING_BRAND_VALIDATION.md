@@ -151,3 +151,34 @@ The existing decisions document separately leaves contact notice/retention with
 the designated privacy reviewer. These are activation dependencies; technical
 implementation of the transition can proceed without inventing those values.
 This section is a transition specification, not an implemented real-mode claim.
+
+## Staff discovery pagination delivered — 2026-11-01
+
+The latest-100 limitation above is now resolved in the active inbox. The new
+authorized `/booking-requests/configured/page` endpoint supports bounded offset,
+limit, literal search and status filters. The UI shows 10 rows per page; status
+counts and the header's pending count cover the full clinic set, independently
+of the displayed page/search. The original endpoint remains for compatibility.
+
+Migration `20261101093156_configured_booking_pagination.sql` applied to Dev.
+API `dpl_3wvMuUosxijojGAhr3Wk8A3CcRKL` and clinic
+`dpl_htfuVCE3FbSbVB3PRGcg92xRZvRJ` deployed successfully. Nine embedded PostgreSQL
+tests pass, including 125-row paging, old-record search, literal wildcard input,
+full counts, cross-tenant and revoked-session denial. Nine HTTP tests pass with
+role/query bounds, count-contract checks and unavailable-storage handling.
+Scoped lint and API/clinic builds pass.
+
+Actual hosted API page/search/count and anonymous/foreign-scope denial passed.
+Deployed mobile browser read actual data and counts, then used a mocked 125-row
+dataset to verify page navigation, search resetting to page 1 and exact pending
+notice. No hosted fixtures were added for this test. Screenshot inspected at
+390px with no horizontal overflow. Evidence: ignored
+`.local/qa/check-booking-pages.mjs`, `.local/qa/check-booking-pages-browser.mjs`
+and `.local/qa/booking-pages-mobile.png`.
+
+The advisor reports authenticated SECURITY DEFINER exposure for the new RPC;
+this is intentional in the existing architecture. Anonymous execute is revoked;
+the function checks active session and same-clinic reception/manager membership
+before any rows or counts. Existing project advisories are not declared resolved.
+No real-contact gate was changed. Offset pages are live reads, not a frozen
+snapshot across concurrent submissions; refreshing restarts the current query.

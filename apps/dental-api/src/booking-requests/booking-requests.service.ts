@@ -4,7 +4,7 @@ import type { Actor } from '../identity/domain/access.js';
 import { DemoBookingAvailabilityQuerySchema, DemoBookingAvailabilitySchema } from '@dental/contracts';
 import { scopedClient } from '../identity/infrastructure/supabase.js';
 import { configuredBookingActivationKey } from '../identity/infrastructure/module-activation.js';
-import { ConfirmConfiguredBookingSchema, ConfiguredBookingConfirmationSchema } from '@dental/contracts';
+import { ConfirmConfiguredBookingSchema, ConfiguredBookingConfirmationSchema, ConfiguredBookingPageSchema, ConfiguredBookingPageQuerySchema } from '@dental/contracts';
 import { z } from 'zod';
 
 function localPersistenceConfigured() {
@@ -45,6 +45,21 @@ export class BookingRequestsService {
     const receipt=ConfiguredBookingConfirmationSchema.safeParse(data);
     if(!receipt.success||receipt.data.request_id!==id)throw new ServiceUnavailableException('Confirmation result unavailable; retry the same command');
     return receipt.data;
+  }
+  async configuredPage(actor:Actor,input:unknown) {
+    if(!actor.roles.some(role=>role==='reception'||role==='manager'))throw new ForbiddenException('Reception or manager access required');
+    const query=ConfiguredBookingPageQuerySchema.safeParse(input);
+    if(!query.success)throw new BadRequestException('Valid page and filters required');
+    const {data,error}=await scopedClient(actor.token).rpc('list_configured_booking_requests_page',{
+      p_clinic_id:actor.clinicId,p_offset:query.data.offset,p_limit:query.data.limit,p_query:query.data.query,p_status:query.data.status,
+    }).then(value=>value,()=>{throw new ServiceUnavailableException('Booking requests unavailable');});
+    if(error?.code==='28000')throw new ForbiddenException('Booking session unavailable');
+    if(error?.code==='42501')throw new ForbiddenException('Booking scope denied');
+    if(error?.code==='22023')throw new BadRequestException('Invalid page');
+    if(error)throw new ServiceUnavailableException('Booking requests unavailable');
+    const result=ConfiguredBookingPageSchema.safeParse(data);
+    if(!result.success||result.data.items.length>query.data.limit)throw new ServiceUnavailableException('Booking requests unavailable');
+    return result.data;
   }
   async configuredList(actor:Actor) {
     if(!actor.roles.some(role=>role==='reception'||role==='manager'))throw new ForbiddenException('Reception or manager access required');

@@ -100,6 +100,16 @@ export const ConfiguredBookingListSchema=z.object({items:z.array(z.object({
   appointment:z.object({id:z.uuid(),status:z.enum(['confirmed','cancelled']),version:z.number().int().positive()}).strict().nullable().optional(),
 }).strict().refine(row=>row.status==='request_received'?!row.appointment:row.appointment?.status===row.status)).max(100),truncated:z.boolean(),current_revision:z.number().int().positive().nullable().optional(),confirmation_enabled:z.boolean().optional()}).strict();
 export const AgendaSettingsSavedSchema = z.object({ settings: AgendaSettingsSchema, replayed: z.boolean() }).strict();
+export const ConfiguredBookingPageQuerySchema=z.object({
+  offset:z.coerce.number().int().min(0).max(1000000).default(0),
+  limit:z.coerce.number().int().min(1).max(100).default(10),
+  query:z.string().trim().max(100).default(''),
+  status:z.enum(['all','request_received','confirmed','cancelled']).default('all'),
+}).strict();
+export const ConfiguredBookingPageSchema=ConfiguredBookingListSchema.safeExtend({
+  total_count:z.number().int().nonnegative(),
+  counts:z.object({all:z.number().int().nonnegative(),request_received:z.number().int().nonnegative(),confirmed:z.number().int().nonnegative(),cancelled:z.number().int().nonnegative()}).strict(),
+});
 // Tenant and actor are resolved from the authenticated session, not this command.
 export const UpdateAgendaSettingsSchema = z.object({
   expected_revision: z.number().int().min(0),

@@ -10439,6 +10439,25 @@
         ]
       }
     },
+    "/api/v1/booking-requests/configured/page": {
+      "get": {
+        "operationId": "BookingRequestsController_configuredPage",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "booking-requests"
+        ]
+      }
+    },
     "/api/v1/booking-requests/demo-status": {
       "get": {
         "operationId": "BookingRequestsController_demoStatus",

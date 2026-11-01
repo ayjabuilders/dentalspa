@@ -17,6 +17,27 @@ describe('configured confirmation HTTP boundary',()=>{
   afterAll(async()=>{await app?.close();vi.unstubAllEnvs();});
   beforeEach(()=>{vi.stubEnv('SUPABASE_URL','http://127.0.0.1:54321');vi.stubEnv('ENABLE_LOCAL_CONFIGURED_BOOKING_CONFIRMATIONS','true');vi.stubEnv('LOCAL_AGENDA_SETTINGS_GATE_KEY','synthetic-test');rpc.mockReset().mockResolvedValue({data:receipt,error:null});scoped.mockReset();});
   const command=(token='manager',clinic=A)=>request(app.getHttpServer()).post(`/api/v1/booking-requests/configured/${P1}/confirm`).set('Authorization',`Bearer ${token}`).set('X-Clinic-Id',clinic).set('Idempotency-Key',P2);
+  const page=(token='manager',clinic=A)=>request(app.getHttpServer()).get('/api/v1/booking-requests/configured/page').set('Authorization',`Bearer ${token}`).set('X-Clinic-Id',clinic);
+  it('binds server pagination and counts to the authorized clinic',async()=>{
+    const result={items:[],truncated:false,total_count:0,counts:{all:125,request_received:120,confirmed:4,cancelled:1},current_revision:3,confirmation_enabled:true};
+    rpc.mockResolvedValue({data:result,error:null});
+    const response=await page('reception').query({offset:120,limit:10,query:' Ancien ',status:'request_received'}).expect(200);
+    expect(response.body).toEqual(result);expect(response.headers['cache-control']).toBe('no-store');
+    expect(rpc).toHaveBeenCalledWith('list_configured_booking_requests_page',{p_clinic_id:A,p_offset:120,p_limit:10,p_query:'Ancien',p_status:'request_received'});
+    expect(scoped).toHaveBeenCalledWith('reception');
+  });
+  it('rejects page injection, excessive bounds and unauthorized roles before storage',async()=>{
+    for(const query of [{clinic_id:B},{offset:-1},{offset:1.5},{limit:101},{limit:0},{query:'x'.repeat(101)},{status:'unknown'}])await page().query(query).expect(400);
+    for(const token of ['assistant','dentist','inactive'])await page(token).expect(403);
+    await page('manager',B).expect(403);
+    await request(app.getHttpServer()).get('/api/v1/booking-requests/configured/page').expect(401);
+    expect(rpc).not.toHaveBeenCalled();
+  });
+  it('fails closed when page counts are missing or persistence fails',async()=>{
+    rpc.mockResolvedValue({data:{items:[],truncated:false},error:null});await page().expect(503);
+    rpc.mockResolvedValue({data:null,error:{code:'42501',message:'private'}});await page().expect(403);
+    rpc.mockRejectedValue(Error('private'));const response=await page().expect(503);expect(JSON.stringify(response.body)).not.toContain('private');
+  });
   it('denies anonymous, inactive, wrong role and foreign scope before storage',async()=>{
     await request(app.getHttpServer()).post(`/api/v1/booking-requests/configured/${P1}/confirm`).send(body).expect(401);
     for(const role of ['inactive','dentist','assistant'])await command(role).send(body).expect(403);

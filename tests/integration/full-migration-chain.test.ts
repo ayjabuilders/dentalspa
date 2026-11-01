@@ -55,6 +55,40 @@ describe('full synthetic migration chain on embedded PostgreSQL', () => {
 
   afterAll(async () => { await db?.close(); });
 
+  it('pages beyond 100 requests with complete counts, literal search and tenant/session denial',async()=>{
+    const clinic='10000000-0000-4000-8000-000000000001',foreign='10000000-0000-4000-8000-000000000002';
+    const user='90000000-0000-4000-8000-000000000071',session='90000000-0000-4000-8000-000000000072',visit='90000000-0000-4000-8000-000000000073';
+    await db.exec('begin');
+    try{
+      await db.query('insert into auth.users(id) values($1)',[user]);
+      await db.query('insert into auth.sessions(id,user_id) values($1,$2)',[session,user]);
+      await db.query("insert into public.profiles(user_id,display_name) values($1,'Pagination FICTIF')",[user]);
+      await db.query("insert into public.clinic_memberships(clinic_id,user_id,role,active) values($1,$2,'manager',true)",[clinic,user]);
+      for(const tenant of [clinic,foreign]){
+        await db.query("insert into private.agenda_configuration_versions(clinic_id,revision,configuration,actor_ref,request_key) values($1,999,$2::jsonb,$3,gen_random_uuid())",[tenant,JSON.stringify({visit_types:[{id:visit,name:'Consultation fictive'}]}),user]);
+        await db.query(`insert into private.configured_booking_requests(clinic_id,request_key,visit_type_id,configuration_revision,starts_at,ends_at,contact_name,contact_email,administrative_consent_version,canonical_payload,created_at,acknowledgement)
+          select $1,gen_random_uuid(),$2,999,now()+interval '1 day',now()+interval '1 day 30 minutes',case when n=125 then 'Ancien fictif' else 'Fictif '||n end,'pagination@example.test','local-demo-v1','{"contact_phone":"+212600000005"}'::jsonb,now()-n*interval '1 minute','{}'::jsonb from generate_series(1,$3::int) n`,[tenant,visit,tenant===clinic?125:1]);
+      }
+      await db.query("select set_config('request.jwt.claim.sub',$1,true),set_config('request.jwt.claims',$2,true)",[user,JSON.stringify({sub:user,session_id:session})]);
+      await db.exec('set local role authenticated');
+      type Page={items:{id:string;contact_name:string}[];total_count:number;truncated:boolean;counts:{all:number;request_received:number}};
+      const read=async(offset=0,query='',status='all',tenant=clinic)=>(await db.query<{result:Page}>('select public.list_configured_booking_requests_page($1,$2,10,$3,$4) result',[tenant,offset,query,status])).rows[0]!.result;
+      const first=await read(),second=await read(10),last=await read(120);
+      expect(first.items).toHaveLength(10);expect(first.total_count).toBe(125);expect(first.counts.request_received).toBe(125);expect(first.truncated).toBe(true);
+      expect(second.items.every(item=>!first.items.some(prior=>prior.id===item.id))).toBe(true);
+      expect(last.items).toHaveLength(5);expect(last.truncated).toBe(false);
+      expect((await read(0,'ancien')).items[0]!.contact_name).toBe('Ancien fictif');
+      expect((await read(0,'+212600000005')).total_count).toBe(125);
+      expect((await read(0,'%')).total_count).toBe(0);
+      const empty=await read(0,'','confirmed');expect(empty.total_count).toBe(0);expect(empty.counts.all).toBe(125);
+      for(const action of [()=>read(0,'','all',foreign),()=>read(-1)]){
+        await db.exec('savepoint denied');await expect(action()).rejects.toThrow();await db.exec('rollback to savepoint denied');
+      }
+      await db.exec('reset role');await db.query('delete from auth.sessions where id=$1',[session]);await db.exec('set local role authenticated');
+      await expect(read()).rejects.toThrow('unauthenticated');
+    }finally{await db.exec('rollback');}
+  });
+
   it('denies direct table reads after session revocation while retaining tenant isolation', async () => {
     const user = '90000000-0000-4000-8000-000000000081';
     const session = '90000000-0000-4000-8000-000000000082';
@@ -106,8 +140,8 @@ describe('full synthetic migration chain on embedded PostgreSQL', () => {
   });
 
   it('applies every migration in filename order and the synthetic clinic seed', async () => {
-    expect(migrationFiles).toHaveLength(87);
-    expect(migrationFiles.at(-1)).toBe('20261101083949_configured_booking_phone.sql');
+    expect(migrationFiles).toHaveLength(88);
+    expect(migrationFiles.at(-1)).toBe('20261101093156_configured_booking_pagination.sql');
     const clinics = await db.query<{ name: string }>('select name from public.clinics order by name');
     expect(clinics.rows.map(row => row.name)).toEqual([
       'Cabinet Dentaire Atlas - Casablanca (FICTIF)',
