@@ -87,3 +87,16 @@ cancelled, and a fresh public availability read showed the slot available again.
 Evidence: ignored `.local/check-deployed-booking-concurrency.mjs` and
 `.local/qa/deployed-booking-concurrency.json`. The unsuccessful request remains
 pending; no real contact was created or notified.
+
+Conflict recovery UX: clinic release `dpl_EoeJSXqiVXZ748vC5BZYJtu5sBiS`
+adds a direct refresh action after a definitive 409 confirmation conflict.
+It closes the dialog, reloads the authorized inbox and refreshes the pending
+notice. An uncertain response still locks exit and retries the identical
+idempotency key/body; it does not expose the refresh action prematurely.
+Scoped ESLint and the clinic package production build passed. Deployed mobile
+browser verification used actual authentication/reads and mocked 503/409
+confirmation responses (no write), verifying retry identity, refresh, unlocked
+inbox and no horizontal overflow. Screenshot inspected at 390px. Evidence:
+ignored `.local/qa/check-booking-conflict-refresh.mjs` and
+`.local/qa/booking-conflict-refresh-mobile.png`. This does not implement selecting
+a replacement slot for an unconfirmed request or rejecting that request.
