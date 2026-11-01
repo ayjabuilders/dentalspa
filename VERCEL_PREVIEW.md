@@ -81,3 +81,30 @@ The Vercel account currently displays Hobby. Resolve hosting suitability for the
 Historical booking/contact/consent and finance contracts still contain synthetic-only restrictions. Some modules remain previews or incomplete. Removing labels or hiding routes does not make those workflows production-ready. Development routes are blocked on Vercel, but that is not a claim that every demo component has been removed from build artifacts.
 
 See [the activation evidence and outstanding work](docs/HOSTED_FOUNDATION_ACTIVATION_PLAN.md), [the module progress ledger](docs/MODULE_PROGRESS.json) and [the work queue](docs/WORK_QUEUE.json). Preserve all MVP scope while closing these gaps; do not treat successful builds as completion.
+
+## Hosted booking recovery — 2026-11-01
+
+API deployment `dpl_3hbxgDH1YWLHkLr223vP3jiXrK9N` is Ready on
+https://dentalspa-api.vercel.app. Native ESM bootstrap fixes the NestJS runtime
+crash; health now returns HTTP 200. Public booking originally returned 503
+because deployment activation and the default workspace agenda were absent.
+
+The existing synthetic Atlas workspace now has a version-1 staff-review agenda:
+three public example visits, one private follow-up type, Monday–Saturday sample
+hours, and synthetic practitioner/chair resource windows for the next 31 days.
+These are demonstration rules, not approved clinic opening hours. Resource
+windows need extension or replacement before their horizon expires.
+
+The owner's requested email has a validation-only manager membership, not
+clinical authority. Credentials remain in an ignored local file and are not
+included here. Configuration was saved through an authenticated RPC with its
+normal audit/outbox emission. Public and staff agenda gates are enabled only
+for this synthetic workspace; no real-patient activation is implied.
+
+Deployed-origin checks passed: public visit catalogue (3 types), CORS, available
+slots, request creation, same-key replay, owner visibility, anonymous 401 and
+foreign-clinic 403. Evidence: `.local/qa/deployed-booking-smoke.json` (ignored).
+One labelled fictitious verification request remains visible to staff. This is
+a request awaiting staff review, not a confirmed appointment. Frontend browser
+verification confirms visit choices load and next-day slot navigation works.
+Other module gates and outstanding release criteria remain unchanged.
