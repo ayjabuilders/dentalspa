@@ -127,3 +127,19 @@ sessions now log out with `scope=local`, so checks do not revoke the owner's
 other phone/browser sessions. Evidence: ignored
 `.local/qa/deployed-owner-module-access.json`. These checks establish route
 availability only, not complete module functionality or real-patient readiness.
+
+## Deployed team workflow — 2026-11-01
+
+Deployment `dpl_DZsq4vRoy4iHbfPK6X93L8jYsh6s` activates team management
+on the approved Dev validation environment. The API switch and database gate
+match; normal manager/session/clinic authorization still applies. The owner team
+endpoint now returns 200. No invitation email is sent by this implementation.
+
+`TEAM_VERIFY_API_ORIGIN=https://dentalspa-api.vercel.app node scripts/check-hosted-team-flow.mjs`
+now runs the existing acceptance workflow against Vercel, rather than a local
+Nest process. Passed: complete manager profile/roster, anonymous denial, create
+and replay, assistant/foreign-clinic/self-change denial, role update/replay,
+stale-version 409, deactivation and existing-session denial, and search showing
+the disabled account. Test accounts were disabled/banned and sessions revoked;
+audit-linked fixtures remain. This does not prove browser UX, clinical authority,
+invitations, or the remaining fine-grained permissions. Finance remains gated.

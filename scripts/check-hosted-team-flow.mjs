@@ -5,6 +5,8 @@ import { createRequire } from 'node:module';
 import { verifyHostedPrerequisites } from '../apps/dental-api/scripts/verify-hosted-prerequisites.mjs';
 
 process.loadEnvFile('apps/dental-api/.env.hosted.local');
+const deployedOrigin = process.env.TEAM_VERIFY_API_ORIGIN;
+if (deployedOrigin !== undefined) assert.equal(deployedOrigin, 'https://dentalspa-api.vercel.app', 'Approved validation deployment only');
 const provider = 'https://giufpdppsunryyhfnzps.supabase.co';
 assert.equal(process.env.SUPABASE_URL, provider, 'Approved Dev project only');
 const adminKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -30,7 +32,6 @@ globalThis.fetch = async (input, init) => {
     return response;
   } catch (error) { if (trace) console.log(`TRACE team update RPC transport failure elapsed_ms=${Date.now() - started}`); throw error; }
 };
-const { createApplication } = require('../apps/dental-api/dist/bootstrap.js');
 const clinicId = '10000000-0000-4000-8000-000000000001';
 const clinicB = '10000000-0000-4000-8000-000000000002';
 const fixture = { runId: randomUUID(), managerId: null, memberId: null, cleaned: false };
@@ -65,11 +66,19 @@ try {
     email, password, email_confirm: true, app_metadata: { hosted_verification_fixture: true },
   }) }), 'Create synthetic manager');
   fixture.managerId = (await created.json()).id; save();
+  ok(await adminRequest('/rest/v1/profiles', { method: 'POST', body: JSON.stringify({ user_id: fixture.managerId, display_name: 'Gestionnaire vérification — FICTIF' }) }), 'Manager profile');
   ok(await adminRequest('/rest/v1/clinic_memberships', { method: 'POST', body: JSON.stringify({ clinic_id: clinicId, user_id: fixture.managerId, role: 'manager', active: true }) }), 'Manager membership');
   const token = await login(email, password);
-  app = await createApplication(); await app.listen(0, '127.0.0.1');
-  origin = `http://127.0.0.1:${app.getHttpServer().address().port}`;
+  if (deployedOrigin) origin = deployedOrigin;
+  else {
+    const { createApplication } = await import('../apps/dental-api/dist/bootstrap.js');
+    app = await createApplication(); await app.listen(0, '127.0.0.1');
+    origin = `http://127.0.0.1:${app.getHttpServer().address().port}`;
+  }
   const input = { display_name: 'Imane El Idrissi — équipe FICTIVE', email: `team-member-${fixture.runId}@example.test`, temporary_password: randomBytes(36).toString('base64url'), roles: ['assistant'] };
+  const roster = await ok(await request(token, '/team/roster'), 'Read complete team profiles').json();
+  assert.ok(roster.members.some(member => member.user_id === fixture.managerId));
+  assert.equal((await request('', endpoint)).status, 401);
   const key = randomUUID();
   const receipt = await ok(await request(token, endpoint, 'POST', input, key), 'Create member').json();
   fixture.memberId = receipt.member.user_id; save();
@@ -115,4 +124,4 @@ try {
 }
 if (failures.length) throw new AggregateError(failures, 'Hosted team verification or cleanup failed');
 console.log('PASS hosted team HTTP workflow; audit-linked fixtures retained, memberships disabled and sessions revoked.');
-console.log('Coordinator must restore the temporary team gate.');
+console.log(deployedOrigin ? 'Verified deployed validation API; keep only explicitly authorized activation.' : 'Coordinator must restore the temporary team gate.');

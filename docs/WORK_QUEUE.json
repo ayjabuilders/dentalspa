@@ -3910,7 +3910,7 @@
         "CRM-MVP-LOCAL-TEAM-ACCESS"
       ],
       "acceptance": "Synthetic Dev Auth/API create, replay, role update, stale version, deactivation and tenant/role denial verified; fixture sessions revoked and gate restored. Not deployed-browser or full M16 acceptance.",
-      "evidence": "scripts/check-hosted-team-flow.mjs; .local/qa/hosted-team-flow-fixed.log; migration20261101060921;12 unit tests and26 SQL checks; docs/HOSTED_FOUNDATION_ACTIVATION_PLAN.md."
+      "evidence": "scripts/check-hosted-team-flow.mjs; .local/qa/hosted-team-flow-fixed.log; migration20261101060921;12 unit tests and26 SQL checks; docs/HOSTED_FOUNDATION_ACTIVATION_PLAN.md. Vercel 2026-11-01 : parcours API déployée vérifié (création/replay, rôles, conflit 409, refus anonyme/assistant/autre cabinet/auto-modification, désactivation et session existante refusée). Module activé sur Dev pour validation, comptes QA désactivés et sessions révoquées. Preuve : VERCEL_PREVIEW.md et scripts/check-hosted-team-flow.mjs avec TEAM_VERIFY_API_ORIGIN. Validation navigateur et permissions complètes restent ouvertes."
     },
     {
       "id": "HOSTED-FINANCE-HTTP-ACCEPTANCE",
