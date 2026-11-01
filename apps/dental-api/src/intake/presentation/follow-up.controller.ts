@@ -3,8 +3,8 @@ import { ApiBearerAuth, ApiBody, ApiHeader, ApiOperation, ApiResponse, ApiTags }
 import { FollowUpListSchema, FollowUpRecordedSchema, RecordFollowUpSchema } from '@dental/contracts';
 import { z } from 'zod';
 import type { Response } from 'express';
-import { Access, type AuthorizedRequest } from '../../identity/presentation/policy.guard';
-import { FollowUpService } from '../application/follow-up.service';
+import { Access, type AuthorizedRequest } from '../../identity/presentation/policy.guard.js';
+import { FollowUpService } from '../application/follow-up.service.js';
 type ApiSchema=Extract<Parameters<typeof ApiBody>[0],{schema:unknown}>['schema'];
 @Catch()
 export class FollowUpExceptionFilter implements ExceptionFilter {

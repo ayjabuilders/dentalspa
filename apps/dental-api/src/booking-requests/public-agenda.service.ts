@@ -1,9 +1,9 @@
 import { BadRequestException, ConflictException, Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { AgendaSettingsSchema, ConfiguredBookingRequestSchema, ConfiguredBookingReceiptSchema, PublicAgendaQuerySchema, PublicAgendaAvailabilitySchema } from '@dental/contracts';
 import { z } from 'zod';
-import { scopedClient } from '../identity/infrastructure/supabase';
-import { publicAgendaActivation } from '../identity/infrastructure/module-activation';
-import { calculatePublicAgendaSlots } from './agenda-availability';
+import { scopedClient } from '../identity/infrastructure/supabase.js';
+import { publicAgendaActivation } from '../identity/infrastructure/module-activation.js';
+import { calculatePublicAgendaSlots } from './agenda-availability.js';
 
 @Injectable()
 export class PublicAgendaService {

@@ -1,9 +1,9 @@
 import { Injectable,NotFoundException,ServiceUnavailableException } from '@nestjs/common';
 import { InquirySchema,InquiryOwnerWorklistSchema } from '@dental/contracts';
-import type { Actor } from '../../identity/domain/access';
-import { scopedClient } from '../../identity/infrastructure/supabase';
-import type { OwnerWorklistRepository } from '../domain/owner-worklist';
-import { throwIntakeDatabaseError } from './intake.repository';
+import type { Actor } from '../../identity/domain/access.js';
+import { scopedClient } from '../../identity/infrastructure/supabase.js';
+import type { OwnerWorklistRepository } from '../domain/owner-worklist.js';
+import { throwIntakeDatabaseError } from './intake.repository.js';
 @Injectable()
 export class SupabaseOwnerWorklist implements OwnerWorklistRepository {
   async list(actor:Actor) {

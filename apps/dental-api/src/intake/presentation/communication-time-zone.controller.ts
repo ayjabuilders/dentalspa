@@ -3,8 +3,8 @@ import { ApiBearerAuth,ApiBody,ApiHeader,ApiOperation,ApiResponse,ApiTags } from
 import { InquiryCommunicationTimeZoneStateSchema,InquiryCommunicationTimeZoneResultSchema,SetInquiryCommunicationTimeZoneSchema } from '@dental/contracts';
 import { z } from 'zod';
 import type { Response } from 'express';
-import { Access,type AuthorizedRequest } from '../../identity/presentation/policy.guard';
-import { CommunicationTimeZoneService } from '../application/communication-time-zone.service';
+import { Access,type AuthorizedRequest } from '../../identity/presentation/policy.guard.js';
+import { CommunicationTimeZoneService } from '../application/communication-time-zone.service.js';
 type ApiSchema=Extract<Parameters<typeof ApiBody>[0],{schema:unknown}>['schema'];
 @Catch()
 export class CommunicationTimeZoneExceptionFilter implements ExceptionFilter {

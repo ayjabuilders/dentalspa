@@ -1,8 +1,8 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import { InquiryCreatedSchema, InquiryListSchema, type CreateInquiry } from '@dental/contracts';
-import type { Actor } from '../../identity/domain/access';
-import { scopedClient } from '../../identity/infrastructure/supabase';
-import type { IntakeRepository } from '../domain/intake';
+import type { Actor } from '../../identity/domain/access.js';
+import { scopedClient } from '../../identity/infrastructure/supabase.js';
+import type { IntakeRepository } from '../domain/intake.js';
 
 export function throwIntakeDatabaseError(error: { code?: string }): never {
   // Map SQLSTATE, not HTTP status or database messages that may contain inputs.

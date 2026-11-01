@@ -3,8 +3,8 @@ import { ApiBearerAuth, ApiBody, ApiHeader, ApiOperation, ApiResponse, ApiTags }
 import { CreateInquirySchema, InquiryCreatedSchema, InquiryListSchema } from '@dental/contracts';
 import { z } from 'zod';
 import type { Response } from 'express';
-import { Access, type AuthorizedRequest } from '../../identity/presentation/policy.guard';
-import { IntakeService } from '../application/intake.service';
+import { Access, type AuthorizedRequest } from '../../identity/presentation/policy.guard.js';
+import { IntakeService } from '../application/intake.service.js';
 type ApiSchema = Extract<Parameters<typeof ApiBody>[0], {schema: unknown}>['schema'];
 
 @ApiTags('intake') @ApiBearerAuth() @ApiHeader({name:'X-Clinic-Id',required:true})

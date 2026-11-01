@@ -1,8 +1,8 @@
 import { BadRequestException,ForbiddenException,Injectable,NotFoundException,ServiceUnavailableException,UnauthorizedException } from '@nestjs/common';
 import { InquiryPlannedActionHistorySchema } from '@dental/contracts';
-import type { Actor } from '../../identity/domain/access';
-import { scopedClient } from '../../identity/infrastructure/supabase';
-import type { PlannedActionHistoryRepository } from '../domain/planned-action-history';
+import type { Actor } from '../../identity/domain/access.js';
+import { scopedClient } from '../../identity/infrastructure/supabase.js';
+import type { PlannedActionHistoryRepository } from '../domain/planned-action-history.js';
 @Injectable()
 export class SupabasePlannedActionHistory implements PlannedActionHistoryRepository {
  async list(actor:Actor,id:string){

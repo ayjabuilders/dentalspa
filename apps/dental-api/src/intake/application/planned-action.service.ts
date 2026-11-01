@@ -1,9 +1,9 @@
 import { BadRequestException,ForbiddenException,HttpException,Inject,Injectable,ServiceUnavailableException } from '@nestjs/common';
 import { InquiryPlannedActionStateSchema,InquiryPlannedActionResultSchema,SetInquiryPlannedActionSchema } from '@dental/contracts';
 import { z } from 'zod';
-import type { Actor } from '../../identity/domain/access';
-import { safeCorrelation } from '../../audit/redaction';
-import { PLANNED_ACTION_REPOSITORY,type PlannedActionRepository } from '../domain/planned-action';
+import type { Actor } from '../../identity/domain/access.js';
+import { safeCorrelation } from '../../audit/redaction.js';
+import { PLANNED_ACTION_REPOSITORY,type PlannedActionRepository } from '../domain/planned-action.js';
 @Injectable()
 export class PlannedActionService {
  constructor(@Inject(PLANNED_ACTION_REPOSITORY) private readonly repository:PlannedActionRepository){}

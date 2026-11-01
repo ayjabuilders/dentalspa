@@ -3,8 +3,8 @@ import { BadRequestException, Body, Controller, Get, Header, Headers, Inject, Pa
 import { ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiHeader, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { PrepareLocalInvoiceSchema, IssueLocalInvoiceSchema, LocalInvoiceDraftReceiptSchema, LocalInvoiceIssuedReceiptSchema, LocalInvoiceListSchema } from '@dental/contracts';
 import { z } from 'zod';
-import { Access, type AuthorizedRequest } from '../../identity/presentation/policy.guard';
-import { LocalInvoicesService } from '../application/local-invoices.service';
+import { Access, type AuthorizedRequest } from '../../identity/presentation/policy.guard.js';
+import { LocalInvoicesService } from '../application/local-invoices.service.js';
 type ApiSchema = Extract<Parameters<typeof ApiBody>[0], { schema: unknown }>['schema'];
 
 @ApiTags('finance') @ApiBearerAuth() @ApiHeader({ name: 'X-Clinic-Id', required: true })

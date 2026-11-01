@@ -2,7 +2,7 @@ import { CanActivate, ExecutionContext, ForbiddenException, Inject, Injectable, 
 import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
 import { z } from 'zod';
-import { IDENTITY, resolveActor, type Actor, type AuthenticatedIdentity, type IdentityPort } from '../domain/access';
+import { IDENTITY, resolveActor, type Actor, type AuthenticatedIdentity, type IdentityPort } from '../domain/access.js';
 
 export type AccessRule = 'public' | 'workspace-list' | 'staff' | 'patient';
 export const Access = (rule: AccessRule) => SetMetadata('access', rule);

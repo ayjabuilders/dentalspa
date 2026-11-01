@@ -1,9 +1,9 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import { ConfiguredBookingListSchema, ConfirmDemoBookingResponseSchema, ConfirmDemoBookingSchema, CreateDemoBookingRequestSchema, DemoBookingRequestAcknowledgementSchema, DemoBookingRequestListSchema } from '@dental/contracts';
-import type { Actor } from '../identity/domain/access';
+import type { Actor } from '../identity/domain/access.js';
 import { DemoBookingAvailabilityQuerySchema, DemoBookingAvailabilitySchema } from '@dental/contracts';
-import { scopedClient } from '../identity/infrastructure/supabase';
-import { configuredBookingActivationKey } from '../identity/infrastructure/module-activation';
+import { scopedClient } from '../identity/infrastructure/supabase.js';
+import { configuredBookingActivationKey } from '../identity/infrastructure/module-activation.js';
 import { ConfirmConfiguredBookingSchema, ConfiguredBookingConfirmationSchema } from '@dental/contracts';
 import { z } from 'zod';
 

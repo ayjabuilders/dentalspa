@@ -1,9 +1,9 @@
 import { Injectable,NotFoundException,ServiceUnavailableException } from '@nestjs/common';
 import { InquiryScheduleResultSchema,type SetInquirySchedule } from '@dental/contracts';
-import type { Actor } from '../../identity/domain/access';
-import { scopedClient } from '../../identity/infrastructure/supabase';
-import type { InquiryScheduleRepository } from '../domain/inquiry-schedule';
-import { throwIntakeDatabaseError } from './intake.repository';
+import type { Actor } from '../../identity/domain/access.js';
+import { scopedClient } from '../../identity/infrastructure/supabase.js';
+import type { InquiryScheduleRepository } from '../domain/inquiry-schedule.js';
+import { throwIntakeDatabaseError } from './intake.repository.js';
 @Injectable()
 export class SupabaseInquirySchedule implements InquiryScheduleRepository {
  async set(actor:Actor,id:string,input:SetInquirySchedule,key:string,correlationId:string){

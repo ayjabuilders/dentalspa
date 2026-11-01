@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import type { Actor } from '../identity/domain/access';
-import { scopedClient } from '../identity/infrastructure/supabase';
-import { databaseError, SchedulingError } from './errors';
+import type { Actor } from '../identity/domain/access.js';
+import { scopedClient } from '../identity/infrastructure/supabase.js';
+import { databaseError, SchedulingError } from './errors.js';
 export const SCHEDULING_REPOSITORY=Symbol('SCHEDULING_REPOSITORY');
 export interface SchedulingRepository { call(actor:Actor,procedure:string,args:Record<string,unknown>):Promise<unknown> }
 @Injectable()

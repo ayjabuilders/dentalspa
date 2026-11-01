@@ -3,8 +3,8 @@ import { ApiBearerAuth, ApiBody, ApiHeader, ApiOperation, ApiResponse, ApiTags }
 import { InquiryScheduleResultSchema, SetInquiryScheduleSchema } from '@dental/contracts';
 import { z } from 'zod';
 import type { Response } from 'express';
-import { Access, type AuthorizedRequest } from '../../identity/presentation/policy.guard';
-import { InquiryScheduleService } from '../application/inquiry-schedule.service';
+import { Access, type AuthorizedRequest } from '../../identity/presentation/policy.guard.js';
+import { InquiryScheduleService } from '../application/inquiry-schedule.service.js';
 type ApiSchema=Extract<Parameters<typeof ApiBody>[0],{schema:unknown}>['schema'];
 @Catch()
 export class InquiryScheduleExceptionFilter implements ExceptionFilter {

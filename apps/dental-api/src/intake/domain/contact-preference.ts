@@ -1,5 +1,5 @@
 import type { InquiryContactPreferenceState,InquiryContactPreferenceResult,SetInquiryContactPreference } from '@dental/contracts';
-import type { Actor } from '../../identity/domain/access';
+import type { Actor } from '../../identity/domain/access.js';
 export const CONTACT_PREFERENCE_REPOSITORY=Symbol('CONTACT_PREFERENCE_REPOSITORY');
 export interface ContactPreferenceRepository {
  get(actor:Actor,id:string):Promise<InquiryContactPreferenceState>;

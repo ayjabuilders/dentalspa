@@ -1,8 +1,8 @@
 import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { createClient } from '@supabase/supabase-js';
-import { supabaseAdminKey } from '../../identity/infrastructure/supabase-admin-key';
-import type { PrivateDocumentStorage } from '../domain/private-document-storage';
-import type { StagingEntry } from '../application/staging-cleanup';
+import { supabaseAdminKey } from '../../identity/infrastructure/supabase-admin-key.js';
+import type { PrivateDocumentStorage } from '../domain/private-document-storage.js';
+import type { StagingEntry } from '../application/staging-cleanup.js';
 
 @Injectable()
 export class SupabasePrivateDocumentStorage implements PrivateDocumentStorage {

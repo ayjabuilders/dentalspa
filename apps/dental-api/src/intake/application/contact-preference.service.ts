@@ -1,9 +1,9 @@
 import { BadRequestException,ForbiddenException,HttpException,Inject,Injectable,ServiceUnavailableException } from '@nestjs/common';
 import { InquiryContactPreferenceStateSchema,InquiryContactPreferenceResultSchema,SetInquiryContactPreferenceSchema } from '@dental/contracts';
 import { z } from 'zod';
-import type { Actor } from '../../identity/domain/access';
-import { safeCorrelation } from '../../audit/redaction';
-import { CONTACT_PREFERENCE_REPOSITORY,type ContactPreferenceRepository } from '../domain/contact-preference';
+import type { Actor } from '../../identity/domain/access.js';
+import { safeCorrelation } from '../../audit/redaction.js';
+import { CONTACT_PREFERENCE_REPOSITORY,type ContactPreferenceRepository } from '../domain/contact-preference.js';
 @Injectable()
 export class ContactPreferenceService {
  constructor(@Inject(CONTACT_PREFERENCE_REPOSITORY) private readonly repository:ContactPreferenceRepository){}

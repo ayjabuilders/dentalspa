@@ -2,11 +2,11 @@ import { BadRequestException, Body, Controller, Get, Header, Headers, HttpCode, 
 import { ApiBearerAuth, ApiHeader, ApiTags, ApiOkResponse, ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ClinicWorkspaceChoicesSchema, PatientCommunicationPreferencesResultSchema, PatientCommunicationPreferencesStateSchema, SetPatientCommunicationPreferencesSchema } from '@dental/contracts';
 import { z } from 'zod';
-import { CLINIC_WORKSPACE_READER, type ClinicWorkspaceReader } from '../domain/access';
-import { WorkspaceDto } from './workspace.dto';
-import { PatientDto } from '../../patients/presentation/patient.dto';
-import { PatientsService } from '../../patients/application/patients.service';
-import { Access, type AuthorizedRequest, type IdentityRequest } from './policy.guard';
+import { CLINIC_WORKSPACE_READER, type ClinicWorkspaceReader } from '../domain/access.js';
+import { WorkspaceDto } from './workspace.dto.js';
+import { PatientDto } from '../../patients/presentation/patient.dto.js';
+import { PatientsService } from '../../patients/application/patients.service.js';
+import { Access, type AuthorizedRequest, type IdentityRequest } from './policy.guard.js';
 type ApiSchema=Extract<Parameters<typeof ApiBody>[0],{schema:unknown}>['schema'];
 @ApiTags('identity') @ApiBearerAuth()
 @Controller('me')

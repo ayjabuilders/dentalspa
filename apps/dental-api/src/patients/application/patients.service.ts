@@ -1,9 +1,9 @@
 import { BadRequestException, ConflictException, ForbiddenException, HttpException, Inject, Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import { PatientAdminChecklistListSchema, PatientAdminChecklistResultSchema, PatientCommunicationPreferencesResultSchema, PatientCommunicationPreferencesStateSchema, PatientLookupRequestSchema, PatientLookupResponseSchema, SetPatientAdminChecklistSchema, SetPatientCommunicationPreferencesSchema } from '@dental/contracts';
-import { canReadPatient, type Actor } from '../../identity/domain/access';
-import { PATIENT_REPOSITORY, type PatientRepository } from '../domain/patient';
-import { PATIENT_ADMIN_CHECKLIST_REPOSITORY, type PatientAdminChecklistRepository } from '../domain/patient-admin-checklist';
-import { safeCorrelation } from '../../audit/redaction';
+import { canReadPatient, type Actor } from '../../identity/domain/access.js';
+import { PATIENT_REPOSITORY, type PatientRepository } from '../domain/patient.js';
+import { PATIENT_ADMIN_CHECKLIST_REPOSITORY, type PatientAdminChecklistRepository } from '../domain/patient-admin-checklist.js';
+import { safeCorrelation } from '../../audit/redaction.js';
 import { z } from 'zod';
 @Injectable()
 export class PatientsService {

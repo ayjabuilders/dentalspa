@@ -1,8 +1,8 @@
 import { ConflictException, ForbiddenException, NotFoundException, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import { InquiryOwnerAssignmentResultSchema, type SetInquiryOwner } from '@dental/contracts';
-import type { Actor } from '../../identity/domain/access';
-import { scopedClient } from '../../identity/infrastructure/supabase';
-import type { InquiryOwnerReassignmentRepository } from '../domain/owner-reassignment';
+import type { Actor } from '../../identity/domain/access.js';
+import { scopedClient } from '../../identity/infrastructure/supabase.js';
+import type { InquiryOwnerReassignmentRepository } from '../domain/owner-reassignment.js';
 
 export class SupabaseInquiryOwnerReassignment implements InquiryOwnerReassignmentRepository {
   async assign(actor: Actor, inquiryId: string, input: SetInquiryOwner, key: string, correlationId: string) {

@@ -1,9 +1,9 @@
 import { Injectable,NotFoundException,ServiceUnavailableException } from '@nestjs/common';
 import { InquiryContactPreferenceStateSchema,InquiryContactPreferenceResultSchema,type SetInquiryContactPreference } from '@dental/contracts';
-import type { Actor } from '../../identity/domain/access';
-import { scopedClient } from '../../identity/infrastructure/supabase';
-import type { ContactPreferenceRepository } from '../domain/contact-preference';
-import { throwIntakeDatabaseError } from './intake.repository';
+import type { Actor } from '../../identity/domain/access.js';
+import { scopedClient } from '../../identity/infrastructure/supabase.js';
+import type { ContactPreferenceRepository } from '../domain/contact-preference.js';
+import { throwIntakeDatabaseError } from './intake.repository.js';
 @Injectable()
 export class SupabaseContactPreference implements ContactPreferenceRepository {
  async get(actor:Actor,id:string){const parsed=InquiryContactPreferenceStateSchema.safeParse(await this.call(actor,'get_inquiry_contact_preference',{p_inquiry_id:id}));if(!parsed.success)throw new ServiceUnavailableException('Contact preference unavailable');return parsed.data;}

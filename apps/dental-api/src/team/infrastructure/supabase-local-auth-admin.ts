@@ -1,7 +1,7 @@
 import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { createClient } from '@supabase/supabase-js';
-import { supabaseAdminKey } from '../../identity/infrastructure/supabase-admin-key';
-import type { LocalTeamAuthAdmin, LocalTeamAuthUser } from '../domain/local-auth-admin';
+import { supabaseAdminKey } from '../../identity/infrastructure/supabase-admin-key.js';
+import type { LocalTeamAuthAdmin, LocalTeamAuthUser } from '../domain/local-auth-admin.js';
 
 @Injectable()
 export class SupabaseLocalTeamAuthAdmin implements LocalTeamAuthAdmin {

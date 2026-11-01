@@ -2,10 +2,10 @@ import { BadRequestException, Body, Controller, Get, Header, HttpCode, Inject, P
 import { ApiBearerAuth, ApiBody, ApiHeader, ApiTags, ApiOkResponse, ApiResponse, ApiOperation } from '@nestjs/swagger';
 import { PatientLookupRequestSchema, PatientLookupResponseSchema } from '@dental/contracts';
 import { z } from 'zod';
-import { PatientDto } from './patient.dto';
-import { Access, type AuthorizedRequest } from '../../identity/presentation/policy.guard';
-import { PatientsService } from '../application/patients.service';
-import { PatientHubService } from '../application/patient-hub.service';
+import { PatientDto } from './patient.dto.js';
+import { Access, type AuthorizedRequest } from '../../identity/presentation/policy.guard.js';
+import { PatientsService } from '../application/patients.service.js';
+import { PatientHubService } from '../application/patient-hub.service.js';
 type ApiSchema=Extract<Parameters<typeof ApiBody>[0],{schema:unknown}>['schema'];
 @ApiTags('patients')
 @ApiBearerAuth()

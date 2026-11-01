@@ -1,9 +1,9 @@
 import { timingSafeEqual } from 'node:crypto';
-import { supabaseAdminKey } from '../../identity/infrastructure/supabase-admin-key';
+import { supabaseAdminKey } from '../../identity/infrastructure/supabase-admin-key.js';
 import { BadRequestException, Controller, Get, Header, Headers, Inject, Query, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
-import { Access } from '../../identity/presentation/policy.guard';
-import { PRIVATE_DOCUMENT_STORAGE } from '../domain/private-document-storage';
-import { cleanupDocumentStaging, type StagingCleanupStorage } from '../application/staging-cleanup';
+import { Access } from '../../identity/presentation/policy.guard.js';
+import { PRIVATE_DOCUMENT_STORAGE } from '../domain/private-document-storage.js';
+import { cleanupDocumentStaging, type StagingCleanupStorage } from '../application/staging-cleanup.js';
 
 export function stagingCleanupConfigured(env:Readonly<Record<string,string|undefined>>=process.env) {
   if(env.ENABLE_DOCUMENT_STAGING_CLEANUP!=='true'||!supabaseAdminKey(env))return false;

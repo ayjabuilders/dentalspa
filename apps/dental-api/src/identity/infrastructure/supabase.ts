@@ -2,7 +2,7 @@ import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { createClient } from '@supabase/supabase-js';
 import { ClinicWorkspaceChoicesSchema } from '@dental/contracts';
 import { z } from 'zod';
-import type { ClinicWorkspaceReader, IdentityPort, Membership, PatientLink } from '../domain/access';
+import type { ClinicWorkspaceReader, IdentityPort, Membership, PatientLink } from '../domain/access.js';
 
 const activeWorkspaceMemberships = z.array(z.object({
   clinic_id: z.uuid(), user_id: z.uuid(), role: z.enum(['dentist','reception','assistant','manager']), active: z.literal(true),

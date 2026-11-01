@@ -1,4 +1,4 @@
-import type { Actor } from '../../identity/domain/access';
+import type { Actor } from '../../identity/domain/access.js';
 import type { PatientCommunicationPreferencesResult, PatientCommunicationPreferencesState, PatientLookupRequest, PatientLookupResponse, SetPatientCommunicationPreferences } from '@dental/contracts';
 export type Patient = { id: string; clinic_id: string; display_name: string; reference: string };
 export const PATIENT_REPOSITORY = Symbol('PATIENT_REPOSITORY');

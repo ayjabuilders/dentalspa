@@ -3,8 +3,8 @@ import { ApiBearerAuth,ApiBody,ApiHeader,ApiOperation,ApiResponse,ApiTags } from
 import { InquiryContactPreferenceStateSchema,InquiryContactPreferenceResultSchema,SetInquiryContactPreferenceSchema } from '@dental/contracts';
 import { z } from 'zod';
 import type { Response } from 'express';
-import { Access,type AuthorizedRequest } from '../../identity/presentation/policy.guard';
-import { ContactPreferenceService } from '../application/contact-preference.service';
+import { Access,type AuthorizedRequest } from '../../identity/presentation/policy.guard.js';
+import { ContactPreferenceService } from '../application/contact-preference.service.js';
 type ApiSchema=Extract<Parameters<typeof ApiBody>[0],{schema:unknown}>['schema'];
 @Catch()
 export class ContactPreferenceExceptionFilter implements ExceptionFilter {

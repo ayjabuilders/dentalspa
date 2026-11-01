@@ -3,8 +3,8 @@ import { ApiBearerAuth, ApiBody, ApiHeader, ApiOperation, ApiResponse, ApiTags }
 import type { Request } from 'express';
 import { DemoFakeInboundAcknowledgementSchema, DemoFakeInboxListSchema, DemoFakeWebhookEventSchema } from '@dental/contracts';
 import { z } from 'zod';
-import { Access, type AuthorizedRequest } from '../../identity/presentation/policy.guard';
-import { DemoFakeInboxService } from '../application/demo-fake-inbox.service';
+import { Access, type AuthorizedRequest } from '../../identity/presentation/policy.guard.js';
+import { DemoFakeInboxService } from '../application/demo-fake-inbox.service.js';
 
 type RawWebhookRequest = Request & { rawBody?: Buffer };
 type ApiSchema = Extract<Parameters<typeof ApiBody>[0], { schema: unknown }>['schema'];

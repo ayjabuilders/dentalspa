@@ -1,5 +1,5 @@
 import type { InquiryPlannedActionState,InquiryPlannedActionResult,SetInquiryPlannedAction } from '@dental/contracts';
-import type { Actor } from '../../identity/domain/access';
+import type { Actor } from '../../identity/domain/access.js';
 export const PLANNED_ACTION_REPOSITORY=Symbol('PLANNED_ACTION_REPOSITORY');
 export interface PlannedActionRepository {
  get(actor:Actor,id:string):Promise<InquiryPlannedActionState>;

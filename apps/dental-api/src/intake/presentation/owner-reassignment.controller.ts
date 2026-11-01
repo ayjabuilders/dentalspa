@@ -3,8 +3,8 @@ import { ApiBearerAuth, ApiBody, ApiHeader, ApiOperation, ApiResponse, ApiTags }
 import { InquiryOwnerAssignmentResultSchema, SetInquiryOwnerSchema } from '@dental/contracts';
 import { z } from 'zod';
 import type { Response } from 'express';
-import { Access, type AuthorizedRequest } from '../../identity/presentation/policy.guard';
-import { InquiryOwnerReassignmentService } from '../application/owner-reassignment.service';
+import { Access, type AuthorizedRequest } from '../../identity/presentation/policy.guard.js';
+import { InquiryOwnerReassignmentService } from '../application/owner-reassignment.service.js';
 
 type ApiSchema = Extract<Parameters<typeof ApiBody>[0], { schema: unknown }>['schema'];
 

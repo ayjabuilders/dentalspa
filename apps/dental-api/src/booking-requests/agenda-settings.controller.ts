@@ -1,7 +1,7 @@
 import { BadRequestException, Body, Controller, Get, Header, Headers, Inject, Post, Req } from '@nestjs/common';
 import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
-import { Access, type AuthorizedRequest } from '../identity/presentation/policy.guard';
-import { AgendaSettingsService } from './agenda-settings.service';
+import { Access, type AuthorizedRequest } from '../identity/presentation/policy.guard.js';
+import { AgendaSettingsService } from './agenda-settings.service.js';
 
 @ApiTags('agenda-settings') @ApiBearerAuth()
 @Controller('agenda-settings')

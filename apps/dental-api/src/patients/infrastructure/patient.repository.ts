@@ -1,9 +1,9 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import { PatientAdminChecklistListSchema, PatientAdminChecklistResultSchema, PatientCommunicationPreferencesResultSchema, PatientCommunicationPreferencesStateSchema, PatientLookupResponseSchema, PatientSelfSchema, type PatientLookupRequest, type SetPatientAdminChecklist, type SetPatientCommunicationPreferences } from '@dental/contracts';
-import type { Actor } from '../../identity/domain/access';
-import { scopedClient } from '../../identity/infrastructure/supabase';
-import type { Patient, PatientRepository } from '../domain/patient';
-import type { PatientAdminChecklistRepository } from '../domain/patient-admin-checklist';
+import type { Actor } from '../../identity/domain/access.js';
+import { scopedClient } from '../../identity/infrastructure/supabase.js';
+import type { Patient, PatientRepository } from '../domain/patient.js';
+import type { PatientAdminChecklistRepository } from '../domain/patient-admin-checklist.js';
 @Injectable()
 export class SupabasePatients implements PatientRepository, PatientAdminChecklistRepository {
   async lookup(actor: Actor, request: PatientLookupRequest) {

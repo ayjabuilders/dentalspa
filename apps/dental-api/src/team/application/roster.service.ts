@@ -1,7 +1,7 @@
 import { ForbiddenException,HttpException,Inject,Injectable,ServiceUnavailableException } from '@nestjs/common';
 import { TeamRosterSchema } from '@dental/contracts';
-import type { Actor } from '../../identity/domain/access';
-import { TEAM_ROSTER_REPOSITORY,type TeamRosterRepository } from '../domain/roster';
+import type { Actor } from '../../identity/domain/access.js';
+import { TEAM_ROSTER_REPOSITORY,type TeamRosterRepository } from '../domain/roster.js';
 @Injectable()
 export class TeamRosterService {
   constructor(@Inject(TEAM_ROSTER_REPOSITORY) private readonly repository:TeamRosterRepository) {}

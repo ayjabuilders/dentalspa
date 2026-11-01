@@ -2,8 +2,8 @@ import {BadRequestException,Body,Controller,Get,Header,Headers,Inject,Post,Req} 
 import {ApiBearerAuth,ApiBody,ApiCreatedResponse,ApiHeader,ApiOkResponse,ApiTags} from '@nestjs/swagger';
 import {LocalPaymentConfigurationSchema,SaveLocalReceivingAccountSchema,LocalReceivingAccountReceiptSchema,SaveLocalPaymentMethodSchema,LocalPaymentMethodReceiptSchema} from '@dental/contracts';
 import {z} from 'zod';
-import {Access,type AuthorizedRequest} from '../../identity/presentation/policy.guard';
-import {LocalPaymentConfigurationService} from '../application/local-payment-configuration.service';
+import {Access,type AuthorizedRequest} from '../../identity/presentation/policy.guard.js';
+import {LocalPaymentConfigurationService} from '../application/local-payment-configuration.service.js';
 type ApiSchema=Extract<Parameters<typeof ApiBody>[0],{schema:unknown}>['schema'];
 @ApiTags('finance') @ApiBearerAuth() @ApiHeader({name:'X-Clinic-Id',required:true})
 @Controller('finance/payment-configuration')

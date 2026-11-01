@@ -1,9 +1,9 @@
 import { BadRequestException, ForbiddenException, HttpException, Inject, Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { InquiryContactOutcomeListSchema, InquiryContactOutcomeRecordedSchema, RecordInquiryContactOutcomeSchema } from '@dental/contracts';
 import { z } from 'zod';
-import type { Actor } from '../../identity/domain/access';
-import { safeCorrelation } from '../../audit/redaction';
-import { INQUIRY_CONTACT_OUTCOME_REPOSITORY, type InquiryContactOutcomeRepository } from '../domain/contact-outcome';
+import type { Actor } from '../../identity/domain/access.js';
+import { safeCorrelation } from '../../audit/redaction.js';
+import { INQUIRY_CONTACT_OUTCOME_REPOSITORY, type InquiryContactOutcomeRepository } from '../domain/contact-outcome.js';
 
 @Injectable()
 export class InquiryContactOutcomeService {

@@ -4,8 +4,8 @@ import { ApiBearerAuth, ApiBody, ApiConsumes, ApiHeader, ApiOkResponse, ApiOpera
 import { LibraryDeleteReceiptSchema, LibraryListSchema, LibraryOptionsSchema, LibraryReceiptSchema } from '@dental/contracts';
 import { z } from 'zod';
 import { LibraryUploadStartSchema, LibraryUploadFinishSchema, LibraryUploadTicketSchema } from '@dental/contracts';
-import { Access, type AuthorizedRequest } from '../../identity/presentation/policy.guard';
-import { PatientDocumentLibraryService } from '../application/document-library.service';
+import { Access, type AuthorizedRequest } from '../../identity/presentation/policy.guard.js';
+import { PatientDocumentLibraryService } from '../application/document-library.service.js';
 
 type ApiSchema = Extract<Parameters<typeof ApiBody>[0], {schema:unknown}>['schema'];
 type LibraryUploadFile = { buffer:Buffer; size:number; mimetype:string; originalname?:string };

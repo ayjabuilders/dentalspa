@@ -1,4 +1,4 @@
-import type { DeliveryState, FakeEventResult, FakeProviderEvent } from '../domain/fake-provider';
+import type { DeliveryState, FakeEventResult, FakeProviderEvent } from '../domain/fake-provider.js';
 
 type OutboundReceipt = { conversation_ref: string; status: DeliveryState; sequence: number; uncertain: boolean; failed: boolean };
 

@@ -4,8 +4,8 @@ import { ApiBearerAuth, ApiBody, ApiConsumes, ApiCreatedResponse, ApiHeader, Api
 import type { Response } from 'express';
 import { z } from 'zod';
 import { PatientDocumentSectionSchema, PatientGeneratedTypeSchema, PatientDocumentListSchema, PatientDocumentTemplatesSchema, PatientDocumentDraftListSchema, PatientDocumentDraftSchema, PatientDocumentDraftVersionsSchema, PatientDocumentUploadReceiptSchema, PatientDocumentDraftReceiptSchema, CreatePatientDocumentDraftSchema, UpdatePatientDocumentDraftSchema, ValidatePatientDocumentDraftSchema } from '@dental/contracts';
-import { Access, type AuthorizedRequest } from '../../identity/presentation/policy.guard';
-import { DocumentsService } from '../application/documents.service';
+import { Access, type AuthorizedRequest } from '../../identity/presentation/policy.guard.js';
+import { DocumentsService } from '../application/documents.service.js';
 import { LibraryDownloadSchema } from '@dental/contracts';
 
 type UploadFile = { buffer:Buffer; size:number; mimetype:string };

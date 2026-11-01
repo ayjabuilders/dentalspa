@@ -3,8 +3,8 @@ import { ApiBearerAuth,ApiBody,ApiHeader,ApiOperation,ApiResponse,ApiTags } from
 import { InquiryPlannedActionHistorySchema } from '@dental/contracts';
 import { z } from 'zod';
 import type { Response } from 'express';
-import { Access,type AuthorizedRequest } from '../../identity/presentation/policy.guard';
-import { PlannedActionHistoryService } from '../application/planned-action-history.service';
+import { Access,type AuthorizedRequest } from '../../identity/presentation/policy.guard.js';
+import { PlannedActionHistoryService } from '../application/planned-action-history.service.js';
 type ApiSchema=Extract<Parameters<typeof ApiBody>[0],{schema:unknown}>['schema'];
 @Catch()
 export class PlannedActionHistoryExceptionFilter implements ExceptionFilter {

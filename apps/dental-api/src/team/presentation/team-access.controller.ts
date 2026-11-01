@@ -3,8 +3,8 @@ import { ApiBearerAuth, ApiBody, ApiHeader, ApiOperation, ApiParam, ApiQuery, Ap
 import { CreateTeamAccessMemberSchema, TeamAccessListSchema, TeamAccessReceiptSchema, UpdateTeamAccessMemberSchema } from '@dental/contracts';
 import { z } from 'zod';
 import type { Response } from 'express';
-import { Access, type AuthorizedRequest } from '../../identity/presentation/policy.guard';
-import { TeamAccessService } from '../application/team-access.service';
+import { Access, type AuthorizedRequest } from '../../identity/presentation/policy.guard.js';
+import { TeamAccessService } from '../application/team-access.service.js';
 
 type ApiSchema = Extract<Parameters<typeof ApiBody>[0], { schema: unknown }>['schema'];
 

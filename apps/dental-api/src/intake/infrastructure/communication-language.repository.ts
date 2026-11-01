@@ -1,9 +1,9 @@
 import { Injectable,NotFoundException,ServiceUnavailableException } from '@nestjs/common';
 import { InquiryCommunicationLanguageStateSchema,InquiryCommunicationLanguageResultSchema,type SetInquiryCommunicationLanguage } from '@dental/contracts';
-import type { Actor } from '../../identity/domain/access';
-import { scopedClient } from '../../identity/infrastructure/supabase';
-import type { CommunicationLanguageRepository } from '../domain/communication-language';
-import { throwIntakeDatabaseError } from './intake.repository';
+import type { Actor } from '../../identity/domain/access.js';
+import { scopedClient } from '../../identity/infrastructure/supabase.js';
+import type { CommunicationLanguageRepository } from '../domain/communication-language.js';
+import { throwIntakeDatabaseError } from './intake.repository.js';
 @Injectable()
 export class SupabaseCommunicationLanguage implements CommunicationLanguageRepository {
  async get(actor:Actor,id:string){const parsed=InquiryCommunicationLanguageStateSchema.safeParse(await this.call(actor,'get_inquiry_communication_language',{p_inquiry_id:id}));if(!parsed.success)throw new ServiceUnavailableException('Communication language unavailable');return parsed.data;}

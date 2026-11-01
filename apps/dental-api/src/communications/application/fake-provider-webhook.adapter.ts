@@ -1,6 +1,6 @@
-import { parseSignedFakeProviderEvent } from '../infrastructure/fake-provider-signature';
-import { LocalFakeProviderLedger } from '../infrastructure/fake-provider-ledger';
-import type { FakeEventResult, SignedEventResult } from '../domain/fake-provider';
+import { parseSignedFakeProviderEvent } from '../infrastructure/fake-provider-signature.js';
+import { LocalFakeProviderLedger } from '../infrastructure/fake-provider-ledger.js';
+import type { FakeEventResult, SignedEventResult } from '../domain/fake-provider.js';
 
 export type FakeWebhookAcceptance =
   | { accepted: true; result: FakeEventResult }

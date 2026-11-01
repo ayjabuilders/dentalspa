@@ -1,8 +1,8 @@
 import { BadRequestException,ForbiddenException,Injectable,ServiceUnavailableException,UnauthorizedException } from '@nestjs/common';
 import { TeamRosterSchema } from '@dental/contracts';
-import type { Actor } from '../../identity/domain/access';
-import { scopedClient } from '../../identity/infrastructure/supabase';
-import type { TeamRosterRepository } from '../domain/roster';
+import type { Actor } from '../../identity/domain/access.js';
+import { scopedClient } from '../../identity/infrastructure/supabase.js';
+import type { TeamRosterRepository } from '../domain/roster.js';
 @Injectable()
 export class SupabaseTeamRoster implements TeamRosterRepository {
   async list(actor:Actor) {

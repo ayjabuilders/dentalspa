@@ -1,8 +1,8 @@
 import { BadRequestException,ForbiddenException,HttpException,Inject,Injectable,ServiceUnavailableException } from '@nestjs/common';
 import { InquirySchema,InquiryOwnerWorklistSchema,type InquiryWorklistItem } from '@dental/contracts';
 import { z } from 'zod';
-import type { Actor } from '../../identity/domain/access';
-import { OWNER_WORKLIST_REPOSITORY,type OwnerWorklistRepository } from '../domain/owner-worklist';
+import type { Actor } from '../../identity/domain/access.js';
+import { OWNER_WORKLIST_REPOSITORY,type OwnerWorklistRepository } from '../domain/owner-worklist.js';
 // Preserve PostgreSQL sub-millisecond ordering instead of rounding through Date alone.
 export function compareInquiryInstants(a:string,b:string):number {
   const seconds=Math.floor(Date.parse(a)/1000)-Math.floor(Date.parse(b)/1000);

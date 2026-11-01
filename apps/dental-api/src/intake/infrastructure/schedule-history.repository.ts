@@ -1,8 +1,8 @@
 import { BadRequestException,ForbiddenException,Injectable,NotFoundException,ServiceUnavailableException,UnauthorizedException } from '@nestjs/common';
 import { InquiryScheduleHistorySchema } from '@dental/contracts';
-import type { Actor } from '../../identity/domain/access';
-import { scopedClient } from '../../identity/infrastructure/supabase';
-import type { ScheduleHistoryRepository } from '../domain/schedule-history';
+import type { Actor } from '../../identity/domain/access.js';
+import { scopedClient } from '../../identity/infrastructure/supabase.js';
+import type { ScheduleHistoryRepository } from '../domain/schedule-history.js';
 @Injectable()
 export class SupabaseScheduleHistory implements ScheduleHistoryRepository {
  async list(actor:Actor,id:string){

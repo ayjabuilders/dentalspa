@@ -1,9 +1,9 @@
 import { BadRequestException,ForbiddenException,HttpException,Inject,Injectable,ServiceUnavailableException } from '@nestjs/common';
 import { InquiryCommunicationLanguageStateSchema,InquiryCommunicationLanguageResultSchema,SetInquiryCommunicationLanguageSchema } from '@dental/contracts';
 import { z } from 'zod';
-import type { Actor } from '../../identity/domain/access';
-import { safeCorrelation } from '../../audit/redaction';
-import { COMMUNICATION_LANGUAGE_REPOSITORY,type CommunicationLanguageRepository } from '../domain/communication-language';
+import type { Actor } from '../../identity/domain/access.js';
+import { safeCorrelation } from '../../audit/redaction.js';
+import { COMMUNICATION_LANGUAGE_REPOSITORY,type CommunicationLanguageRepository } from '../domain/communication-language.js';
 @Injectable()
 export class CommunicationLanguageService {
  constructor(@Inject(COMMUNICATION_LANGUAGE_REPOSITORY) private readonly repository:CommunicationLanguageRepository){}

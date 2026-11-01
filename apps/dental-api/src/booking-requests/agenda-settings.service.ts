@@ -1,10 +1,10 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { AgendaSettingsSchema, UpdateAgendaSettingsSchema } from '@dental/contracts';
 import { z } from 'zod';
-import type { Actor } from '../identity/domain/access';
-import { scopedClient } from '../identity/infrastructure/supabase';
-import { agendaSettingsActivationKey } from '../identity/infrastructure/module-activation';
-import { calculatePublicAgendaSlots } from './agenda-availability';
+import type { Actor } from '../identity/domain/access.js';
+import { scopedClient } from '../identity/infrastructure/supabase.js';
+import { agendaSettingsActivationKey } from '../identity/infrastructure/module-activation.js';
+import { calculatePublicAgendaSlots } from './agenda-availability.js';
 
 @Injectable()
 export class AgendaSettingsService {

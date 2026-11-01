@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { z } from 'zod';
 import { CreateSchedulingHoldSchema, SchedulingAvailabilityRequestSchema, SchedulingAvailabilityResponseSchema, SchedulingResourceListResponseSchema, SchedulingHoldCreatedResponseSchema, SchedulingHoldReleasedResponseSchema, SchedulingHoldResponseSchema } from '@dental/contracts';
-import type { Actor } from '../identity/domain/access';
-import { safeCorrelation } from '../audit/redaction';
-import { SCHEDULING_REPOSITORY, type SchedulingRepository } from './scheduling.repository';
-import { SchedulingError } from './errors';
+import type { Actor } from '../identity/domain/access.js';
+import { safeCorrelation } from '../audit/redaction.js';
+import { SCHEDULING_REPOSITORY, type SchedulingRepository } from './scheduling.repository.js';
+import { SchedulingError } from './errors.js';
 @Injectable()
 export class SchedulingService {
   constructor(@Inject(SCHEDULING_REPOSITORY) private readonly repository:SchedulingRepository) {}

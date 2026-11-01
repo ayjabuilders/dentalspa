@@ -1,7 +1,7 @@
 import { BadRequestException, Body, Controller, Get, Header, Headers, Inject, Param, Post, Req } from '@nestjs/common';
 import { z } from 'zod';
-import { Access, type AuthorizedRequest } from '../identity/presentation/policy.guard';
-import { PatientAppointmentsService } from './patient-appointments.service';
+import { Access, type AuthorizedRequest } from '../identity/presentation/policy.guard.js';
+import { PatientAppointmentsService } from './patient-appointments.service.js';
 import { ApiBody, ApiCreatedResponse, ApiHeader, ApiOperation } from '@nestjs/swagger';
 import { AppointmentPatientAssociationSchema, AppointmentPatientAssociationReceiptSchema } from '@dental/contracts';
 type ApiSchema = Extract<Parameters<typeof ApiBody>[0], { schema: unknown }>['schema'];

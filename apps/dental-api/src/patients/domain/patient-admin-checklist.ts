@@ -1,4 +1,4 @@
-import type { Actor } from '../../identity/domain/access';
+import type { Actor } from '../../identity/domain/access.js';
 import type { PatientAdminChecklistList, PatientAdminChecklistResult, SetPatientAdminChecklist } from '@dental/contracts';
 
 export const PATIENT_ADMIN_CHECKLIST_REPOSITORY = Symbol('PATIENT_ADMIN_CHECKLIST_REPOSITORY');

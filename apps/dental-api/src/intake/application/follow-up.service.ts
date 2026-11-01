@@ -1,9 +1,9 @@
 import { BadRequestException, ForbiddenException, HttpException, Inject, Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { FollowUpListSchema, FollowUpRecordedSchema, RecordFollowUpSchema } from '@dental/contracts';
 import { z } from 'zod';
-import type { Actor } from '../../identity/domain/access';
-import { safeCorrelation } from '../../audit/redaction';
-import { FOLLOW_UP_REPOSITORY, type FollowUpRepository } from '../domain/follow-up';
+import type { Actor } from '../../identity/domain/access.js';
+import { safeCorrelation } from '../../audit/redaction.js';
+import { FOLLOW_UP_REPOSITORY, type FollowUpRepository } from '../domain/follow-up.js';
 @Injectable()
 export class FollowUpService {
   constructor(@Inject(FOLLOW_UP_REPOSITORY) private readonly repository:FollowUpRepository) {}

@@ -2,6 +2,7 @@
   "name": "@dental/dental-api",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "pnpm build && concurrently -k \"tsc --watch\" \"node --watch --env-file-if-exists=.env --env-file-if-exists=.env.local dist/main.js\"",
     "build": "tsc",

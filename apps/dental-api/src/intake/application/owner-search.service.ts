@@ -1,7 +1,7 @@
 import { BadRequestException,ForbiddenException,HttpException,Inject,Injectable,ServiceUnavailableException } from '@nestjs/common';
 import { InquiryOwnerSearchRequestSchema,InquiryOwnerSearchResultSchema } from '@dental/contracts';
-import type { Actor } from '../../identity/domain/access';
-import { OWNER_SEARCH_REPOSITORY,type OwnerSearchRepository } from '../domain/owner-search';
+import type { Actor } from '../../identity/domain/access.js';
+import { OWNER_SEARCH_REPOSITORY,type OwnerSearchRepository } from '../domain/owner-search.js';
 @Injectable()
 export class OwnerSearchService {
  constructor(@Inject(OWNER_SEARCH_REPOSITORY) private readonly repository:OwnerSearchRepository){}

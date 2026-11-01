@@ -1,9 +1,9 @@
 import { BadRequestException, Body, Controller, Get, Header, Headers, Inject, Param, Post, Req, ServiceUnavailableException } from '@nestjs/common';
 import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { z } from 'zod';
-import { Access, type AuthorizedRequest } from '../identity/presentation/policy.guard';
-import { BookingRequestsService } from './booking-requests.service';
-import { PublicAgendaService } from './public-agenda.service';
+import { Access, type AuthorizedRequest } from '../identity/presentation/policy.guard.js';
+import { BookingRequestsService } from './booking-requests.service.js';
+import { PublicAgendaService } from './public-agenda.service.js';
 
 @ApiTags('booking-requests')
 @Controller('booking-requests')

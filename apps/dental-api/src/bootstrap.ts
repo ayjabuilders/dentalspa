@@ -2,9 +2,9 @@ import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import type { Request, Response, NextFunction } from 'express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { AppModule } from './app.module';
-import { accessLog, safeCorrelation } from './audit/redaction';
-import { resolveAllowedOrigins } from './runtime-origins';
+import { AppModule } from './app.module.js';
+import { accessLog, safeCorrelation } from './audit/redaction.js';
+import { resolveAllowedOrigins } from './runtime-origins.js';
 export function describeApi(app: Parameters<typeof SwaggerModule.createDocument>[0]) {
   return SwaggerModule.createDocument(app, new DocumentBuilder().setTitle('Dental Spa Foundation API').setVersion('1.0').addBearerAuth().build());
 }

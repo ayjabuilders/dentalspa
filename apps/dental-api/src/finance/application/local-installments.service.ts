@@ -1,9 +1,9 @@
-import { financeActivationKey } from '../../identity/infrastructure/module-activation';
+import { financeActivationKey } from '../../identity/infrastructure/module-activation.js';
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import { LocalInstallmentReminderQuerySchema, LocalInstallmentReminderQueueSchema, AllocateLocalInstallmentSchema, LocalInstallmentAllocationReceiptSchema, LocalInstallmentBalancesSchema, SaveLocalInstallmentSchema, TransitionLocalInstallmentSchema, LocalInstallmentDraftReceiptSchema, LocalInstallmentTransitionReceiptSchema, LocalInstallmentListSchema, LocalInstallmentVersionSchema } from '@dental/contracts';
 import {z} from 'zod';
-import type {Actor} from '../../identity/domain/access';
-import {scopedClient} from '../../identity/infrastructure/supabase';
+import type {Actor} from '../../identity/domain/access.js';
+import {scopedClient} from '../../identity/infrastructure/supabase.js';
 @Injectable()
 export class LocalInstallmentsService {
   private ids(...ids:string[]){if(!ids.every(id=>z.uuid().safeParse(id).success))throw new BadRequestException('Invalid agreement resource');}

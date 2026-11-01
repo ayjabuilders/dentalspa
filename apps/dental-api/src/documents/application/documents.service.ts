@@ -7,10 +7,10 @@ import {
   UpdatePatientDocumentDraftSchema, ValidatePatientDocumentDraftSchema,
 } from '@dental/contracts';
 import { z } from 'zod';
-import type { Actor } from '../../identity/domain/access';
-import { scopedClient } from '../../identity/infrastructure/supabase';
-import { documentsActivationKey } from '../../identity/infrastructure/module-activation';
-import { PRIVATE_DOCUMENT_STORAGE, type PrivateDocumentStorage } from '../domain/private-document-storage';
+import type { Actor } from '../../identity/domain/access.js';
+import { scopedClient } from '../../identity/infrastructure/supabase.js';
+import { documentsActivationKey } from '../../identity/infrastructure/module-activation.js';
+import { PRIVATE_DOCUMENT_STORAGE, type PrivateDocumentStorage } from '../domain/private-document-storage.js';
 
 const ID = z.uuid();
 const titleDecode = (value: string) => {

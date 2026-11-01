@@ -1,9 +1,9 @@
 import { BadRequestException, ForbiddenException, HttpException, Inject, Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { InquiryOwnerAssignmentResultSchema, SetInquiryOwnerSchema } from '@dental/contracts';
 import { z } from 'zod';
-import type { Actor } from '../../identity/domain/access';
-import { safeCorrelation } from '../../audit/redaction';
-import { INQUIRY_OWNER_REASSIGNMENT_REPOSITORY, type InquiryOwnerReassignmentRepository } from '../domain/owner-reassignment';
+import type { Actor } from '../../identity/domain/access.js';
+import { safeCorrelation } from '../../audit/redaction.js';
+import { INQUIRY_OWNER_REASSIGNMENT_REPOSITORY, type InquiryOwnerReassignmentRepository } from '../domain/owner-reassignment.js';
 
 @Injectable()
 export class InquiryOwnerReassignmentService {

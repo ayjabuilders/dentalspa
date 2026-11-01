@@ -1,9 +1,9 @@
 import { Injectable,NotFoundException,ServiceUnavailableException } from '@nestjs/common';
 import { InquiryCommunicationTimeZoneStateSchema,InquiryCommunicationTimeZoneResultSchema,type SetInquiryCommunicationTimeZone } from '@dental/contracts';
-import type { Actor } from '../../identity/domain/access';
-import { scopedClient } from '../../identity/infrastructure/supabase';
-import type { CommunicationTimeZoneRepository } from '../domain/communication-time-zone';
-import { throwIntakeDatabaseError } from './intake.repository';
+import type { Actor } from '../../identity/domain/access.js';
+import { scopedClient } from '../../identity/infrastructure/supabase.js';
+import type { CommunicationTimeZoneRepository } from '../domain/communication-time-zone.js';
+import { throwIntakeDatabaseError } from './intake.repository.js';
 @Injectable()
 export class SupabaseCommunicationTimeZone implements CommunicationTimeZoneRepository {
  async get(actor:Actor,id:string){const parsed=InquiryCommunicationTimeZoneStateSchema.safeParse(await this.call(actor,'get_inquiry_communication_time_zone',{p_inquiry_id:id}));if(!parsed.success)throw new ServiceUnavailableException('Communication time_zone unavailable');return parsed.data;}

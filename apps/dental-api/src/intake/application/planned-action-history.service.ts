@@ -1,8 +1,8 @@
 import { BadRequestException,ForbiddenException,HttpException,Inject,Injectable,ServiceUnavailableException } from '@nestjs/common';
 import { InquiryPlannedActionHistorySchema } from '@dental/contracts';
 import { z } from 'zod';
-import type { Actor } from '../../identity/domain/access';
-import { PLANNED_ACTION_HISTORY_REPOSITORY,type PlannedActionHistoryRepository } from '../domain/planned-action-history';
+import type { Actor } from '../../identity/domain/access.js';
+import { PLANNED_ACTION_HISTORY_REPOSITORY,type PlannedActionHistoryRepository } from '../domain/planned-action-history.js';
 @Injectable()
 export class PlannedActionHistoryService {
  constructor(@Inject(PLANNED_ACTION_HISTORY_REPOSITORY) private readonly repository:PlannedActionHistoryRepository){}

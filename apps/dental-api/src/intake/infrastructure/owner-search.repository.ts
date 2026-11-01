@@ -1,8 +1,8 @@
 import { BadRequestException,ForbiddenException,Injectable,ServiceUnavailableException,UnauthorizedException } from '@nestjs/common';
 import { InquiryOwnerSearchResultSchema,type InquiryOwnerSearchRequest } from '@dental/contracts';
-import type { Actor } from '../../identity/domain/access';
-import { scopedClient } from '../../identity/infrastructure/supabase';
-import type { OwnerSearchRepository } from '../domain/owner-search';
+import type { Actor } from '../../identity/domain/access.js';
+import { scopedClient } from '../../identity/infrastructure/supabase.js';
+import type { OwnerSearchRepository } from '../domain/owner-search.js';
 @Injectable()
 export class SupabaseOwnerSearch implements OwnerSearchRepository {
  async search(actor:Actor,input:InquiryOwnerSearchRequest){

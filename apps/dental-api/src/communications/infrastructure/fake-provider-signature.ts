@@ -1,5 +1,5 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
-import { FakeProviderEventSchema, MAX_FAKE_WEBHOOK_BYTES, type SignedEventResult } from '../domain/fake-provider';
+import { FakeProviderEventSchema, MAX_FAKE_WEBHOOK_BYTES, type SignedEventResult } from '../domain/fake-provider.js';
 
 const SECRET_MIN_BYTES = 32;
 const SIGNATURE_PATTERN = /^sha256=([a-f0-9]{64})$/;

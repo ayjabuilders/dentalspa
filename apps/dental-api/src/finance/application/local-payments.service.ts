@@ -1,10 +1,10 @@
-import { financeActivationKey } from '../../identity/infrastructure/module-activation';
+import { financeActivationKey } from '../../identity/infrastructure/module-activation.js';
 import {LocalPaymentRefundContextSchema,RecordLocalPaymentRefundSchema,LocalPaymentRefundReceiptSchema} from '@dental/contracts';
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import { RecordLocalPaymentSchema, TransitionLocalPaymentSchema, AllocateLocalPaymentSchema, IssueLocalPaymentReceiptSchema, LocalPaymentStateReceiptSchema, LocalAllocationReceiptSchema, LocalPaymentDocumentReceiptSchema, LocalPatientPaymentsSchema, LocalPaymentDocumentSchema } from '@dental/contracts';
 import { z } from 'zod';
-import type { Actor } from '../../identity/domain/access';
-import { scopedClient } from '../../identity/infrastructure/supabase';
+import type { Actor } from '../../identity/domain/access.js';
+import { scopedClient } from '../../identity/infrastructure/supabase.js';
 const same=(a:string,b:string)=>a.toLowerCase()===b.toLowerCase();
 @Injectable()
 export class LocalPaymentsService {

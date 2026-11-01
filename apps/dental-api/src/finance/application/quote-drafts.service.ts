@@ -1,9 +1,9 @@
-import { financeActivationKey } from '../../identity/infrastructure/module-activation';
+import { financeActivationKey } from '../../identity/infrastructure/module-activation.js';
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import { QuoteCatalogSchema, QuoteDraftCommandSchema, QuoteDraftReceiptSchema, QuoteRevisionCommandSchema, QuoteRevisionReceiptSchema, FinanceCatalogSchema, FinanceCatalogCommandSchema, FinanceCatalogReceiptSchema } from '@dental/contracts';
 import { z } from 'zod';
-import type { Actor } from '../../identity/domain/access';
-import { scopedClient } from '../../identity/infrastructure/supabase';
+import type { Actor } from '../../identity/domain/access.js';
+import { scopedClient } from '../../identity/infrastructure/supabase.js';
 
 @Injectable()
 export class QuoteDraftsService {

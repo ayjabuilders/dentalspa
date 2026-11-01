@@ -1,9 +1,9 @@
 import { BadRequestException,ForbiddenException,HttpException,Inject,Injectable,ServiceUnavailableException } from '@nestjs/common';
 import { InquiryCommunicationTimeZoneStateSchema,InquiryCommunicationTimeZoneResultSchema,SetInquiryCommunicationTimeZoneSchema } from '@dental/contracts';
 import { z } from 'zod';
-import type { Actor } from '../../identity/domain/access';
-import { safeCorrelation } from '../../audit/redaction';
-import { COMMUNICATION_TIME_ZONE_REPOSITORY,type CommunicationTimeZoneRepository } from '../domain/communication-time-zone';
+import type { Actor } from '../../identity/domain/access.js';
+import { safeCorrelation } from '../../audit/redaction.js';
+import { COMMUNICATION_TIME_ZONE_REPOSITORY,type CommunicationTimeZoneRepository } from '../domain/communication-time-zone.js';
 @Injectable()
 export class CommunicationTimeZoneService {
  constructor(@Inject(COMMUNICATION_TIME_ZONE_REPOSITORY) private readonly repository:CommunicationTimeZoneRepository){}

@@ -1,4 +1,4 @@
-import type { Actor } from '../../identity/domain/access';
+import type { Actor } from '../../identity/domain/access.js';
 import type { InquiryOwnerAssignmentResult, SetInquiryOwner } from '@dental/contracts';
 
 export const INQUIRY_OWNER_REASSIGNMENT_REPOSITORY = Symbol('INQUIRY_OWNER_REASSIGNMENT_REPOSITORY');

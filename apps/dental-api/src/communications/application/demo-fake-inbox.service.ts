@@ -1,8 +1,8 @@
 import { BadRequestException, ForbiddenException, Injectable, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import { DemoFakeInboundAcknowledgementSchema, DemoFakeInboxListSchema, DemoFakeWebhookEventSchema } from '@dental/contracts';
-import type { Actor } from '../../identity/domain/access';
-import { scopedClient } from '../../identity/infrastructure/supabase';
-import { FakeProviderWebhookAdapter } from './fake-provider-webhook.adapter';
+import type { Actor } from '../../identity/domain/access.js';
+import { scopedClient } from '../../identity/infrastructure/supabase.js';
+import { FakeProviderWebhookAdapter } from './fake-provider-webhook.adapter.js';
 
 function localPersistenceConfigured() {
   if (process.env.ENABLE_DEMO_FAKE_INBOX !== 'true'

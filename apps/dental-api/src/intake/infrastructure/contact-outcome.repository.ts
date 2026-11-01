@@ -1,8 +1,8 @@
 import { BadRequestException, ConflictException, ForbiddenException, NotFoundException, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import { InquiryContactOutcomeListSchema, InquiryContactOutcomeRecordedSchema, type RecordInquiryContactOutcome } from '@dental/contracts';
-import type { Actor } from '../../identity/domain/access';
-import { scopedClient } from '../../identity/infrastructure/supabase';
-import type { InquiryContactOutcomeRepository } from '../domain/contact-outcome';
+import type { Actor } from '../../identity/domain/access.js';
+import { scopedClient } from '../../identity/infrastructure/supabase.js';
+import type { InquiryContactOutcomeRepository } from '../domain/contact-outcome.js';
 
 export class SupabaseInquiryContactOutcome implements InquiryContactOutcomeRepository {
   async list(actor: Actor, inquiryId: string) {

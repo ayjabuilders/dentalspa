@@ -1,8 +1,8 @@
 import { BadRequestException,ForbiddenException,Injectable,ServiceUnavailableException,UnauthorizedException } from '@nestjs/common';
 import { TeamActivitySchema } from '@dental/contracts';
-import type { Actor } from '../../identity/domain/access';
-import { scopedClient } from '../../identity/infrastructure/supabase';
-import type { TeamActivityRepository } from '../domain/activity';
+import type { Actor } from '../../identity/domain/access.js';
+import { scopedClient } from '../../identity/infrastructure/supabase.js';
+import type { TeamActivityRepository } from '../domain/activity.js';
 @Injectable()
 export class SupabaseTeamActivity implements TeamActivityRepository {
   async list(actor:Actor) {

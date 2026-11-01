@@ -3,9 +3,9 @@ import { ApiBearerAuth, ApiBody, ApiHeader, ApiOkResponse, ApiResponse, ApiTags 
 import { z } from 'zod';
 import type { Response } from 'express';
 import { CreateSchedulingHoldSchema, SchedulingAvailabilityRequestSchema, SchedulingAvailabilityResponseSchema, SchedulingResourceListResponseSchema, SchedulingHoldCreatedResponseSchema, SchedulingHoldReleasedResponseSchema, SchedulingHoldResponseSchema } from '@dental/contracts';
-import { Access, type AuthorizedRequest } from '../identity/presentation/policy.guard';
-import { SchedulingService } from './scheduling.service';
-import { SchedulingError, SchedulingExceptionFilter } from './errors';
+import { Access, type AuthorizedRequest } from '../identity/presentation/policy.guard.js';
+import { SchedulingService } from './scheduling.service.js';
+import { SchedulingError, SchedulingExceptionFilter } from './errors.js';
 type ApiSchema=Extract<Parameters<typeof ApiBody>[0],{schema:unknown}>['schema'];
 const schema=(value:z.ZodType)=>z.toJSONSchema(value,{target:'openapi-3.0'}) as ApiSchema;
 @ApiTags('scheduling') @ApiBearerAuth() @ApiHeader({name:'X-Clinic-Id',required:true})

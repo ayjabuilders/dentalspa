@@ -1,9 +1,9 @@
 import { BadRequestException,ForbiddenException,HttpException,Inject,Injectable,ServiceUnavailableException } from '@nestjs/common';
 import { InquiryScheduleResultSchema,SetInquiryScheduleSchema } from '@dental/contracts';
 import { z } from 'zod';
-import type { Actor } from '../../identity/domain/access';
-import { safeCorrelation } from '../../audit/redaction';
-import { INQUIRY_SCHEDULE_REPOSITORY,type InquiryScheduleRepository } from '../domain/inquiry-schedule';
+import type { Actor } from '../../identity/domain/access.js';
+import { safeCorrelation } from '../../audit/redaction.js';
+import { INQUIRY_SCHEDULE_REPOSITORY,type InquiryScheduleRepository } from '../domain/inquiry-schedule.js';
 function instant(value:string|null) {
  if(value===null)return null;
  const fraction=value.match(/\.(\d+)(?=Z|[+-]\d{2}:\d{2}$)/)?.[1]??'';

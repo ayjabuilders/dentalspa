@@ -1,10 +1,10 @@
-import { financeActivationKey } from '../../identity/infrastructure/module-activation';
+import { financeActivationKey } from '../../identity/infrastructure/module-activation.js';
 import {PostLocalInvoiceCreditSchema,LocalInvoiceCreditReceiptSchema,LocalInvoiceCreditContextSchema,LocalInvoiceCreditDocumentSchema} from '@dental/contracts';
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import { PrepareLocalInvoiceSchema, IssueLocalInvoiceSchema, LocalInvoiceDraftReceiptSchema, LocalInvoiceIssuedReceiptSchema, LocalInvoiceListSchema } from '@dental/contracts';
 import { z } from 'zod';
-import type { Actor } from '../../identity/domain/access';
-import { scopedClient } from '../../identity/infrastructure/supabase';
+import type { Actor } from '../../identity/domain/access.js';
+import { scopedClient } from '../../identity/infrastructure/supabase.js';
 
 @Injectable()
 export class LocalInvoicesService {

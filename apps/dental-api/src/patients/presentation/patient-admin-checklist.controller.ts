@@ -3,8 +3,8 @@ import { ApiBearerAuth, ApiBody, ApiHeader, ApiOperation, ApiResponse, ApiTags }
 import { PatientAdminChecklistListSchema, PatientAdminChecklistResultSchema, SetPatientAdminChecklistSchema } from '@dental/contracts';
 import type { Response } from 'express';
 import { z } from 'zod';
-import { Access, type AuthorizedRequest } from '../../identity/presentation/policy.guard';
-import { PatientsService } from '../application/patients.service';
+import { Access, type AuthorizedRequest } from '../../identity/presentation/policy.guard.js';
+import { PatientsService } from '../application/patients.service.js';
 
 type ApiSchema = Extract<Parameters<typeof ApiBody>[0], { schema: unknown }>['schema'];
 

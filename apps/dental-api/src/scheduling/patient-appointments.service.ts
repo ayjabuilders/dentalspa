@@ -1,11 +1,11 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import { ConfiguredAppointmentReceiptSchema, ConfiguredAppointmentCommandSchema, PatientAppointmentCommandSchema, PatientAppointmentReceiptSchema, PatientAppointmentListSchema, PatientAppointmentQuerySchema } from '@dental/contracts';
-import type { Actor } from '../identity/domain/access';
-import { scopedClient } from '../identity/infrastructure/supabase';
-import { configuredBookingActivationKey } from '../identity/infrastructure/module-activation';
+import type { Actor } from '../identity/domain/access.js';
+import { scopedClient } from '../identity/infrastructure/supabase.js';
+import { configuredBookingActivationKey } from '../identity/infrastructure/module-activation.js';
 import {z} from 'zod';
 import {AgendaSettingsSchema,ConfiguredAppointmentAvailabilitySchema} from '@dental/contracts';
-import {calculatePublicAgendaSlots} from '../booking-requests/agenda-availability';
+import {calculatePublicAgendaSlots} from '../booking-requests/agenda-availability.js';
 import { AppointmentPatientAssociationSchema, AppointmentPatientAssociationReceiptSchema } from '@dental/contracts';
 @Injectable()
 export class PatientAppointmentsService {

@@ -1,8 +1,8 @@
 import { BadRequestException,ForbiddenException,HttpException,Inject,Injectable,ServiceUnavailableException } from '@nestjs/common';
 import { InquiryScheduleHistorySchema } from '@dental/contracts';
 import { z } from 'zod';
-import type { Actor } from '../../identity/domain/access';
-import { SCHEDULE_HISTORY_REPOSITORY,type ScheduleHistoryRepository } from '../domain/schedule-history';
+import type { Actor } from '../../identity/domain/access.js';
+import { SCHEDULE_HISTORY_REPOSITORY,type ScheduleHistoryRepository } from '../domain/schedule-history.js';
 @Injectable()
 export class ScheduleHistoryService {
  constructor(@Inject(SCHEDULE_HISTORY_REPOSITORY) private readonly repository:ScheduleHistoryRepository){}

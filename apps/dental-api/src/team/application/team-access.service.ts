@@ -1,11 +1,11 @@
 import { createHmac } from 'node:crypto';
 import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import { CreateTeamAccessMemberSchema, TeamAccessListSchema, TeamAccessReceiptSchema, UpdateTeamAccessMemberSchema } from '@dental/contracts';
-import type { Actor } from '../../identity/domain/access';
-import { scopedClient } from '../../identity/infrastructure/supabase';
-import { supabaseAdminKey } from '../../identity/infrastructure/supabase-admin-key';
-import { teamActivationKey } from '../../identity/infrastructure/module-activation';
-import { LOCAL_TEAM_AUTH_ADMIN, type LocalTeamAuthAdmin } from '../domain/local-auth-admin';
+import type { Actor } from '../../identity/domain/access.js';
+import { scopedClient } from '../../identity/infrastructure/supabase.js';
+import { supabaseAdminKey } from '../../identity/infrastructure/supabase-admin-key.js';
+import { teamActivationKey } from '../../identity/infrastructure/module-activation.js';
+import { LOCAL_TEAM_AUTH_ADMIN, type LocalTeamAuthAdmin } from '../domain/local-auth-admin.js';
 
 const CLINICAL_ROLE_NOTICE = 'Clinical roles grant application access only; they do not verify professional qualifications.' as const;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;

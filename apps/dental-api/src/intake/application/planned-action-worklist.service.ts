@@ -1,7 +1,7 @@
 import { ForbiddenException,HttpException,Inject,Injectable,ServiceUnavailableException } from '@nestjs/common';
 import { InquiryPlannedActionWorklistSchema } from '@dental/contracts';
-import type { Actor } from '../../identity/domain/access';
-import { PLANNED_ACTION_WORKLIST_REPOSITORY,type PlannedActionWorklistRepository } from '../domain/planned-action-worklist';
+import type { Actor } from '../../identity/domain/access.js';
+import { PLANNED_ACTION_WORKLIST_REPOSITORY,type PlannedActionWorklistRepository } from '../domain/planned-action-worklist.js';
 @Injectable()
 export class PlannedActionWorklistService {
  constructor(@Inject(PLANNED_ACTION_WORKLIST_REPOSITORY) private readonly repository:PlannedActionWorklistRepository){}

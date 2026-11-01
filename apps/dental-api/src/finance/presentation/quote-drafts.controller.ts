@@ -2,8 +2,8 @@ import { BadRequestException, Body, Controller, Get, Header, Headers, Inject, Pa
 import { ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiHeader, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { QuoteCatalogSchema, QuoteDraftCommandSchema, QuoteDraftReceiptSchema, QuoteRevisionCommandSchema, QuoteRevisionReceiptSchema, FinanceCatalogSchema, FinanceCatalogCommandSchema, FinanceCatalogReceiptSchema } from '@dental/contracts';
 import { z } from 'zod';
-import { Access, type AuthorizedRequest } from '../../identity/presentation/policy.guard';
-import { QuoteDraftsService } from '../application/quote-drafts.service';
+import { Access, type AuthorizedRequest } from '../../identity/presentation/policy.guard.js';
+import { QuoteDraftsService } from '../application/quote-drafts.service.js';
 type ApiSchema = Extract<Parameters<typeof ApiBody>[0], { schema: unknown }>['schema'];
 @ApiTags('finance') @ApiBearerAuth() @ApiHeader({ name: 'X-Clinic-Id', required: true })
 @Controller('finance')

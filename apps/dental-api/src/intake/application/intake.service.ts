@@ -1,9 +1,9 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { CreateInquirySchema, InquiryCreatedSchema, InquiryListSchema } from '@dental/contracts';
 import { z } from 'zod';
-import type { Actor } from '../../identity/domain/access';
-import { safeCorrelation } from '../../audit/redaction';
-import { INTAKE_REPOSITORY, type IntakeRepository } from '../domain/intake';
+import type { Actor } from '../../identity/domain/access.js';
+import { safeCorrelation } from '../../audit/redaction.js';
+import { INTAKE_REPOSITORY, type IntakeRepository } from '../domain/intake.js';
 
 @Injectable()
 export class IntakeService {

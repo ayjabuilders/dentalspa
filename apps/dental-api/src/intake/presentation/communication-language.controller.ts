@@ -3,8 +3,8 @@ import { ApiBearerAuth,ApiBody,ApiHeader,ApiOperation,ApiResponse,ApiTags } from
 import { InquiryCommunicationLanguageStateSchema,InquiryCommunicationLanguageResultSchema,SetInquiryCommunicationLanguageSchema } from '@dental/contracts';
 import { z } from 'zod';
 import type { Response } from 'express';
-import { Access,type AuthorizedRequest } from '../../identity/presentation/policy.guard';
-import { CommunicationLanguageService } from '../application/communication-language.service';
+import { Access,type AuthorizedRequest } from '../../identity/presentation/policy.guard.js';
+import { CommunicationLanguageService } from '../application/communication-language.service.js';
 type ApiSchema=Extract<Parameters<typeof ApiBody>[0],{schema:unknown}>['schema'];
 @Catch()
 export class CommunicationLanguageExceptionFilter implements ExceptionFilter {

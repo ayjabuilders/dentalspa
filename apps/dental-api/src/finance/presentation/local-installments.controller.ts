@@ -2,8 +2,8 @@ import { BadRequestException, Body, Controller, Get, Header, Headers, Inject, Pa
 import { ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiHeader, ApiOkResponse, ApiTags, ApiQuery } from '@nestjs/swagger';
 import { LocalInstallmentReminderQueueSchema, AllocateLocalInstallmentSchema, LocalInstallmentAllocationReceiptSchema, LocalInstallmentBalancesSchema, SaveLocalInstallmentSchema, TransitionLocalInstallmentSchema, LocalInstallmentDraftReceiptSchema, LocalInstallmentTransitionReceiptSchema, LocalInstallmentListSchema, LocalInstallmentVersionSchema } from '@dental/contracts';
 import { z } from 'zod';
-import { Access, type AuthorizedRequest } from '../../identity/presentation/policy.guard';
-import { LocalInstallmentsService } from '../application/local-installments.service';
+import { Access, type AuthorizedRequest } from '../../identity/presentation/policy.guard.js';
+import { LocalInstallmentsService } from '../application/local-installments.service.js';
 type ApiSchema = Extract<Parameters<typeof ApiBody>[0], { schema: unknown }>['schema'];
 function noQuery(request:AuthorizedRequest){if(Object.keys(request.query).length)throw new BadRequestException('Query parameters not supported');}
 @ApiTags('finance') @ApiBearerAuth() @ApiHeader({name:'X-Clinic-Id',required:true})

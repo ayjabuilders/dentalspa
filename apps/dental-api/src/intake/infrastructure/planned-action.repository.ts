@@ -1,9 +1,9 @@
 import { Injectable,NotFoundException,ServiceUnavailableException } from '@nestjs/common';
 import { InquiryPlannedActionStateSchema,InquiryPlannedActionResultSchema,type SetInquiryPlannedAction } from '@dental/contracts';
-import type { Actor } from '../../identity/domain/access';
-import { scopedClient } from '../../identity/infrastructure/supabase';
-import type { PlannedActionRepository } from '../domain/planned-action';
-import { throwIntakeDatabaseError } from './intake.repository';
+import type { Actor } from '../../identity/domain/access.js';
+import { scopedClient } from '../../identity/infrastructure/supabase.js';
+import type { PlannedActionRepository } from '../domain/planned-action.js';
+import { throwIntakeDatabaseError } from './intake.repository.js';
 @Injectable()
 export class SupabasePlannedAction implements PlannedActionRepository {
  async get(actor:Actor,id:string){const parsed=InquiryPlannedActionStateSchema.safeParse(await this.call(actor,'get_inquiry_planned_action',{p_inquiry_id:id}));if(!parsed.success)throw new ServiceUnavailableException('Planned action unavailable');return parsed.data;}

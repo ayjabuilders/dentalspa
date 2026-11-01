@@ -3,13 +3,13 @@ import { BadRequestException, ConflictException, ForbiddenException, Inject, Inj
 import { LibraryDeleteReceiptSchema, LibraryDeleteSchema, LibraryListSchema, LibraryMetadataSchema, LibraryOptionsSchema, LibraryReceiptSchema, LibraryUpdateSchema, type LibraryMetadata } from '@dental/contracts';
 import { PATIENT_DOCUMENT_CATALOG, patientDocumentDefinition } from '@dental/contracts';
 import { z } from 'zod';
-import type { Actor } from '../../identity/domain/access';
-import { scopedClient } from '../../identity/infrastructure/supabase';
-import { documentsActivationKey } from '../../identity/infrastructure/module-activation';
-import { PRIVATE_DOCUMENT_STORAGE, type PrivateDocumentStorage } from '../domain/private-document-storage';
-import { validateDocumentBytes } from './documents.service';
+import type { Actor } from '../../identity/domain/access.js';
+import { scopedClient } from '../../identity/infrastructure/supabase.js';
+import { documentsActivationKey } from '../../identity/infrastructure/module-activation.js';
+import { PRIVATE_DOCUMENT_STORAGE, type PrivateDocumentStorage } from '../domain/private-document-storage.js';
+import { validateDocumentBytes } from './documents.service.js';
 import { LibraryUploadStartSchema, LibraryUploadFinishSchema } from '@dental/contracts';
-import { sealUploadTicket, openUploadTicket } from './document-upload-ticket';
+import { sealUploadTicket, openUploadTicket } from './document-upload-ticket.js';
 
 type UploadFile = { buffer: Buffer; size: number; mimetype: string; originalname?: string };
 const UUID = z.uuid();
