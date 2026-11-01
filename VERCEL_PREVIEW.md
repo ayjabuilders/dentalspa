@@ -2,7 +2,24 @@
 
 Repository: https://github.com/ayjabuilders/dentalspa
 
-Status checked 2026-11-01: no Vercel project or deployment exists in ayjabuilders-7875. The integrated implementation checkpoint is published as commit `624b75751037e4dc217420f517b420f14af1e976` on `codex/vercel-preview-readiness`. Remote refs were verified after push. GitHub main remains `d0d3efad2dd378fb61f7d10931a9b06a5e5a922c`; do not import that old commit as the completed MVP. The preview checkpoint is not a claim that every module or real-client release gate is complete.
+Status checked 2026-11-01: four Vercel projects now exist in ayjabuilders-7875 and initial validation deployments have been submitted. The owner explicitly approved Vercel's required first-deployment Production classification for validation only, without real-patient activation or a paid upgrade. The integrated implementation checkpoint is published as commit `624b75751037e4dc217420f517b420f14af1e976` on `codex/vercel-preview-readiness`, followed by deployment fixes. GitHub main remains `d0d3efad2dd378fb61f7d10931a9b06a5e5a922c`; do not import that old commit as the completed MVP. The preview checkpoint is not a claim that every module or real-client release gate is complete.
+
+## Initial validation deployment tracking
+
+All projects use Node 24 and their individual framework/root settings. Required configuration was installed for Preview and Production. The Supabase server key is stored as a Secret only on `dentalspa-api`; browser projects have only public Supabase configuration. Module switches remain unset/disabled. Exact reserved frontend domains are configured for CORS, and the Clinic OS session origin is its reserved domain. Successful domain assignment and browser connectivity still need verification.
+
+| Project | Latest submitted deployment | Status at submission |
+| --- | --- | --- |
+| dentalspa-api | `dpl_BQ2W7BU69iAcUJkzYcZ3ReLgDmpy` | Submitted after entrypoint fix |
+| dentalspa-clinic | `dpl_9aiubYioFG4xRhAifbmzEnJkB6GT` | Ready; homepage read in browser |
+| dentalspa-patient | `dpl_5AeC8Uz6KM3kt9B2xAsTwoqyB1hD` | Ready; connected journeys unverified |
+| dentalspa-booking | `dpl_CDdNT3KjoXSEAD6TQbrMqoYo69NK` | Queued |
+
+The first API attempt `dpl_59xuUr7pCjdTr6fyWpDSsyKVhhBW` failed after TypeScript compiled because Vercel's NestJS detector required a direct framework import in `src/main.ts`. Commit `78aaf49` adds that import; local API build and lint passed before resubmission. Build logs are in `.local/qa/vercel-api-build-first.log`. Do not treat the CLI's submission message as readiness: inspect the actual deployment state and test its runtime.
+
+Confirmed aliases: `https://dentalspa-clinic.vercel.app` and `https://dentalspa-patient.vercel.app`. The deployed Clinic OS homepage renders its navigation and account-entry links. It still exposes local-preview captions for the clinical and business workspace cards, and upcoming-module cards; this is an observed release gap, not completed production cleanup. No authenticated deployed patient-data workflow has been accepted yet.
+
+CLI 65.9.0 upload inspection reported 1,114 source files, excluding local environment files, private local fixtures, build directories, source documents and QA artefacts using `.vercelignore` (commit `dd0d978`). Git integration is not yet connected; these deployments were submitted explicitly from the published checkout.
 
 The Vercel browser session and GitHub sign-in connection are now usable: the import screen lists `ayjabuilders/dentalspa`. Its default import targets `main` and detected only three frontend applications from that old revision. It suggests a multi-service root configuration; that suggestion has not been adopted. Use the published preview branch and standalone project imports with the four roots below. No project was created, no deployment triggered and no paid option selected during this inspection. Generated `next-env.d.ts` references from the isolated publication build were restored to the standard `.next` paths rather than shipping local check-directory paths.
 
