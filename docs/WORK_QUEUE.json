@@ -3918,7 +3918,7 @@
       "owner": "coordinator",
       "depends_on": [],
       "acceptance": "Isolated synthetic Dev catalogue/quote/invoice/payment workflow, replay, frozen snapshots, balances and role/tenant denial verified. Disable fixture gates and sessions. Not statutory finance, refunds/installments, deployed browser or full M14 acceptance.",
-      "evidence": "apps/dental-api/scripts/verify-finance-flow.mjs; scripts/check-hosted-finance-flow.mjs; .local/qa/hosted-finance-flow.log; exact one quote/invoice/payment/allocation, zero active memberships/sessions; docs/HOSTED_FOUNDATION_ACTIVATION_PLAN.md."
+      "evidence": "apps/dental-api/scripts/verify-finance-flow.mjs; scripts/check-hosted-finance-flow.mjs; .local/qa/hosted-finance-flow.log; exact one quote/invoice/payment/allocation, zero active memberships/sessions; docs/HOSTED_FOUNDATION_ACTIVATION_PLAN.md. 2026-11-01 : même parcours vérifié directement sur dentalspa-api.vercel.app (déploiement dpl_HpwSTBTWSGgAgncSaQztumrR3jNr), catalogue/devis/facture/paiement, reprises, soldes et refus de rôle/clinique/patient PASS. Cabinet QA isolé ensuite désactivé, compte banni et session révoquée; une facture et un paiement conservés pour audit. Finance Atlas activée en validation synthétique; catalogue propriétaire HTTP200. Preuve .local/qa/deployed-finance-flow.log. Navigateur Vercel, fiscalité réelle, remboursements et échéanciers hébergés restent non validés."
     },
     {
       "id": "HOSTED-AGENDA-HTTP-ACCEPTANCE",

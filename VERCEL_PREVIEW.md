@@ -160,3 +160,27 @@ deployed API search verifies all five matched verifier members are inactive.
 Evidence: `.local/qa/team-effective-status-pgtap.log`,
 `.local/qa/team-status-chain.log`. Local native test ran transactionally and
 rolled back; the local app still needs the normal migration apply step.
+# Hosted acceptance follow-up — 2026-11-01
+
+Follow-up completed: deployment `dpl_HpwSTBTWSGgAgncSaQztumrR3jNr` is Ready.
+The deployed finance scenario passed catalogue/quote persistence, frozen prices,
+invoice numbering, duplicate-safe retries, payment settlement/allocation/balances,
+immutable receipt and role/tenant/patient denials. QA membership and gates are
+disabled; one issued invoice and one payment remain as audit evidence. Atlas
+synthetic validation finance is enabled and owner catalogue now returns 200.
+Evidence: `.local/qa/deployed-finance-flow.log`. No real-patient import, external
+money movement, statutory accounting approval or deployed browser acceptance.
+
+Owner-session HTTP recheck: workspaces, patient directory, team roster/access,
+agenda settings and configured booking requests return 200. The local-only
+patient fixture hub returns 404 and finance catalogue still returns 503.
+Evidence: ignored `.local/qa/deployed-owner-module-access.json`. These status
+checks do not prove complete module workflows or real-patient readiness.
+
+The finance verifier now accepts `FINANCE_VERIFY_API_ORIGIN` only when exactly
+`https://dentalspa-api.vercel.app`; otherwise it retains the local API transport.
+It creates the synthetic manager profile and records the tested API origin.
+Syntax and rejection of an unapproved origin were checked. The deployed finance
+mutation scenario remains pending environment activation and fresh isolated QA
+fixtures; no financial gate or real-patient import was activated by this change.
+

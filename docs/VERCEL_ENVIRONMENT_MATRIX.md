@@ -71,6 +71,14 @@ retention policy for finalized patient documents.
 
 ## Outstanding release work
 
+2026-11-01 validation activation: API Preview/Production now have
+`ENABLE_HOSTED_QUOTE_DRAFTS`, `ENABLE_HOSTED_INVOICES`, `ENABLE_HOSTED_PAYMENTS`
+and server-only `HOSTED_FINANCE_GATE_KEY`. Atlas synthetic clinic gates match.
+The isolated deployed finance acceptance clinic was disabled after verification;
+its ledger remains for audit. Installments and real financial operations are not
+enabled by this change. Owner catalogue HTTP200 verified after deployment
+`dpl_HpwSTBTWSGgAgncSaQztumrR3jNr`.
+
 Hosted module selection is implemented, but historical database/contact/consent
 and finance rules still include synthetic-only restrictions. Keep real patient
 activation disabled until these are replaced by reviewed live configuration.

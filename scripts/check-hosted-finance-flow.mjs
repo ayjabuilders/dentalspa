@@ -5,6 +5,8 @@ import { createRequire } from 'node:module';
 import { verifyFinanceFlow } from '../apps/dental-api/scripts/verify-finance-flow.mjs';
 
 process.loadEnvFile('apps/dental-api/.env.hosted.local');
+const deployedOrigin = process.env.FINANCE_VERIFY_API_ORIGIN;
+if (deployedOrigin !== undefined) assert.equal(deployedOrigin, 'https://dentalspa-api.vercel.app', 'Approved validation deployment only');
 const provider = 'https://giufpdppsunryyhfnzps.supabase.co';
 assert.equal(process.env.SUPABASE_URL, provider);
 const adminKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -16,8 +18,7 @@ const clinicName = `Cabinet Finance QA ${setup.clinicId.slice(0, 8)} (FICTIF)`;
 Object.assign(process.env, { HOSTED_SUPABASE_PROJECT_REF: setup.project, HOSTED_FINANCE_GATE_KEY: setup.key,
   ENABLE_HOSTED_QUOTE_DRAFTS: 'true', ENABLE_HOSTED_INVOICES: 'true', ENABLE_HOSTED_PAYMENTS: 'true' });
 const require = createRequire(import.meta.url); require('reflect-metadata');
-const { createApplication } = require('../apps/dental-api/dist/bootstrap.js');
-const fixture = { clinicId: setup.clinicId, userId: null, records: null, cleaned: false };
+const fixture = { clinicId: setup.clinicId, apiOrigin: deployedOrigin ?? 'local', userId: null, records: null, cleaned: false };
 const save = () => writeFileSync(`.local/qa/hosted-finance-${setup.clinicId}.json`, JSON.stringify(fixture, null, 2));
 const call = (url, options = {}) => fetch(url, { redirect: 'error', signal: globalThis.AbortSignal.timeout(20000), ...options });
 const adminRequest = (path, options = {}) => call(provider + path, { ...options, headers: {
@@ -39,10 +40,15 @@ try {
   const email = `finance-verifier-${setup.clinicId}@example.test`, password = randomBytes(36).toString('base64url');
   const created = await ok(await adminRequest('/auth/v1/admin/users', { method: 'POST', body: JSON.stringify({ email, password, email_confirm: true, app_metadata: { hosted_verification_fixture: true } }) }), 'Create synthetic manager').json();
   fixture.userId = created.id; save();
+  ok(await adminRequest('/rest/v1/profiles', { method: 'POST', body: JSON.stringify({ user_id: created.id, display_name: 'Gestionnaire finance QA — FICTIF' }) }), 'Add fixture profile');
   ok(await adminRequest('/rest/v1/clinic_memberships', { method: 'POST', body: JSON.stringify({ clinic_id: setup.clinicId, user_id: created.id, role: 'manager', active: true }) }), 'Add fixture membership');
   const auth = await ok(await call(`${provider}/auth/v1/token?grant_type=password`, { method: 'POST', headers: { apikey: process.env.SUPABASE_ANON_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) }), 'Synthetic login').json();
   token = auth.access_token;
-  app = await createApplication(); await app.listen(0, '127.0.0.1'); origin = `http://127.0.0.1:${app.getHttpServer().address().port}`;
+  if (deployedOrigin) origin = deployedOrigin;
+  else {
+    const { createApplication } = await import('../apps/dental-api/dist/bootstrap.js');
+    app = await createApplication(); await app.listen(0, '127.0.0.1'); origin = `http://127.0.0.1:${app.getHttpServer().address().port}`;
+  }
   fixture.records = await verifyFinanceFlow({ request, ...setup, foreignClinicId: '10000000-0000-4000-8000-000000000001', report: message => console.log(`PASS ${message}`) }); save();
   ok(await adminRequest(`/rest/v1/clinic_memberships?user_id=eq.${fixture.userId}&clinic_id=eq.${setup.clinicId}`, { method: 'PATCH', body: JSON.stringify({ role: 'assistant' }) }), 'Change fixture role');
   assert.equal((await request(`/finance/patients/${setup.patientId}/payments`)).status, 403);
