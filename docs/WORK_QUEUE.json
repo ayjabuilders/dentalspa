@@ -3,6 +3,22 @@
   "max_agents": 3,
   "tasks": [
     {
+      "id": "BOOKING-REAL-CONTACT-POLICY",
+      "state": "ready",
+      "owner": "coordinator",
+      "depends_on": [],
+      "acceptance": "Implement explicit per-clinic booking mode and versioned contact policy with default-closed real activation, API/database agreement, environment-matched resources and retained synthetic fixture restrictions. Wire public contract/form and all configured availability/create/confirm/cancel paths. Preserve transactional locks, capacity exclusion, session/tenant authorization, idempotency and audit/outbox. Test real-mode behavior with synthetic identities; never enable real capture until actual clinic rules and contact notice/retention are recorded. See docs/BOOKING_BRAND_VALIDATION.md real-contact transition.",
+      "release_gate": "open"
+    },
+    {
+      "id": "BOOKING-STAFF-DISCOVERY-PAGINATION",
+      "state": "ready",
+      "owner": "coordinator",
+      "depends_on": [],
+      "acceptance": "Replace latest-100-only staff discovery with bounded tenant-authorized server pagination/search/status filters and an independent exact pending count. Notice must not silently miss pending requests older than the first page. Preserve session revocation, role checks, no-store responses and no cross-tenant count or cursor leakage. Verify more than 100 records with synthetic fixtures, cursor boundaries and UI page/search/reset/error states.",
+      "release_gate": "open"
+    },
+    {
       "id": "BOOKING-FIRST-LIVE-PIPELINE",
       "state": "in_progress",
       "owner": "coordinator",

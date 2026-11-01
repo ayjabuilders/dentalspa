@@ -100,3 +100,54 @@ inbox and no horizontal overflow. Screenshot inspected at 390px. Evidence:
 ignored `.local/qa/check-booking-conflict-refresh.mjs` and
 `.local/qa/booking-conflict-refresh-mobile.png`. This does not implement selecting
 a replacement slot for an unconfirmed request or rejecting that request.
+
+## Real-contact transition: verified implementation boundaries
+
+The current deployment cannot be opened to real contacts by changing UI copy or
+an environment flag alone. Source inspection on 2026-11-01 identified:
+
+- `ConfiguredBookingRequestSchema` permits only `@example.test` and the consent
+  version `local-demo-v1`; the form uses that same schema.
+- `private.configured_booking_requests` independently constrains the email and
+  consent version. Its stored request is immutable evidence; list status is
+  projected from the associated appointment, not from the request's status.
+- Agenda configuration gates, scheduling settings and scheduling resources have
+  database `check(synthetic_only)` constraints. Public creation, confirmation and
+  availability also filter on synthetic resources/gates. Removing one filter
+  would not produce a functioning real workflow.
+- The deployed public API selects its clinic server-side. The browser must never
+  gain authority to choose a clinic or to link a patient by supplying their ID.
+- The staff inbox reads only the latest 100 requests; its current search and
+  pending notice operate on that bounded set. Complete staff handling at scale
+  requires server pagination and an independent pending count.
+
+Implementation sequence for the focused release:
+
+1. Introduce an explicit per-clinic booking environment/policy, default closed,
+   with a versioned patient-facing privacy notice. Preserve synthetic fixture
+   behavior and enforce resource/environment parity in every read/write path.
+   Ordinary email/phone acceptance must require both API and database policy,
+   with the notice version checked against the selected clinic's active policy.
+   Do not copy Atlas fixture identities into the real clinic or relax the
+   synthetic contact constraint globally.
+2. Extend the existing transactional booking path for the real mode, retaining
+   its configuration locks, capacity exclusion, immutable receipt/replay,
+   actor/session checks and audit/outbox transaction. A booking contact remains
+   distinct from an identity-verified medical patient and Patient Pass account.
+3. Add server-paginated staff discovery and a complete pending count, public
+   submission abuse controls, and explicit handling for an unconfirmed request
+   whose slot can no longer be confirmed. No automatic external message claim.
+4. Provision Dental Spa separately using owner-approved hours, visit durations,
+   actual practitioner/chair availability and manager membership. Attach the
+   reviewed contact notice and retention rules before opening real collection.
+5. Verify the deployed public form and authorized admin workflow, including a
+   second tenant, negative roles, exact retry, concurrent confirmation, resource
+   release, truthful public receipt and error recovery. Then change the public
+   wording according to the active mode; retain validation labels for fixtures.
+
+The owner has requested real operation. The outstanding input is the actual
+opening configuration (current sample rules were approved only for a demo).
+The existing decisions document separately leaves contact notice/retention with
+the designated privacy reviewer. These are activation dependencies; technical
+implementation of the transition can proceed without inventing those values.
+This section is a transition specification, not an implemented real-mode claim.
