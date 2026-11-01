@@ -2,9 +2,9 @@
 
 Repository: https://github.com/ayjabuilders/dentalspa
 
-Status checked 2026-11-01: no Vercel project or deployment exists in ayjabuilders-7875. GitHub main remains d0d3efad2dd378fb61f7d10931a9b06a5e5a922c; the implementation in this worktree has not yet been published. Do not import that old commit as the completed MVP.
+Status checked 2026-11-01: no Vercel project or deployment exists in ayjabuilders-7875. The integrated implementation checkpoint is published as commit `624b75751037e4dc217420f517b420f14af1e976` on `codex/vercel-preview-readiness`. Remote refs were verified after push. GitHub main remains `d0d3efad2dd378fb61f7d10931a9b06a5e5a922c`; do not import that old commit as the completed MVP. The preview checkpoint is not a claim that every module or real-client release gate is complete.
 
-The Vercel browser session and GitHub sign-in connection are now usable: the import screen lists `ayjabuilders/dentalspa`. Its default import still targets `main` and detects only three frontend applications from that old revision. It suggests a multi-service root configuration; that suggestion has not been adopted. Publish the reviewed source revision first, then use standalone project imports with the four roots below. No project was created, no deployment triggered and no paid option selected during this inspection. Generated `next-env.d.ts` references from the isolated publication build were restored to the standard `.next` paths rather than shipping local check-directory paths.
+The Vercel browser session and GitHub sign-in connection are now usable: the import screen lists `ayjabuilders/dentalspa`. Its default import targets `main` and detected only three frontend applications from that old revision. It suggests a multi-service root configuration; that suggestion has not been adopted. Use the published preview branch and standalone project imports with the four roots below. No project was created, no deployment triggered and no paid option selected during this inspection. Generated `next-env.d.ts` references from the isolated publication build were restored to the standard `.next` paths rather than shipping local check-directory paths.
 
 ## Four deployment projects
 
