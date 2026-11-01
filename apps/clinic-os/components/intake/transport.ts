@@ -1,3 +1,5 @@
+import { createRequestKey } from '../../lib/request-key';
+import {sessionFetch as fetch} from '../../lib/renewing-session';
 import { InquiryPlannedActionHistorySchema, type InquiryPlannedActionHistory } from '@dental/contracts';
 import { InquiryPlannedActionWorklistSchema, type InquiryPlannedActionWorklist } from '@dental/contracts';
 import { InquiryPlannedActionStateSchema, InquiryPlannedActionResultSchema, SetInquiryPlannedActionSchema, type InquiryPlannedActionState, type InquiryPlannedActionResult, type SetInquiryPlannedAction } from '@dental/contracts';
@@ -10,6 +12,7 @@ import { SetInquiryScheduleSchema, InquiryScheduleResultSchema, type SetInquiryS
 import { InquiryOwnerWorklistSchema, InquirySchema, type InquiryOwnerWorklist, type Inquiry } from '@dental/contracts';
 import { FollowUpListSchema, FollowUpRecordedSchema, RecordFollowUpSchema, type FollowUpList, type FollowUpRecorded, type RecordFollowUp } from '@dental/contracts';
 import { CreateInquirySchema, InquiryCreatedSchema, InquiryListSchema, type CreateInquiry, type InquiryCreated, type InquiryList } from '@dental/contracts';
+import { InquiryOwnerAssignmentResultSchema, SetInquiryOwnerSchema, TeamRosterSchema, type InquiryOwnerAssignmentResult, type SetInquiryOwner, type TeamRosterMember } from '@dental/contracts';
 
 export type IntakeFailure = 'offline' | 'denied' | 'expired' | 'disabled' | 'conflict' | 'invalid' | 'unavailable' | 'missing';
 export class IntakeError extends Error {
@@ -21,16 +24,22 @@ export type PlannedActionAttempt = { id: string; displayName?: string; body: Set
 export type TimeZoneAttempt = { id: string; displayName?: string; body: SetInquiryCommunicationTimeZone; key: string };
 export type LanguageAttempt = { id: string; displayName?: string; body: SetInquiryCommunicationLanguage; key: string };
 export type PreferenceAttempt = { id: string; displayName?: string; body: SetInquiryContactPreference; key: string };
+export type OwnerAssignmentAttempt = { id: string; body: SetInquiryOwner; key: string };
+export type DemoInquiryDetails = {
+  topic: 'general_information' | 'first_visit' | 'appointment_example_question' | 'administrative_request';
+  callback_window: 'unspecified' | 'morning' | 'afternoon';
+};
 function privacyState() {
   const pendingPlannedAction: { current: PlannedActionAttempt | null } = { current: null };
   const pendingTimeZone: { current: TimeZoneAttempt | null } = { current: null };
   const pendingLanguage: { current: LanguageAttempt | null } = { current: null };
   const pendingPreference: { current: PreferenceAttempt | null } = { current: null };
   const pendingSchedule: { current: ScheduleAttempt | null } = { current: null };
+  const pendingOwner: { current: OwnerAssignmentAttempt | null } = { current: null };
   const scheduleActive = { current: false };
   let clearing = false;
   const listeners = new Set<(kind: IntakeFailure) => void>();
-  return { pendingPlannedAction, pendingTimeZone, pendingLanguage, pendingPreference, pendingSchedule, scheduleActive, onPrivateClear(listener: (kind: IntakeFailure) => void) { listeners.add(listener); return () => { listeners.delete(listener); }; }, clearPrivate(kind: IntakeFailure) { pendingPlannedAction.current = null; pendingTimeZone.current = null; pendingLanguage.current = null; pendingPreference.current = null; pendingSchedule.current = null; scheduleActive.current = false; if (clearing) return; clearing = true; try { listeners.forEach(listener => listener(kind)); } finally { clearing = false; } } };
+  return { pendingPlannedAction, pendingTimeZone, pendingLanguage, pendingPreference, pendingSchedule, pendingOwner, scheduleActive, onPrivateClear(listener: (kind: IntakeFailure) => void) { listeners.add(listener); return () => { listeners.delete(listener); }; }, clearPrivate(kind: IntakeFailure) { pendingPlannedAction.current = null; pendingTimeZone.current = null; pendingLanguage.current = null; pendingPreference.current = null; pendingSchedule.current = null; pendingOwner.current = null; scheduleActive.current = false; if (clearing) return; clearing = true; try { listeners.forEach(listener => listener(kind)); } finally { clearing = false; } } };
 }
 function instant(value: string | null): string | null {
   if (value === null) return null;
@@ -59,10 +68,16 @@ export interface IntakeTransport {
   onPrivateClear(listener: (kind: IntakeFailure) => void): () => void;
   clearPrivate(kind: IntakeFailure): void;
   setSchedule(id: string, body: SetInquirySchedule, key: string, signal?: AbortSignal): Promise<InquiryScheduleResult>;
+  pendingOwner: { current: OwnerAssignmentAttempt | null };
+  canReassignOwner: boolean;
+  ownerCandidates(signal?: AbortSignal): Promise<TeamRosterMember[]>;
+  reassignOwner(id: string, body: SetInquiryOwner, key: string, signal?: AbortSignal): Promise<InquiryOwnerAssignmentResult>;
   /** Unresolved receipt stays in this session transport across closing/reopening the tool. */
   pendingFollowUp: { current: FollowUpAttempt | null };
   mode: 'demo' | 'connected';
   currentUserId: string;
+  demoInquiryDetails?(id: string): DemoInquiryDetails | null;
+  setDemoInquiryDetails?(id: string, details: DemoInquiryDetails): void;
   ownerWorklist(signal?: AbortSignal): Promise<InquiryOwnerWorklist>;
   inquiry(id: string, signal?: AbortSignal): Promise<Inquiry>;
   list(signal?: AbortSignal): Promise<InquiryList>;
@@ -75,20 +90,36 @@ export type IntakeAttempt = { fingerprint: string; key: string };
 export function inquiryAttempt(previous: IntakeAttempt | null, input: CreateInquiry): IntakeAttempt {
   const body = CreateInquirySchema.parse(input);
   const fingerprint = JSON.stringify(body);
-  return previous?.fingerprint === fingerprint ? previous : { fingerprint, key: crypto.randomUUID() };
+  return previous?.fingerprint === fingerprint ? previous : { fingerprint, key: createRequestKey() };
+}
+export function ownerAssignmentAttempt(previous: OwnerAssignmentAttempt | null, id: string, input: SetInquiryOwner): OwnerAssignmentAttempt {
+  const body = SetInquiryOwnerSchema.parse(input);
+  return previous?.id === id && previous.body.expected_owner_user_id === body.expected_owner_user_id && previous.body.owner_user_id === body.owner_user_id
+    ? previous : { id, body, key: createRequestKey() };
 }
 const demoClinic = '10000000-0000-4000-8000-000000000001';
 const demoOwner = '10000000-0000-4000-8000-000000000002';
+const demoOwnerCandidates: TeamRosterMember[] = [
+  { user_id: '10000000-0000-4000-8000-000000000011', clinic_id: demoClinic, display_name: 'Youssef Benali', roles: ['manager'] },
+  { user_id: '10000000-0000-4000-8000-000000000012', clinic_id: demoClinic, display_name: 'Salma Alaoui', roles: ['assistant', 'reception'] },
+  { user_id: '10000000-0000-4000-8000-000000000013', clinic_id: demoClinic, display_name: 'Imane El Idrissi', roles: ['dentist', 'manager'] },
+  { user_id: '10000000-0000-4000-8000-000000000014', clinic_id: demoClinic, display_name: 'Mehdi Amrani', roles: ['reception'] },
+];
 
 /** One isolated synthetic store per mounted preview. Never writes browser storage. */
 export function createDemoIntakeTransport(): IntakeTransport {
   const privacy = privacyState();
   const pendingFollowUp: { current: FollowUpAttempt | null } = { current: null };
   let items: InquiryList['items'] = [
-    { id: '10000000-0000-4000-8000-000000000011', clinic_id: demoClinic, owner_user_id: demoOwner, display_name: 'Lina Exemple', contact_email: 'lina@example.invalid', contact_phone: null, source: 'phone', follow_up_at: null, status: 'new', created_at: '2026-10-26T09:30:00Z' },
-    { id: '10000000-0000-4000-8000-000000000012', clinic_id: demoClinic, owner_user_id: demoOwner, display_name: 'Adam Exemple', contact_email: null, contact_phone: null, source: 'website', follow_up_at: new Date(Date.now() + 86400000).toISOString(), status: 'new', created_at: '2026-10-26T08:45:00Z' },
-    { id: '10000000-0000-4000-8000-000000000013', clinic_id: demoClinic, owner_user_id: demoOwner, display_name: 'Nora Exemple', contact_email: 'nora@example.invalid', contact_phone: null, source: 'walk_in', follow_up_at: new Date(Date.now() - 86400000).toISOString(), status: 'new', created_at: '2026-10-25T15:00:00Z' },
+    { id: '10000000-0000-4000-8000-000000000011', clinic_id: demoClinic, owner_user_id: demoOwner, display_name: 'Salma Alaoui', contact_email: 'salma.alaoui@example.invalid', contact_phone: null, source: 'phone', follow_up_at: null, status: 'new', created_at: '2026-10-26T09:30:00Z' },
+    { id: '10000000-0000-4000-8000-000000000012', clinic_id: demoClinic, owner_user_id: demoOwner, display_name: 'Youssef Benali', contact_email: null, contact_phone: null, source: 'website', follow_up_at: new Date(Date.now() + 86400000).toISOString(), status: 'new', created_at: '2026-10-26T08:45:00Z' },
+    { id: '10000000-0000-4000-8000-000000000013', clinic_id: demoClinic, owner_user_id: demoOwner, display_name: 'Imane El Idrissi', contact_email: 'imane.elidrissi@example.invalid', contact_phone: null, source: 'walk_in', follow_up_at: new Date(Date.now() - 86400000).toISOString(), status: 'new', created_at: '2026-10-25T15:00:00Z' },
   ];
+  const demoDetails = new Map<string, DemoInquiryDetails>([
+    ['10000000-0000-4000-8000-000000000011', { topic: 'general_information', callback_window: 'afternoon' }],
+    ['10000000-0000-4000-8000-000000000012', { topic: 'first_visit', callback_window: 'morning' }],
+    ['10000000-0000-4000-8000-000000000013', { topic: 'administrative_request', callback_window: 'unspecified' }],
+  ]);
   const followUps = new Map<string, FollowUpList['items']>();
   const followUpReceipts = new Map<string, { fingerprint: string; result: FollowUpRecorded }>();
   const plannedActionStates = new Map<string, InquiryPlannedActionState>();
@@ -104,6 +135,7 @@ export function createDemoIntakeTransport(): IntakeTransport {
   const preferenceReceipts = new Map<string, { fingerprint: string; result: InquiryContactPreferenceResult }>();
   function preferenceState(id: string) { return preferenceStates.get(id) ?? { schema_version: 1 as const, inquiry_id: id, clinic_id: demoClinic, owner_user_id: demoOwner, preference: null, revision: 0, updated_at: null }; }
   const scheduleReceipts = new Map<string, { fingerprint: string; result: InquiryScheduleResult }>();
+  const ownerReceipts = new Map<string, { fingerprint: string; result: InquiryOwnerAssignmentResult }>();
   let disposed = false;
   function authorize(inquiryId: string, signal?: AbortSignal) {
     signal?.throwIfAborted();
@@ -114,7 +146,25 @@ export function createDemoIntakeTransport(): IntakeTransport {
   }
   const saved = new Map<string, { fingerprint: string; result: InquiryCreated }>();
   return {
-    mode: 'demo', currentUserId: demoOwner, pendingFollowUp, ...privacy, clearPrivate(kind) { pendingFollowUp.current = null; privacy.clearPrivate(kind); },
+    mode: 'demo', currentUserId: demoOwner, pendingFollowUp, canReassignOwner: true, ...privacy, clearPrivate(kind) { pendingFollowUp.current = null; privacy.clearPrivate(kind); },
+    demoInquiryDetails(id) { return demoDetails.get(id) ?? null; },
+    setDemoInquiryDetails(id, details) { authorize(id); demoDetails.set(id, details); },
+    async ownerCandidates(signal) {
+      signal?.throwIfAborted(); if (disposed) throw new IntakeError('expired');
+      return demoOwnerCandidates.filter(member => member.roles.some(role => role === 'reception' || role === 'manager' || role === 'dentist'));
+    },
+    async reassignOwner(id, input, key, signal) {
+      signal?.throwIfAborted(); if (disposed) throw new IntakeError('expired');
+      const body = SetInquiryOwnerSchema.parse(input); const item = items.find(value => value.id === id); if (!item) throw new IntakeError('missing');
+      const fingerprint = JSON.stringify(body); const savedReceipt = ownerReceipts.get(id + ':' + key);
+      if (savedReceipt) { if (savedReceipt.fingerprint !== fingerprint) throw new IntakeError('conflict'); return { ...savedReceipt.result, replayed: true }; }
+      if (item.owner_user_id !== body.expected_owner_user_id) throw new IntakeError('conflict');
+      if (body.owner_user_id !== item.owner_user_id && !demoOwnerCandidates.some(member => member.clinic_id === demoClinic && member.user_id === body.owner_user_id && member.roles.some(role => role === 'reception' || role === 'manager' || role === 'dentist'))) throw new IntakeError('denied');
+      const changed = body.owner_user_id !== item.owner_user_id;
+      const result = InquiryOwnerAssignmentResultSchema.parse({ receipt: { inquiry_id: id, clinic_id: demoClinic, previous_owner_user_id: item.owner_user_id, owner_user_id: body.owner_user_id, changed, recorded_at: new Date().toISOString(), event_version: 1 }, replayed: false });
+      if (changed) items = items.map(value => value.id === id ? { ...value, owner_user_id: body.owner_user_id } : value);
+      ownerReceipts.set(id + ':' + key, { fingerprint, result }); return result;
+    },
     async ownerPlannedActions(signal) {
       signal?.throwIfAborted(); if (disposed) throw new IntakeError('expired');
       const rows = items.filter(item => item.owner_user_id === demoOwner).flatMap(item => { const state = plannedActionState(item.id); return state.planned_action === null || state.updated_at === null ? [] : [{ inquiry_id: item.id, display_name: item.display_name, vocabulary_version: 1 as const, planned_action: state.planned_action, revision: state.revision, updated_at: state.updated_at }]; }).sort((a,b) => b.updated_at.localeCompare(a.updated_at) || (a.inquiry_id === b.inquiry_id ? 0 : a.inquiry_id < b.inquiry_id ? 1 : -1));
@@ -225,12 +275,12 @@ export function createDemoIntakeTransport(): IntakeTransport {
       const body = RecordFollowUpSchema.parse(input); const fingerprint = JSON.stringify(body);
       const saved = followUpReceipts.get(id + ':' + key);
       if (saved) { if (saved.fingerprint !== fingerprint) throw new IntakeError('conflict'); return { ...saved.result, replayed: true }; }
-      const result = FollowUpRecordedSchema.parse({ item: { ...body, id: crypto.randomUUID(), clinic_id: demoClinic, inquiry_id: id, actor_user_id: demoOwner, recorded_at: new Date().toISOString(), event_version: 1 }, replayed: false });
+      const result = FollowUpRecordedSchema.parse({ item: { ...body, id: createRequestKey(), clinic_id: demoClinic, inquiry_id: id, actor_user_id: demoOwner, recorded_at: new Date().toISOString(), event_version: 1 }, replayed: false });
       followUpReceipts.set(id + ':' + key, { fingerprint, result });
       followUps.set(id, [result.item, ...(followUps.get(id) ?? [])].sort((a, b) => b.recorded_at.localeCompare(a.recorded_at) || b.id.localeCompare(a.id)));
       return result;
     },
-    dispose() { plannedActionStates.clear(); plannedActionReceipts.clear(); timeZoneStates.clear(); timeZoneReceipts.clear(); languageStates.clear(); languageReceipts.clear(); preferenceStates.clear(); preferenceReceipts.clear(); privacy.clearPrivate('expired'); scheduleReceipts.clear(); pendingFollowUp.current = null; disposed = true; items = []; saved.clear(); followUps.clear(); followUpReceipts.clear(); },
+    dispose() { plannedActionStates.clear(); plannedActionReceipts.clear(); timeZoneStates.clear(); timeZoneReceipts.clear(); languageStates.clear(); languageReceipts.clear(); preferenceStates.clear(); preferenceReceipts.clear(); privacy.clearPrivate('expired'); scheduleReceipts.clear(); ownerReceipts.clear(); pendingFollowUp.current = null; disposed = true; items = []; saved.clear(); followUps.clear(); followUpReceipts.clear(); },
     async list(signal) {
       signal?.throwIfAborted();
       return InquiryListSchema.parse({ items: items.slice(0, 100), truncated: items.length > 100 });
@@ -244,7 +294,7 @@ export function createDemoIntakeTransport(): IntakeTransport {
         if (previous.fingerprint !== fingerprint) throw new IntakeError('conflict');
         return InquiryCreatedSchema.parse({ ...previous.result, replayed: true });
       }
-      const result = InquiryCreatedSchema.parse({ item: { ...body, id: crypto.randomUUID(), clinic_id: demoClinic, owner_user_id: demoOwner, status: 'new', created_at: new Date().toISOString() }, replayed: false });
+      const result = InquiryCreatedSchema.parse({ item: { ...body, id: createRequestKey(), clinic_id: demoClinic, owner_user_id: demoOwner, status: 'new', created_at: new Date().toISOString() }, replayed: false });
       saved.set(key, { fingerprint, result });
       items = [result.item, ...items].sort((a, b) => b.created_at.localeCompare(a.created_at) || b.id.localeCompare(a.id));
       return result;
@@ -253,15 +303,16 @@ export function createDemoIntakeTransport(): IntakeTransport {
 }
 
 /** Credentials are closed over in memory and revoked when the session view closes. */
-export function createHttpIntakeTransport(options: { api: string; token: string; clinicId: string; userId: string; fetcher?: typeof fetch }): IntakeTransport {
+export function createHttpIntakeTransport(options: { api: string; token: string; clinicId: string; userId: string; roles?: string[]; fetcher?: typeof fetch }): IntakeTransport {
   const privacy = privacyState();
   const pendingFollowUp: { current: FollowUpAttempt | null } = { current: null };
   let token: string | null = options.token;
   const { api, clinicId, userId } = options;
+  const canReassignOwner = options.roles?.includes('manager') === true;
   let privacyRevision = 0;
   const controllers = new Set<AbortController>();
   const fetcher = options.fetcher ?? fetch;
-  async function send(method: 'GET' | 'POST', body?: CreateInquiry | RecordFollowUp | SetInquirySchedule | InquiryOwnerSearchRequest | SetInquiryContactPreference | SetInquiryCommunicationLanguage | SetInquiryCommunicationTimeZone | SetInquiryPlannedAction, key?: string, callerSignal?: AbortSignal, suffix = '') {
+  async function send(method: 'GET' | 'POST', body?: CreateInquiry | RecordFollowUp | SetInquirySchedule | InquiryOwnerSearchRequest | SetInquiryContactPreference | SetInquiryCommunicationLanguage | SetInquiryCommunicationTimeZone | SetInquiryPlannedAction | SetInquiryOwner, key?: string, callerSignal?: AbortSignal, suffix = '') {
     if (!token) throw new IntakeError('expired');
     const revision = privacyRevision;
     const controller = new AbortController();
@@ -280,7 +331,7 @@ export function createHttpIntakeTransport(options: { api: string; token: string;
           disabled = typeof problem === 'object' && problem !== null && 'code' in problem && problem.code === 'intake_disabled';
         }
         const kind: IntakeFailure = response.status === 401 ? 'expired' : response.status === 403 ? 'denied' : response.status === 404 ? 'missing' : disabled ? 'disabled' : response.status === 409 ? 'conflict' : response.status === 400 ? 'invalid' : 'unavailable';
-        if ((privacy.pendingPlannedAction.current !== null || privacy.pendingTimeZone.current !== null || privacy.pendingLanguage.current !== null || privacy.pendingPreference.current !== null || privacy.scheduleActive.current || suffix.endsWith('/follow-up-schedule') || suffix.endsWith('/follow-up-schedule/history') || suffix === '/owner-search' || suffix === '/owner-planned-actions' || suffix.endsWith('/contact-preference') || suffix.endsWith('/communication-language') || suffix.endsWith('/communication-time-zone') || suffix.endsWith('/planned-action') || suffix.endsWith('/planned-action/history')) && (kind === 'expired' || kind === 'denied' || kind === 'missing')) clearPrivate(kind);
+        if ((privacy.pendingPlannedAction.current !== null || privacy.pendingTimeZone.current !== null || privacy.pendingLanguage.current !== null || privacy.pendingPreference.current !== null || privacy.pendingOwner.current !== null || privacy.scheduleActive.current || suffix.endsWith('/follow-up-schedule') || suffix.endsWith('/follow-up-schedule/history') || suffix === '/owner-search' || suffix === '/owner-planned-actions' || suffix.endsWith('/contact-preference') || suffix.endsWith('/communication-language') || suffix.endsWith('/communication-time-zone') || suffix.endsWith('/planned-action') || suffix.endsWith('/planned-action/history') || suffix.endsWith('/owner')) && (kind === 'expired' || kind === 'denied' || kind === 'missing')) clearPrivate(kind);
         throw new IntakeError(kind);
       }
       if (!token || revision !== privacyRevision) throw new IntakeError('expired');
@@ -296,7 +347,39 @@ export function createHttpIntakeTransport(options: { api: string; token: string;
   function clearPrivate(kind: IntakeFailure) { privacyRevision++; pendingFollowUp.current = null; controllers.forEach(controller => controller.abort()); privacy.clearPrivate(kind); }
   return {
     ...privacy, clearPrivate,
-    mode: 'connected', currentUserId: userId, pendingFollowUp,
+    mode: 'connected', currentUserId: userId, pendingFollowUp, pendingOwner: privacy.pendingOwner, canReassignOwner,
+    async ownerCandidates(signal) {
+      if (!canReassignOwner) throw new IntakeError('denied');
+      if (!token) throw new IntakeError('expired');
+      const revision = privacyRevision; const controller = new AbortController(); controllers.add(controller);
+      try {
+        const response = await fetcher(`${api.replace(/\/$/, '')}/api/v1/team/roster`, { method: 'GET', cache: 'no-store', credentials: 'omit', headers: { Authorization: `Bearer ${token}`, 'X-Clinic-Id': clinicId }, signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15000), ...(signal ? [signal] : [])]) });
+        if (!token || revision !== privacyRevision) throw new IntakeError('expired');
+        if (!response.ok) {
+          const kind: IntakeFailure = response.status === 401 ? 'expired' : response.status === 403 ? 'denied' : 'unavailable';
+          if (kind === 'expired' || kind === 'denied') clearPrivate(kind);
+          throw new IntakeError(kind);
+        }
+        const parsed = TeamRosterSchema.safeParse(await response.json());
+        if (!token || revision !== privacyRevision) throw new IntakeError('expired');
+        if (!parsed.success || parsed.data.truncated || parsed.data.members.some(member => member.clinic_id.toLowerCase() !== clinicId.toLowerCase())) throw new IntakeError('unavailable');
+        return parsed.data.members.filter(member => member.roles.some(role => role === 'reception' || role === 'manager' || role === 'dentist'));
+      } catch (error) {
+        if (error instanceof IntakeError) throw error;
+        if (signal?.aborted || controller.signal.aborted) throw error;
+        throw new IntakeError(typeof navigator !== 'undefined' && !navigator.onLine ? 'offline' : 'unavailable');
+      } finally { controllers.delete(controller); }
+    },
+    async reassignOwner(id, input, key, signal) {
+      if (!canReassignOwner) throw new IntakeError('denied');
+      const body = SetInquiryOwnerSchema.parse(input);
+      const parsed = InquiryOwnerAssignmentResultSchema.safeParse(await send('POST', body, key, signal, '/' + encodeURIComponent(id) + '/owner'));
+      if (!token) throw new IntakeError('expired');
+      if (!parsed.success) throw new IntakeError('unavailable');
+      const receipt = parsed.data.receipt;
+      if (receipt.inquiry_id.toLowerCase() !== id.toLowerCase() || receipt.clinic_id.toLowerCase() !== clinicId.toLowerCase() || receipt.previous_owner_user_id.toLowerCase() !== body.expected_owner_user_id.toLowerCase() || receipt.owner_user_id.toLowerCase() !== body.owner_user_id.toLowerCase() || receipt.changed !== (body.expected_owner_user_id.toLowerCase() !== body.owner_user_id.toLowerCase())) throw new IntakeError('unavailable');
+      return parsed.data;
+    },
     async ownerPlannedActions(signal) {
       const parsed = InquiryPlannedActionWorklistSchema.safeParse(await send('GET', undefined, undefined, signal, '/owner-planned-actions'));
       if (!token) throw new IntakeError('expired');

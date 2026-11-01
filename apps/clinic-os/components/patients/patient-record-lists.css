@@ -1,0 +1,24 @@
+.patient-record-list{min-width:0;color:var(--ds-ink)}
+.patient-record-list>header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:16px 0}
+.patient-record-list h3{margin:0;font:750 18px var(--heading)}
+.patient-record-list>header>span{font-size:12px;color:var(--ds-muted)}
+.patient-record-tools{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.patient-record-search{display:flex;align-items:center;gap:9px;flex:1;min-width:160px;border:1px solid var(--ds-border);border-radius:12px;padding-inline:12px;background:var(--ds-surface);color:var(--ds-muted);transition:box-shadow 160ms,border-color 160ms}
+.patient-record-search:focus-within{outline:2px solid var(--ds-focus);outline-offset:2px}
+.patient-record-search>svg{flex:none}
+.patient-record-search input{width:100%;min-width:0;min-height:44px;border:0;background:transparent;color:var(--ds-ink);font:inherit;outline:none;padding:10px 0}
+.patient-record-search input:focus-visible{outline:none;box-shadow:none}
+.patient-record-tools select{max-width:100%;min-height:44px;padding:8px 12px;border:1px solid var(--ds-border);border-radius:12px;background:var(--ds-surface);color:var(--ds-ink);font:inherit}
+.patient-record-list>ul{margin:0}
+.patient-record-list>ul>li>div{min-width:0;flex:1}
+.patient-record-list>ul>li strong{font-size:14px;overflow-wrap:anywhere}
+.patient-record-list .patient-record-status{flex:none;padding:6px 10px;margin:0;border-radius:999px;font-size:11px;font-weight:650;background:var(--ds-mint);color:var(--ds-success)}
+.patient-record-list .patient-record-status[data-cancelled=true]{background:var(--ds-soft);color:var(--ds-muted)}
+.patient-record-pages{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px;padding-top:12px;border-top:1px solid var(--ds-border);font-size:12px;color:var(--ds-muted)}
+.patient-record-pages>div{display:flex;align-items:center;gap:12px}
+.patient-record-pages button,.patient-record-empty button{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding:8px;border:1px solid var(--ds-border);border-radius:11px;background:var(--ds-surface);color:var(--ds-primary);font:inherit}
+.patient-record-pages button:hover:not(:disabled),.patient-record-empty button:hover:not(:disabled){background:var(--ds-soft)}
+.patient-record-empty{padding:30px 12px;text-align:center;color:var(--ds-muted)}
+.patient-record-list :is(select,button):focus-visible{outline:2px solid var(--ds-focus);outline-offset:2px}
+@media(max-width:640px){.patient-record-search input,.patient-record-tools select{font-size:16px}.patient-record-tools select{width:100%}.patient-record-list>ul>li{flex-wrap:wrap}.patient-record-list .patient-record-status{margin-inline-start:36px}}
+@media(prefers-reduced-motion:reduce){.patient-record-search{transition:none}}

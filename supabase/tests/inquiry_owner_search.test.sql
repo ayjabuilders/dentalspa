@@ -4,10 +4,14 @@ set search_path=public,extensions;
 select plan(20);
 insert into public.clinics(id,name) values('e1000000-0000-4000-8000-000000000001','Synthetic Search A'),('e1000000-0000-4000-8000-000000000002','Synthetic Search B');
 insert into auth.users(id) values('e2000000-0000-4000-8000-000000000001'),('e2000000-0000-4000-8000-000000000002');
+-- Authenticated fixtures include a live session; all rows roll back with this test.
+insert into auth.sessions(id,user_id,not_after) values('e2000000-0000-4000-8000-000000000001','e2000000-0000-4000-8000-000000000001',now()+interval '1 hour'),('e2000000-0000-4000-8000-000000000002','e2000000-0000-4000-8000-000000000002',now()+interval '1 hour');
 insert into public.clinic_memberships(clinic_id,user_id,role,active) values('e1000000-0000-4000-8000-000000000001','e2000000-0000-4000-8000-000000000001','reception',true),('e1000000-0000-4000-8000-000000000001','e2000000-0000-4000-8000-000000000002','manager',true);
 select set_config('request.jwt.claim.sub','e2000000-0000-4000-8000-000000000001',true);
+select set_config('request.jwt.claims',jsonb_build_object('session_id',nullif(current_setting('request.jwt.claim.sub'),''))::text,true);
 select set_config('request.method','POST',true);
 create function pg_temp.search(name text) returns jsonb language sql as $$select public.inquiry_owner_search('e1000000-0000-4000-8000-000000000001',jsonb_build_object('name',name))$$;
+grant execute on function pg_temp.search(text) to authenticated;
 select ok(not has_function_privilege('anon','public.inquiry_owner_search(uuid,jsonb)','EXECUTE'),'anonymous execution denied');
 select is((select enabled from private.intake_command_settings),false,'writes disabled');
 set local role authenticated;

@@ -6,7 +6,7 @@ describe('manual inquiry v1 contract', () => {
   it('normalizes permitted fields without requiring sensitive notes', () => {
     expect(CreateInquirySchema.parse(valid)).toEqual({ ...valid, display_name: 'Synthetic inquiry' });
   });
-  it.each(['clinic_id', 'owner_user_id', 'patient_id', 'status', 'clinical_notes'])('rejects caller-owned %s', field => {
+  it.each(['clinic_id', 'owner_user_id', 'patient_id', 'status', 'clinical_notes', 'medical_history', 'diagnosis'])('rejects caller-owned or out-of-scope %s', field => {
     expect(CreateInquirySchema.safeParse({ ...valid, [field]: 'forged' }).success).toBe(false);
   });
   it('rejects invalid contact values and ambiguous local timestamps', () => {

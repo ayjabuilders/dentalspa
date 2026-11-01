@@ -4,11 +4,15 @@ set search_path=public,extensions;
 select plan(19);
 insert into public.clinics(id,name) values('d1000000-0000-4000-8000-000000000001','Synthetic History A');
 insert into auth.users(id) values('d2000000-0000-4000-8000-000000000001'),('d2000000-0000-4000-8000-000000000002');
+-- Authenticated fixtures include a live session; all rows roll back with this test.
+insert into auth.sessions(id,user_id,not_after) values('d2000000-0000-4000-8000-000000000001','d2000000-0000-4000-8000-000000000001',now()+interval '1 hour'),('d2000000-0000-4000-8000-000000000002','d2000000-0000-4000-8000-000000000002',now()+interval '1 hour');
 insert into public.clinic_memberships(clinic_id,user_id,role,active) values('d1000000-0000-4000-8000-000000000001','d2000000-0000-4000-8000-000000000001','reception',true),('d1000000-0000-4000-8000-000000000001','d2000000-0000-4000-8000-000000000002','manager',true);
 insert into public.inquiries(id,clinic_id,owner_user_id,display_name,source) values('d3000000-0000-4000-8000-000000000001','d1000000-0000-4000-8000-000000000001','d2000000-0000-4000-8000-000000000001','Synthetic History','phone');
 select set_config('request.jwt.claim.sub','d2000000-0000-4000-8000-000000000001',true);
+select set_config('request.jwt.claims',jsonb_build_object('session_id',nullif(current_setting('request.jwt.claim.sub'),''))::text,true);
 select set_config('request.method','POST',true);
 create function pg_temp.history() returns jsonb language sql as $$select public.inquiry_planned_action_history('d1000000-0000-4000-8000-000000000001','d3000000-0000-4000-8000-000000000001')$$;
+grant execute on function pg_temp.history() to authenticated;
 select ok(not has_function_privilege('anon','public.inquiry_planned_action_history(uuid,uuid)','EXECUTE'),'anonymous execution denied');
 select is((select enabled from private.intake_command_settings),false,'writes disabled');
 set local role authenticated;

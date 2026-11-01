@@ -1,23 +1,23 @@
 import { expect, test } from '@playwright/test';
 
 test('global search does not overwrite a patient list filter', async ({ page }) => {
-  await page.goto('http://localhost:4200/patients');
+  await page.goto('http://localhost:4204/patients?preview=1');
   const patientSearch = page.getByRole('textbox', { name: 'Rechercher dans les patients' });
-  await patientSearch.fill('Nora');
+  await patientSearch.fill('Yasmine');
   await expect(page.locator('tbody tr')).toHaveCount(1);
   await page.getByRole('button', { name: /Rechercher un patient, un espace/ }).click();
   await page.getByRole('textbox', { name: 'Recherche globale' }).fill('Agenda');
   await page.keyboard.press('Escape');
-  await expect(patientSearch).toHaveValue('Nora');
+  await expect(patientSearch).toHaveValue('Yasmine');
   await expect(page.locator('tbody tr')).toHaveCount(1);
   await page.keyboard.press('Control+k');
   await expect(page.getByRole('textbox', { name: 'Recherche globale' })).toHaveValue('');
   await page.keyboard.press('Escape');
-  await expect(patientSearch).toHaveValue('Nora');
+  await expect(patientSearch).toHaveValue('Yasmine');
 });
 
 test('help explains the preview and secure connection without opening AI Pulse', async ({ page }) => {
-  await page.goto('http://localhost:4200/patients');
+  await page.goto('http://localhost:4204/patients?preview=1');
   const help = page.getByRole('button', { name: 'Aide & accompagnement' });
   await help.click();
   await expect(page.getByRole('dialog')).toContainText('Votre espace, simplement');
@@ -29,7 +29,7 @@ test('help explains the preview and secure connection without opening AI Pulse',
 
 test('unconfigured connection explains the boundary and keeps the preview accessible', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('http://localhost:4200/connection');
+  await page.goto('http://localhost:4204/connection');
   test.skip(!await page.getByText('Connexion en préparation', { exact: true }).isVisible(), 'This check targets builds without Supabase public configuration.');
   await expect(page.getByRole('button', { name: 'Se connecter', exact: true })).toBeDisabled();
   await expect(page.getByLabel('Adresse e-mail', { exact: true })).toBeDisabled();

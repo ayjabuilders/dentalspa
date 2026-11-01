@@ -30,14 +30,26 @@ describe('identity and tenant policy', () => {
     expect(canReadPatient(actor,syntheticRecords[2]!)).toBe(false);
   });
   it('defends against a privileged adapter bypassing RLS', async () => {
+    let profileResult: typeof syntheticRecords[number] | null = syntheticRecords[0]!;
+    const readOwnProfile = async () => profileResult;
     const service = new PatientsService({
       list: async () => syntheticRecords,
       find: async (_, id) => syntheticRecords.find(p => p.id === id) ?? null,
+      readOwnProfile,
+      getOwnCommunicationPreferences: async () => { throw new Error('not used in this test'); },
+      setOwnCommunicationPreferences: async () => { throw new Error('not used in this test'); },
       lookup: async () => ({ items: [], truncated: false }),
-    });
+    }, { listChecklist: async () => ({ schema_version: 1, clinic_id: A, patient_id: P1, items: [] }), setChecklist: async () => { throw new Error('not used in this test'); } });
     const actor: Actor = { userId: STAFF, token:'token', clinicId:A, roles:['reception'] };
     expect((await service.list(actor)).map(p => p.id)).toEqual([P1,P3]);
     await expect(service.find(actor,P2)).rejects.toThrow('Record unavailable');
+    const patientActor: Actor = { ...actor, roles:[], patientId:P1 };
+    await expect(service.findOwnProfile(patientActor,A)).resolves.toEqual(syntheticRecords[0]);
+    profileResult = syntheticRecords[1]!;
+    await expect(service.findOwnProfile(patientActor,A)).rejects.toThrow('Record unavailable');
+    profileResult = syntheticRecords[0]!;
+    await expect(service.findOwnProfile({ ...patientActor, clinicId:B },A)).rejects.toThrow('Record unavailable');
+    await expect(service.findOwnProfile({ ...actor, roles:[] },A)).rejects.toThrow('Patient profile unavailable');
     await expect(service.list({ ...actor, roles:[], patientId:P1 })).rejects.toThrow();
     await expect(service.find({ ...actor, roles:[], patientId:P1 },P3)).rejects.toThrow();
   });

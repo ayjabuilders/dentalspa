@@ -1,0 +1,58 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {chromium,expect} from '@playwright/test';
+const credentials=JSON.parse(readFileSync('.local/owner-demo-access.json','utf8'));
+const browser=await chromium.launch();
+try{
+ const page=await browser.newPage({viewport:{width:1440,height:1000}});
+ let logins=0;page.on('request',request=>{if(request.url().includes('/auth/v1/token'))logins++;});
+ await page.goto('http://localhost:4204/connection?view=patients');
+ await page.getByLabel('Adresse e-mail',{exact:true}).fill(credentials.email);
+ await page.getByLabel('Mot de passe',{exact:true}).fill(credentials.password);
+ await page.getByRole('button',{name:'Se connecter',exact:true}).click();
+ const nav=page.getByRole('navigation',{name:'Modules du cabinet'});await nav.waitFor();
+ await page.getByRole('heading',{name:'Répertoire patient connecté'}).waitFor();
+ await page.getByRole('button',{name:'Fiche',exact:false}).first().waitFor();
+ const list=page.getByRole('region',{name:'Patients autorisés'});
+ const firstName=await list.locator('li strong').first().textContent();
+ const secondName=await list.locator('li strong').nth(1).textContent();
+ await list.getByRole('button').first().click();
+ const dossier=page.getByRole('region',{name:'Dossier patient enregistré'});
+ await expect(dossier.getByRole('heading',{name:firstName,exact:true})).toBeVisible();
+ const recordNav=page.getByRole('navigation',{name:'Parcours des dossiers patients'});
+ await expect(recordNav.getByRole('button',{name:'Patient précédent',exact:true})).toBeDisabled();
+ await recordNav.getByRole('button',{name:'Patient suivant',exact:true}).click();
+ await expect(dossier.getByRole('heading',{name:secondName,exact:true})).toBeVisible();
+ await recordNav.getByRole('button',{name:'Patient précédent',exact:true}).click();
+ await expect(dossier.getByRole('heading',{name:firstName,exact:true})).toBeVisible();
+ await dossier.getByRole('tab',{name:'Devis',exact:true}).click();
+ await dossier.getByRole('button',{name:'Nouveau devis brouillon',exact:true}).click();
+ const draft=dossier.getByRole('region',{name:'Nouveau devis brouillon',exact:true});
+ await expect(recordNav.getByRole('button',{name:'Patient suivant',exact:true})).toBeDisabled();
+ await expect(recordNav.getByRole('button',{name:'Retour à la liste',exact:true})).toBeDisabled();
+ await expect(list.getByRole('button').first()).toBeDisabled();
+ await expect(dossier.getByRole('tab',{name:'Synthèse',exact:true})).toBeDisabled();
+ await expect(page.getByRole('button',{name:'Recharger',exact:true})).toBeDisabled();
+ await draft.getByRole('button',{name:'Fermer',exact:true}).click();
+ await expect(recordNav.getByRole('button',{name:'Retour à la liste',exact:true})).toBeEnabled();
+ await page.screenshot({path:'.local/qa/connected-patient-record-navigation.png'});
+ await recordNav.getByRole('button',{name:'Retour à la liste',exact:true}).click();
+ await expect(dossier).toHaveCount(0);
+ await expect(list.getByRole('heading',{name:'Patients du cabinet',exact:true})).toBeFocused();
+ await page.screenshot({path:'.local/qa/connected-patients-desktop.png'});
+ await nav.getByRole('button',{name:'Agenda',exact:true}).click();await page.getByRole('heading',{name:'Agenda des patients'}).waitFor();
+ await nav.getByRole('button',{name:'Demandes',exact:true}).click();const heading=page.getByRole('heading',{name:'Vos nouvelles demandes'});await heading.waitFor();
+ const initial=await heading.boundingBox();
+ for(const name of ['Mes échéances','Recherche avancée','Demandes récentes']){
+  await page.getByRole('tab',{name:new RegExp(name)}).click();const box=await heading.boundingBox();
+  assert.ok(Math.abs(box.x-initial.x)<=1&&Math.abs(box.width-initial.width)<=1&&Math.abs(box.y-initial.y)<=1,'Intake heading moved: '+name);
+ }
+ await page.screenshot({path:'.local/qa/connected-intake-stable.png'});
+ await nav.getByRole('button',{name:'Messagerie',exact:true}).click();await page.getByRole('heading',{name:'Boîte de réception',exact:true}).waitFor();
+ await expect(page.locator('.fake-inbox')).toHaveAttribute('aria-busy','false');
+ assert.ok((await page.locator('.fake-inbox').boundingBox()).width>1000,'Inbox failed to fill workspace');
+ await page.screenshot({path:'.local/qa/connected-inbox-desktop.png'});
+ assert.equal(logins,1);assert.equal(await page.getByRole('form',{name:'Connexion au cabinet'}).count(),0);
+ await page.setViewportSize({width:390,height:844});assert.equal(await page.evaluate(()=>globalThis.document.documentElement.scrollWidth<=globalThis.innerWidth),true);
+ console.log('PASS native local read-only patient previous/next/list focus and quote navigation lock; Patients/Agenda/Intake/Inbox: one login, stable tab geometry, full desktop width and mobile bounds.');
+}finally{await browser.close();}

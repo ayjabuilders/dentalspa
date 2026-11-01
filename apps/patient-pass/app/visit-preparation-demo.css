@@ -1,0 +1,22 @@
+.visit-preparation-demo{margin-top:18px;padding:18px;background:#fff;border:1px solid var(--ds-line);border-radius:18px;color:var(--ds-primary)}
+.visit-preparation-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;color:var(--ds-muted);font-size:12px;font-weight:700;letter-spacing:1.1px}
+.visit-preparation-heading span{display:flex;align-items:center;gap:7px}
+.visit-preparation-demo h2{font-size:17px;letter-spacing:-.4px;margin:13px 0 6px}
+.visit-preparation-intro{font-size:12px;line-height:1.65;color:var(--ds-muted);margin:0 0 12px}
+.visit-preparation-list{list-style:none;padding:0;margin:0}
+.visit-preparation-list li{display:flex;gap:11px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--ds-line)}
+.visit-preparation-list li>svg{flex:none;color:var(--ds-primary);margin-top:2px}
+.visit-preparation-list strong,.visit-preparation-list small{display:block}
+.visit-preparation-list strong{font-size:12px}
+.visit-preparation-list small{font-size:12px;line-height:1.6;color:var(--ds-muted);margin-top:3px}
+.visit-preparation-next{padding:11px 12px;background:var(--ds-canvas);border-radius:11px;margin-top:8px}
+.visit-preparation-next strong{font-size:12px}
+.visit-preparation-next p{font-size:12px;line-height:1.65;color:var(--ds-muted);margin:4px 0 0}
+.visit-reminder-preview{display:grid;gap:8px;margin-top:12px;padding:12px;border:1px solid var(--ds-line);border-radius:12px;background:var(--ds-canvas)}
+.visit-reminder-preview>strong{font-size:12px;color:var(--ds-primary)}
+.visit-reminder-preview>p{margin:0;font-size:12px;line-height:1.6;color:var(--ds-muted)}
+.visit-reminder-preview>button{min-height:44px;padding:10px 12px;border:1px solid var(--ds-border);border-radius:9px;background:#fff;color:var(--ds-primary);font:inherit;font-size:12px;font-weight:600;text-align:start}
+.visit-reminder-preview>button:focus-visible{outline:3px solid var(--ds-primary);outline-offset:2px}
+.visit-reminder-copy{display:grid;gap:5px;padding:10px;background:var(--ds-canvas);border-radius:9px}
+.visit-reminder-copy strong{font-size:12px}
+.visit-reminder-copy p,.visit-reminder-copy small{margin:0;color:var(--ds-muted);font-size:12px;line-height:1.6;overflow-wrap:anywhere}

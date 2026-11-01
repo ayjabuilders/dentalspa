@@ -1,0 +1,46 @@
+import { test, expect } from '@playwright/test';
+import { randomBytes } from 'node:crypto';
+
+for (const width of [1440,390]) test(`local manager creates, changes and deactivates a real member ${width}`, async ({ page, request }) => {
+  await page.setViewportSize({width,height:width===390?844:1000});
+  const email = `nadia.${Date.now()}@dentalspa.test`, password = 'Local!' + randomBytes(18).toString('base64url') + '9';
+  await page.goto('http://localhost:4204/connection?view=team');
+  await page.getByLabel('Adresse e-mail', { exact: true }).fill(process.env.LOCAL_DOCUMENT_MANAGER_EMAIL!);
+  await page.getByLabel('Mot de passe', { exact: true }).fill(process.env.LOCAL_DOCUMENT_MANAGER_PASSWORD!);
+  await page.getByRole('button', { name: 'Se connecter', exact: true }).click();
+  await page.getByRole('button', { name: 'Ajouter un membre', exact: true }).click();
+  const create = page.getByRole('dialog', { name: 'Ajouter un membre', exact: true });
+  await create.getByLabel('Nom complet', { exact: true }).fill('Nadia Berrada (FICTIF)');
+  await create.getByLabel('Adresse e-mail', { exact: true }).fill(email);
+  await create.getByLabel('Mot de passe temporaire', { exact: true }).fill(password);
+  await create.getByRole('checkbox', { name: /^Assistant/ }).check();
+  await create.getByRole('button', { name: 'Créer le compte local', exact: true }).click();
+  await expect(create).toHaveCount(0);
+  await page.getByPlaceholder('Nom ou adresse e-mail…', { exact: true }).fill(email);
+  await page.getByRole('button', { name: 'Rechercher', exact: true }).click();
+  const modify = page.getByRole('listitem').filter({hasText:email}).getByRole('button', { name: 'Modifier les accès de Nadia Berrada (FICTIF)', exact: true });
+  await expect(modify).toBeVisible();
+  await page.reload();
+  await page.getByPlaceholder('Nom ou adresse e-mail…', { exact: true }).fill(email);
+  await page.getByRole('button', { name: 'Rechercher', exact: true }).click();
+  await modify.click();
+  const edit = page.getByRole('dialog', { name: 'Modifier les accès', exact: true });
+  await edit.getByRole('checkbox', { name: /^Assistant/ }).uncheck();
+  await edit.getByRole('checkbox', { name: /^Accueil/ }).check();
+  await edit.getByRole('button', { name: 'Enregistrer les accès', exact: true }).click();
+  await expect(edit).toHaveCount(0);
+  await page.screenshot({ path: `.local/qa/team-member-created-${width}.png`, animations: 'disabled' });
+  // Verify the actual Auth account exists and has fresh clinic authority.
+  const login = await request.post('http://127.0.0.1:54321/auth/v1/token?grant_type=password', { headers: { apikey: process.env.LOCAL_TEAM_ANON_KEY! }, data: { email, password } });
+  expect(login.status()).toBe(200);
+  const session = await login.json();
+  const headers = { Authorization: 'Bearer ' + session.access_token, 'X-Clinic-Id': '10000000-0000-4000-8000-000000000001' };
+  expect((await request.get('http://127.0.0.1:4300/api/v1/team/access/members', { headers })).status()).toBe(403);
+  await modify.click();
+  await edit.getByLabel('Compte actif dans ce cabinet', { exact: true }).uncheck();
+  await edit.getByRole('button', { name: 'Enregistrer les accès', exact: true }).click();
+  await edit.getByRole('button', { name: 'Confirmer la désactivation', exact: true }).click();
+  await expect(edit).toHaveCount(0);
+  expect((await request.get('http://127.0.0.1:4300/api/v1/patients', { headers })).status()).toBe(403);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});

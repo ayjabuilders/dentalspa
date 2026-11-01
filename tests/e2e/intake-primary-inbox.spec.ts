@@ -1,0 +1,46 @@
+import { expect, test } from '@playwright/test';
+
+const base = process.env.INTAKE_PRIMARY_INBOX_UI_URL ?? 'http://localhost:4204';
+
+test('intake workspaces are exclusive, keyboard accessible and usable on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto(`${base}/intake?preview=1`);
+  const recent = page.getByRole('tab', { name: /Demandes récentes/ });
+  const deadlines = page.getByRole('tab', { name: /Mes échéances/ });
+  const search = page.getByRole('tab', { name: /Recherche avancée/ });
+  await expect(page.locator('.intake-row')).toHaveCount(3);
+  await expect(recent).toHaveAttribute('aria-selected', 'true');
+  await expect(recent).toContainText('3');
+  await expect(page.locator('.owner-worklist')).toBeHidden();
+  await expect(page.locator('.owner-search')).toBeHidden();
+  await page.screenshot({ path: '.local/qa/intake-workspaces-desktop.png' });
+  await recent.focus(); await page.keyboard.press('ArrowRight');
+  await expect(deadlines).toBeFocused();
+  await expect(page.locator('.owner-worklist')).toBeVisible();
+  await expect(page.locator('.intake-grid')).toBeHidden();
+  await page.keyboard.press('End');
+  await expect(search).toBeFocused();
+  await expect(page.locator('.owner-search')).toBeVisible();
+  await expect(page.locator('.owner-worklist')).toBeHidden();
+  await page.getByLabel('Nom de la demande', { exact: true }).fill('Salma');
+  await recent.click(); await search.click();
+  await expect(page.getByLabel('Nom de la demande', { exact: true })).toHaveValue('Salma');
+  await page.getByRole('button', { name: 'Rechercher mes demandes', exact: true }).click();
+  await page.getByRole('button', { name: 'Consulter le détail de Salma Alaoui' }).click();
+  await expect(recent).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator('.intake-detail')).toBeFocused();
+  await expect(page.locator('.intake-detail')).toContainText('salma.alaoui@example.invalid');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await recent.scrollIntoViewIfNeeded();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  for (const tab of [recent, deadlines, search]) expect((await tab.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  await page.screenshot({ path: '.local/qa/intake-workspaces-mobile.png' });
+  await deadlines.click();
+  await expect(page.locator('.owner-worklist')).toBeVisible();
+  await expect(page.locator('.intake-grid')).toBeHidden();
+  await page.screenshot({ path: '.local/qa/intake-deadlines-mobile.png' });
+  await recent.click();
+  const detailNav = page.getByRole('navigation', { name: 'Navigation de la demande' });
+  await detailNav.getByRole('link', { name: 'Suivi', exact: true }).click();
+  await expect(page).toHaveURL(/#intake-next-action$/);
+});

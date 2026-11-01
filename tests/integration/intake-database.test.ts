@@ -63,6 +63,17 @@ describe('manual intake SQL authorization and atomic commands (embedded PostgreS
     expect(JSON.stringify([...audit,...outbox])).not.toContain('Synthetic Inquiry'); expect(JSON.stringify([...audit,...outbox])).not.toContain(input.contact_email);
     expect(outbox[0]).toMatchObject({clinic_id:A,aggregate_id:result.item.id,event_type:'InquiryCreated',event_version:1,actor_ref:STAFF});
   });
+  it('keeps first-contact inquiries structurally separate from patients and clinical fields',async()=>{
+    const columns=(await db.query<{column_name:string}>("select column_name from information_schema.columns where table_schema='public' and table_name='inquiries' order by ordinal_position")).rows.map(row=>row.column_name);
+    expect(columns).toEqual(['id','clinic_id','owner_user_id','display_name','contact_email','contact_phone','source','follow_up_at','status','created_at']);
+    const patientReferences=(await db.query<{count:number}>("select count(*)::int as count from pg_constraint where conrelid='public.inquiries'::regclass and contype='f' and confrelid='public.patients'::regclass")).rows[0]?.count;
+    expect(patientReferences).toBe(0);
+    for(const extra of [{patient_id:P1},{medical_history:'synthetic'},{diagnosis:'synthetic'}]) {
+      await expect(create(STAFF,randomUUID(),{...input,...extra})).rejects.toMatchObject({code:'22023'});
+    }
+    expect((await db.query('select * from public.inquiries')).rows).toHaveLength(0);
+    expect((await db.query('select * from public.patients')).rows).toHaveLength(0);
+  });
   it('allows only active reception, manager and dentist, including direct RPC calls',async()=>{
     for(const user of [STAFF,MANAGER,DENTIST]) expect(InquiryCreatedSchema.parse(await create(user)).item.owner_user_id).toBe(user);
     for(const user of [PATIENT,ASSISTANT,INACTIVE]) {
@@ -83,7 +94,7 @@ describe('manual intake SQL authorization and atomic commands (embedded PostgreS
     await expect(create()).rejects.toMatchObject({code:'42501'});
   });
   it('enforces strict input even when bypassing HTTP validation',async()=>{
-    for(const payload of [null,[],{}, {...input,owner_user_id:MANAGER},{...input,status:'confirmed'},{...input,display_name:'   '},{...input,contact_phone:'<script>'},{...input,contact_email:' A@example.test'},{...input,source:'integration'},{...input,follow_up_at:'2026-02-30T09:00:00Z'},{...input,follow_up_at:'2026-11-01T24:00:00Z'},{...input,follow_up_at:'2026-11-01T09:00Z'},{...input,follow_up_at:'9999-12-31T23:00:00-02:00'},{...input,follow_up_at:'0001-01-01T00:00:00+02:00'}]) {
+    for(const payload of [null,[],{}, {...input,owner_user_id:MANAGER},{...input,patient_id:P1},{...input,medical_history:'synthetic'},{...input,diagnosis:'synthetic'},{...input,status:'confirmed'},{...input,display_name:'   '},{...input,contact_phone:'<script>'},{...input,contact_email:' A@example.test'},{...input,source:'integration'},{...input,follow_up_at:'2026-02-30T09:00:00Z'},{...input,follow_up_at:'2026-11-01T24:00:00Z'},{...input,follow_up_at:'2026-11-01T09:00Z'},{...input,follow_up_at:'9999-12-31T23:00:00-02:00'},{...input,follow_up_at:'0001-01-01T00:00:00+02:00'}]) {
       await expect(create(STAFF,randomUUID(),payload)).rejects.toMatchObject({code:'22023'});
     }
     expect((await db.query('select * from public.inquiries')).rows).toHaveLength(0);

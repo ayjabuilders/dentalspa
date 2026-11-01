@@ -1,0 +1,59 @@
+.patient-invoices{display:grid;gap:18px}.invoice-heading,.invoice-card>header{display:flex;justify-content:space-between;align-items:center;gap:14px}.invoice-heading h3{display:flex;align-items:center;gap:9px;margin:0 0 5px}.invoice-heading span,.invoice-card header div>span,.invoice-payer,.invoice-disclaimer{font-size:13px;color:var(--ds-muted,var(--muted,#586e84))}.invoice-summary{display:flex;gap:12px}.invoice-summary>span{display:flex;align-items:center;gap:12px;padding:14px 20px;background:var(--ds-canvas,var(--soft,#edf2f7));border-radius:14px}.invoice-summary strong{font-size:24px}.invoice-prepare{display:flex;align-items:end;gap:12px}.invoice-prepare label{display:grid;gap:7px;flex:1}.invoice-prepare select{width:100%;min-height:44px;border:1px solid var(--ds-border,var(--boundary,#899bb0));border-radius:10px;padding:8px;background:var(--surface,#fff);color:inherit}.invoice-list{display:grid;gap:14px}.invoice-card{padding:20px;border:1px solid var(--ds-line,var(--line,#dce4ec));border-radius:16px;background:var(--surface,#fff)}.invoice-card h4{margin:0 0 5px;font-size:17px}.invoice-badge{padding:6px 10px;border-radius:20px;background:var(--ds-soft,var(--soft,#edf2f7));color:var(--ds-muted,var(--muted,#42566c));font-size:12px}.invoice-badge[data-state=issued]{background:var(--ds-mint,#e2f3ec);color:var(--ds-success,var(--positive,#116e59))}.invoice-total{font-size:27px;font-weight:750;margin:18px 0 6px}.invoice-lines{display:grid;gap:12px;margin:14px 0}.invoice-lines>div,.invoice-card dl>div{display:flex;justify-content:space-between;gap:14px}.invoice-lines small{display:block;margin-top:5px}.invoice-card dd{margin:0}.invoice-card summary{cursor:pointer;min-height:44px;display:flex;align-items:center}.invoice-issue{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}.invoice-issue p{flex-basis:100%}.invoice-empty{text-align:center;padding:28px;background:var(--ds-canvas,var(--soft,#edf2f7));border-radius:14px}.patient-invoices button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:44px;border:1px solid var(--ds-border,var(--boundary,#899bb0));border-radius:10px;padding:9px 13px;background:var(--surface,#fff);color:inherit;cursor:pointer}.patient-invoices button:disabled{opacity:.55;cursor:default}.patient-invoices button:focus-visible,.patient-invoices select:focus-visible,.patient-invoices summary:focus-visible{outline:2px solid var(--ds-focus,var(--focus,#2c75df));outline-offset:3px}.patient-invoices button[type=submit],.invoice-issue button:first-of-type{background:var(--ds-primary,var(--primary,#2869d8));border-color:var(--ds-primary,var(--primary,#2869d8));color:white}.patient-invoices [role=alert]{padding:12px;border-radius:10px;background:var(--ds-danger-bg,#fff0ed);color:var(--ds-danger,var(--danger,#9e302e))}
+@media(max-width:600px){.invoice-heading,.invoice-prepare{align-items:stretch;flex-direction:column}.invoice-card{padding:16px}.invoice-card>header{align-items:start}.invoice-summary>span{flex:1;padding:12px;flex-direction:column;gap:4px}.invoice-issue button{flex:1}.invoice-card header div{min-width:0;overflow-wrap:anywhere}}
+
+/* Invoice register and preparation dialog. Keep shared payment/credit classes intact. */
+.patient-invoices .invoice-heading-actions{display:flex;align-items:center;gap:8px}
+.patient-invoices .invoice-refresh{width:44px;padding:0}
+.patient-invoices .invoice-new-button{background:var(--ds-primary);border-color:var(--ds-primary);color:white;font-weight:650}
+.patient-invoices .invoice-new-button:hover:not(:disabled){background:var(--ds-primary-hover);color:white}
+.patient-invoices .invoice-overview-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.patient-invoices .invoice-overview-filters button{justify-content:flex-start;border-color:var(--ds-line);background:var(--ds-surface);padding:12px 16px;gap:12px;text-align:start}
+.patient-invoices .invoice-overview-filters button[aria-pressed=true]{background:var(--ds-lavender,var(--ds-soft));border-color:var(--ds-primary);color:var(--ds-primary)}
+.invoice-overview-filters button>span{display:flex;flex:1;align-items:center;justify-content:space-between;gap:8px;font-size:13px}
+.invoice-overview-filters strong{font-size:21px;line-height:1;font-variant-numeric:tabular-nums}
+.invoice-list-toolbar{display:flex;align-items:center;gap:16px;justify-content:space-between}
+.invoice-list-toolbar>span{font-size:12px;color:var(--ds-muted);white-space:nowrap}
+.invoice-search{display:flex;align-items:center;gap:9px;flex:1;min-width:0;max-width:560px;min-height:44px;padding:0 12px;border:1px solid var(--ds-border);border-radius:11px;background:var(--ds-surface);color:var(--ds-muted)}
+.invoice-search:focus-within{outline:2px solid var(--ds-focus);outline-offset:2px}
+.patient-invoices .invoice-search input{min-width:0;width:100%;border:0;background:transparent;box-shadow:none;padding:10px 0;color:var(--ds-ink);font:inherit;font-size:13px;outline:none}
+.patient-invoices .invoice-search input:focus{outline:none;box-shadow:none}
+.patient-invoices .invoice-search button{width:32px;min-height:32px;padding:0;border:0;background:transparent;flex-shrink:0}
+.patient-invoices .invoice-notice{margin:0;padding:12px 14px;border:1px solid var(--ds-success);border-radius:11px;background:var(--ds-mint);color:var(--ds-success);font-size:13px}
+.patient-invoices .invoice-register{gap:10px;min-width:0}
+.patient-invoices .invoice-register>.invoice-card{padding:16px 18px;background:var(--ds-surface);min-width:0}
+.patient-invoices .invoice-register>.invoice-card>header{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:12px}
+.patient-invoices .invoice-register h4{font-size:15px;overflow-wrap:anywhere}
+.patient-invoices .invoice-register .invoice-total{font-size:20px;margin:0;white-space:nowrap}
+.patient-invoices .invoice-register .invoice-card-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px}
+.invoice-card-toolbar>div{display:flex;flex-wrap:wrap;gap:6px}
+.invoice-card-toolbar .invoice-payer{margin:0;overflow-wrap:anywhere}
+.patient-invoices .invoice-register .invoice-card-toolbar button{min-height:36px;padding:6px 10px;font-size:12px;background:var(--ds-canvas);border-color:var(--ds-line)}
+.patient-invoices .invoice-register details{margin-top:10px;border-top:1px solid var(--ds-line);font-size:13px}
+.patient-invoices .invoice-register summary{min-height:36px;color:var(--ds-primary);font-weight:600}
+.patient-invoices .invoice-register summary::after{content:'+';margin-inline-start:auto;font-size:18px}
+.patient-invoices .invoice-register details[open] summary::after{content:'−'}
+.patient-invoices .invoice-register .invoice-issue{margin-top:4px}
+.patient-invoices .invoice-register .invoice-issue p{margin:4px 0 0;font-size:13px;line-height:1.6}
+.patient-invoices .invoice-register .invoice-issue button{min-height:36px;padding:7px 11px;font-size:12px}
+.invoice-pagination{display:flex;align-items:center;justify-content:flex-end;gap:12px;font-size:12px;color:var(--ds-muted)}
+.invoice-pagination>span:first-child{margin-inline-end:auto}
+.patient-invoices .invoice-pagination button{width:40px;padding:0}
+.invoice-prepare-modal{max-width:560px!important}
+.invoice-prepare-form{display:grid;gap:20px;padding-top:6px}
+.invoice-prepare-form>label{display:grid;gap:8px;font-size:13px;font-weight:600;color:var(--ds-ink)}
+.invoice-prepare-form select{width:100%;min-width:0;min-height:46px;border:1px solid var(--ds-border);border-radius:11px;background:var(--ds-surface);color:var(--ds-ink);font:inherit;padding:10px 12px}
+.invoice-prepare-form select:focus-visible{outline:2px solid var(--ds-focus);outline-offset:3px}
+.invoice-prepare-form select:disabled{opacity:.65}
+.invoice-prepare-summary{padding:16px;border:1px solid var(--ds-line);border-radius:14px;background:var(--ds-lavender,var(--ds-soft))}
+.invoice-prepare-summary>span{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13px;color:var(--ds-muted)}
+.invoice-prepare-summary strong{font-size:24px;color:var(--ds-primary);font-variant-numeric:tabular-nums;white-space:nowrap}
+.invoice-prepare-summary small{display:block;margin-top:10px;font-size:12px;color:var(--ds-muted);line-height:1.6}
+.invoice-prepare-actions,.invoice-prepare-discard>div{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;padding-top:14px;border-top:1px solid var(--ds-line)}
+.invoice-prepare-form>[role=alert]{margin:0;padding:12px 14px;border-radius:11px;background:var(--ds-danger-bg);color:var(--ds-danger);font-size:13px;line-height:1.6}
+.invoice-prepare-discard h3{font-size:17px;color:var(--ds-ink)}
+.invoice-prepare-discard p{font-size:14px;color:var(--ds-muted);line-height:1.6}
+.invoice-prepare-modal .invoice-empty{font-size:13px;color:var(--ds-muted);line-height:1.6}
+.invoice-prepare-modal .invoice-empty>svg{display:block;margin:0 auto 12px;color:var(--ds-primary)}
+.invoice-prepare-modal .invoice-empty>strong{color:var(--ds-ink)}
+@media(max-width:400px){.patient-invoices .invoice-heading{flex-wrap:wrap}.patient-invoices .invoice-heading-actions{margin-inline-start:auto}.patient-invoices .invoice-register>.invoice-card>header{grid-template-columns:minmax(0,1fr)}.patient-invoices .invoice-register .invoice-badge{justify-self:start}.invoice-prepare-actions>.button,.invoice-prepare-discard>div>.button{flex-basis:100%}}
+@media(max-width:600px){.patient-invoices .invoice-heading{flex-direction:row;align-items:center}.invoice-heading-actions .invoice-new-button{font-size:12px;padding:9px}.patient-invoices .invoice-overview-filters{gap:6px}.patient-invoices .invoice-overview-filters button{padding:12px 8px;gap:6px;flex-direction:column}.invoice-overview-filters button>span{flex-direction:column;font-size:11px;gap:7px}.invoice-list-toolbar{align-items:stretch;flex-direction:column;gap:8px}.invoice-search{max-width:none}.patient-invoices .invoice-search input,.invoice-prepare-form select{font-size:16px}.patient-invoices .invoice-search button{min-height:44px;width:36px}.patient-invoices .invoice-register>.invoice-card{padding:14px}.patient-invoices .invoice-register>.invoice-card>header{grid-template-columns:minmax(0,1fr) auto;gap:10px}.patient-invoices .invoice-register .invoice-total{grid-column:1/-1;font-size:22px}.patient-invoices .invoice-register .invoice-card-toolbar{align-items:stretch;flex-direction:column;gap:10px}.patient-invoices .invoice-register .invoice-card-toolbar button,.patient-invoices .invoice-register .invoice-issue button{min-height:44px;flex:1}.invoice-card-toolbar>div{display:flex}.patient-invoices .invoice-register summary{min-height:44px}.invoice-prepare-summary>span{align-items:flex-start;flex-direction:column}.invoice-prepare-actions>.button,.invoice-prepare-discard>div>.button{flex:1}.invoice-pagination{gap:8px}}

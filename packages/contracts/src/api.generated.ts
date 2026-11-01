@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+    "/api/v1/me/workspaces": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List active clinic workspaces authorized for the verified account; no clinic selection required */
+        get: operations["MeController_workspacesList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me/workspace": {
         parameters: {
             query?: never;
@@ -52,6 +69,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/me/preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read this verified patient account’s stated communication preferences */
+        get: operations["MeController_preferences"];
+        put?: never;
+        /** Save this patient’s stated preferences only; no consent or messaging effect */
+        post: operations["MeController_setPreferences"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me/documents": {
         parameters: {
             query?: never;
@@ -76,6 +111,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["HealthController_health"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/patients/{id}/hub": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PatientsController_readHub"];
         put?: never;
         post?: never;
         delete?: never;
@@ -127,6 +178,24 @@ export interface paths {
         get: operations["PatientsController_find"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/patients/{id}/admin-document-checklist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read the current clinic-only manual CNSS/CNOPS checklist states */
+        get: operations["PatientAdminChecklistController_list"];
+        put?: never;
+        /** Set a manually reviewed CNSS/CNOPS paperwork status; does not submit a claim or decide eligibility */
+        post: operations["PatientAdminChecklistController_set"];
         delete?: never;
         options?: never;
         head?: never;
@@ -207,6 +276,417 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["SchedulingController_release"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/appointments/{id}/patient-association": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record or clear an identity-unverified possible patient match; no Patient Pass release */
+        post: operations["PatientAppointmentsController_associatePatient"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/appointments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PatientAppointmentsController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/appointments/{id}/commands": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PatientAppointmentsController_command"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/appointments/{id}/configured-commands": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PatientAppointmentsController_configuredCommand"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/appointments/{id}/configured-availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PatientAppointmentsController_configuredAvailability"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/patients/{patientId}/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["DocumentsController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/patients/{patientId}/documents/templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["DocumentsController_templates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/patients/{patientId}/documents/drafts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["DocumentsController_drafts"];
+        put?: never;
+        post: operations["DocumentsController_createDraft"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/patients/{patientId}/documents/uploads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["DocumentsController_upload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/patients/{patientId}/documents/drafts/{draftId}/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["DocumentsController_versions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/patients/{patientId}/documents/drafts/{draftId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["DocumentsController_draft"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["DocumentsController_updateDraft"];
+        trace?: never;
+    };
+    "/api/v1/patients/{patientId}/documents/drafts/{draftId}/validate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["DocumentsController_validateDraft"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/patients/{patientId}/documents/{documentId}/content-link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["DocumentsController_downloadLink"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/patients/{patientId}/documents/{documentId}/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["DocumentsController_content"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/patients/{patientId}/documents/library": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List uploaded patient files in the authorized document library */
+        get: operations["DocumentLibraryController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/patients/{patientId}/documents/library/options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List document filing categories and same-patient confirmed appointment links */
+        get: operations["DocumentLibraryController_options"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/patients/{patientId}/documents/library/uploads/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["DocumentLibraryController_startUpload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/patients/{patientId}/documents/library/uploads/finish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["DocumentLibraryController_finishUpload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/patients/{patientId}/documents/library/uploads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Store one private patient file with catalog metadata; bulk selection uses one idempotent request per file */
+        post: operations["DocumentLibraryController_upload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/patients/{patientId}/documents/library/{documentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Archive a document without deleting private bytes; compare-and-set version required */
+        delete: operations["DocumentLibraryController_archive"];
+        options?: never;
+        head?: never;
+        /** Edit document filing metadata with compare-and-set version */
+        patch: operations["DocumentLibraryController_update"];
+        trace?: never;
+    };
+    "/api/v1/internal/document-staging-cleanup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StagingCleanupController_run"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/communications/demo-webhook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Accept an exact-body HMAC-signed, allowlisted local synthetic inbound event; no provider or send is enabled */
+        post: operations["DemoFakeInboxController_receive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/communications/demo-inbox": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read the verified same-clinic synthetic inbound inbox; only active Reception and Manager roles */
+        get: operations["DemoFakeInboxController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inquiries/{id}/contact-outcomes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Current owner factual contact-outcome history; newest first, maximum 50 */
+        get: operations["InquiryContactOutcomeController_list"];
+        put?: never;
+        /** Record one factual outcome for a manually completed contact; does not contact anyone or change inquiry status */
+        post: operations["InquiryContactOutcomeController_record"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inquiries/{id}/owner": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reassign an inquiry to an active intake owner; manager-only */
+        post: operations["InquiryOwnerReassignmentController_assign"];
         delete?: never;
         options?: never;
         head?: never;
@@ -474,6 +954,569 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/team/access/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the current clinic team accounts and application access */
+        get: operations["TeamAccessController_list"];
+        put?: never;
+        /** Create a synthetic local Auth account without sending email */
+        post: operations["TeamAccessController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/team/access/members/{userId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Change a team member role set or deactivate/reactivate access with version check */
+        patch: operations["TeamAccessController_update"];
+        trace?: never;
+    };
+    "/api/v1/booking-requests/configured-availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["BookingRequestsController_configuredAvailability"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/booking-requests/configured": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["BookingRequestsController_configuredList"];
+        put?: never;
+        post: operations["BookingRequestsController_configuredRequest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/booking-requests/demo-status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["BookingRequestsController_demoStatus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/booking-requests/configured/{id}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["BookingRequestsController_confirmConfigured"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/booking-requests/demo-availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["BookingRequestsController_availability"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/booking-requests/demo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["BookingRequestsController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/booking-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["BookingRequestsController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/booking-requests/{id}/confirm-demo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["BookingRequestsController_confirmDemo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/agenda-settings/availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AgendaSettingsController_availability"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/agenda-settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AgendaSettingsController_read"];
+        put?: never;
+        post: operations["AgendaSettingsController_save"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/patients/{patientId}/installments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["LocalInstallmentsController_list"];
+        put?: never;
+        post: operations["LocalInstallmentsController_save"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/patients/{patientId}/installments/{planId}/versions/{version}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["LocalInstallmentsController_detail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/patients/{patientId}/installments/{planId}/versions/{version}/balances": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["LocalInstallmentsController_balances"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/patients/{patientId}/installments/{planId}/allocations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["LocalInstallmentsController_allocate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/patients/{patientId}/installments/{planId}/transitions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["LocalInstallmentsController_transition"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/installment-reminders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["LocalInstallmentRemindersController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/payment-configuration": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["LocalPaymentConfigurationController_read"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/payment-configuration/accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["LocalPaymentConfigurationController_account"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/payment-configuration/methods": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["LocalPaymentConfigurationController_method"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/services": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["QuoteDraftsController_services"];
+        put?: never;
+        post: operations["QuoteDraftsController_saveService"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/catalog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["QuoteDraftsController_catalog"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/patients/{patientId}/quotes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["QuoteDraftsController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/patients/{patientId}/quotes/{quoteId}/revisions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["QuoteDraftsController_revise"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/patients/{patientId}/invoices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["LocalInvoicesController_list"];
+        put?: never;
+        post: operations["LocalInvoicesController_prepare"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/patients/{patientId}/invoices/{invoiceId}/credits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["LocalInvoicesController_creditContext"];
+        put?: never;
+        post: operations["LocalInvoicesController_postCredit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/patients/{patientId}/invoices/{invoiceId}/credits/{creditId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["LocalInvoicesController_creditDocument"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/patients/{patientId}/invoices/{invoiceId}/issue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["LocalInvoicesController_issue"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/patients/{patientId}/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["LocalPaymentsController_list"];
+        put?: never;
+        post: operations["LocalPaymentsController_record"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/patients/{patientId}/payments/{paymentId}/refunds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["LocalPaymentsController_refundContext"];
+        put?: never;
+        post: operations["LocalPaymentsController_refund"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/patients/{patientId}/payments/{paymentId}/receipt": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["LocalPaymentsController_document"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/patients/{patientId}/payments/{paymentId}/transitions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["LocalPaymentsController_transition"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/patients/{patientId}/payments/{paymentId}/allocations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["LocalPaymentsController_allocate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/patients/{patientId}/payments/{paymentId}/receipts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["LocalPaymentsController_receipt"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -504,6 +1547,46 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    MeController_workspacesList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            /** Format: uuid */
+                            clinic_id: string;
+                            clinic_name: string;
+                            roles: ("dentist" | "reception" | "assistant" | "manager")[];
+                        }[];
+                    };
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authorized workspace lookup unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     MeController_workspace: {
         parameters: {
             query?: never;
@@ -565,6 +1648,113 @@ export interface operations {
             };
         };
     };
+    MeController_preferences: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {number} */
+                        schema_version: 1;
+                        /** Format: uuid */
+                        clinic_id: string;
+                        /** Format: uuid */
+                        patient_id: string;
+                        /** @enum {string|null} */
+                        contact_preference: "phone" | "email" | "no_preference" | null;
+                        /** @enum {string|null} */
+                        language: "fr" | "ar" | "en" | "other" | "no_preference" | null;
+                        /** @enum {string|null} */
+                        time_zone: "Africa/Casablanca" | "Africa/Dakar" | "America/New_York" | "America/Sao_Paulo" | "America/Toronto" | "Asia/Dubai" | "Asia/Riyadh" | "Asia/Tokyo" | "Australia/Sydney" | "Etc/UTC" | "Europe/London" | "Europe/Paris" | null;
+                        revision: number;
+                        /** Format: date-time */
+                        updated_at: string | null;
+                    };
+                };
+            };
+        };
+    };
+    MeController_setPreferences: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-Clinic-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    expected_revision: number;
+                    /** @enum {string|null} */
+                    contact_preference: "phone" | "email" | "no_preference" | null;
+                    /** @enum {string|null} */
+                    language: "fr" | "ar" | "en" | "other" | "no_preference" | null;
+                    /** @enum {string|null} */
+                    time_zone: "Africa/Casablanca" | "Africa/Dakar" | "America/New_York" | "America/Sao_Paulo" | "America/Toronto" | "Asia/Dubai" | "Asia/Riyadh" | "Asia/Tokyo" | "Australia/Sydney" | "Etc/UTC" | "Europe/London" | "Europe/Paris" | null;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        receipt: {
+                            /** Format: uuid */
+                            clinic_id: string;
+                            /** Format: uuid */
+                            patient_id: string;
+                            /** @enum {string|null} */
+                            previous_contact_preference: "phone" | "email" | "no_preference" | null;
+                            /** @enum {string|null} */
+                            contact_preference: "phone" | "email" | "no_preference" | null;
+                            /** @enum {string|null} */
+                            previous_language: "fr" | "ar" | "en" | "other" | "no_preference" | null;
+                            /** @enum {string|null} */
+                            language: "fr" | "ar" | "en" | "other" | "no_preference" | null;
+                            /** @enum {string|null} */
+                            previous_time_zone: "Africa/Casablanca" | "Africa/Dakar" | "America/New_York" | "America/Sao_Paulo" | "America/Toronto" | "Asia/Dubai" | "Asia/Riyadh" | "Asia/Tokyo" | "Australia/Sydney" | "Etc/UTC" | "Europe/London" | "Europe/Paris" | null;
+                            /** @enum {string|null} */
+                            time_zone: "Africa/Casablanca" | "Africa/Dakar" | "America/New_York" | "America/Sao_Paulo" | "America/Toronto" | "Asia/Dubai" | "Asia/Riyadh" | "Asia/Tokyo" | "Australia/Sydney" | "Etc/UTC" | "Europe/London" | "Europe/Paris" | null;
+                            previous_revision: number;
+                            revision: number;
+                            changed: boolean;
+                            /** Format: date-time */
+                            recorded_at: string;
+                            /** @enum {number} */
+                            catalogue_version: 1;
+                            /** @enum {number} */
+                            event_version: 1;
+                        };
+                        replayed: boolean;
+                    };
+                };
+            };
+            /** @description Stale revision or conflicting idempotency key */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     MeController_documents: {
         parameters: {
             query?: never;
@@ -589,6 +1779,27 @@ export interface operations {
             query?: never;
             header?: never;
             path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PatientsController_readHub: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path: {
+                id: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -715,6 +1926,177 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["PatientDto"];
                 };
+            };
+        };
+    };
+    PatientAdminChecklistController_list: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {number} */
+                        schema_version: 1;
+                        /** Format: uuid */
+                        clinic_id: string;
+                        /** Format: uuid */
+                        patient_id: string;
+                        items: {
+                            /** Format: uuid */
+                            clinic_id: string;
+                            /** Format: uuid */
+                            patient_id: string;
+                            /** @enum {string} */
+                            kind: "cnss" | "cnops";
+                            /** @enum {string} */
+                            status: "not_applicable" | "missing" | "received" | "needs_correction" | "completed_manually";
+                            revision: number;
+                            /** Format: date-time */
+                            updated_at: string;
+                            /** Format: uuid */
+                            updated_by: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Active same-clinic reception, manager or dentist membership required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Checklist disabled pending local database and privacy review */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PatientAdminChecklistController_set: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    expected_revision: number;
+                    /** @enum {string} */
+                    kind: "cnss" | "cnops";
+                    /** @enum {string} */
+                    status: "not_applicable" | "missing" | "received" | "needs_correction" | "completed_manually";
+                };
+            };
+        };
+        responses: {
+            /** @description Exact idempotent replay */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        item: {
+                            /** Format: uuid */
+                            clinic_id: string;
+                            /** Format: uuid */
+                            patient_id: string;
+                            /** @enum {string} */
+                            kind: "cnss" | "cnops";
+                            /** @enum {string} */
+                            status: "not_applicable" | "missing" | "received" | "needs_correction" | "completed_manually";
+                            revision: number;
+                            /** Format: date-time */
+                            updated_at: string;
+                            /** Format: uuid */
+                            updated_by: string;
+                        };
+                        replayed: boolean;
+                    };
+                };
+            };
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        item: {
+                            /** Format: uuid */
+                            clinic_id: string;
+                            /** Format: uuid */
+                            patient_id: string;
+                            /** @enum {string} */
+                            kind: "cnss" | "cnops";
+                            /** @enum {string} */
+                            status: "not_applicable" | "missing" | "received" | "needs_correction" | "completed_manually";
+                            revision: number;
+                            /** Format: date-time */
+                            updated_at: string;
+                            /** Format: uuid */
+                            updated_by: string;
+                        };
+                        replayed: boolean;
+                    };
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Active same-clinic reception, manager or dentist membership required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Stale revision or changed idempotency key */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Checklist disabled pending local database and privacy review */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -1242,6 +2624,1527 @@ export interface operations {
                 content?: never;
             };
             /** @description scheduling_disabled */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PatientAppointmentsController_associatePatient: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    patient_id: string | null;
+                    expected_version: number;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        appointment_id: string;
+                        /** Format: uuid */
+                        patient_id: string | null;
+                        version: number;
+                        /** @enum {string} */
+                        association_status: "possible_match" | "unlinked";
+                        /** @enum {boolean} */
+                        identity_verified: false;
+                        replayed: boolean;
+                    };
+                };
+            };
+        };
+    };
+    PatientAppointmentsController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PatientAppointmentsController_command: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PatientAppointmentsController_configuredCommand: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PatientAppointmentsController_configuredAvailability: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    DocumentsController_list: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {number} */
+                        schema_version: 1;
+                        /** Format: uuid */
+                        clinic_id: string;
+                        /** Format: uuid */
+                        patient_id: string;
+                        /** @enum {string} */
+                        section: "administrative" | "clinical";
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            clinic_id: string;
+                            /** Format: uuid */
+                            patient_id: string;
+                            /** @enum {string} */
+                            section: "administrative" | "clinical";
+                            /** @enum {string} */
+                            category: "identity" | "insurance" | "cnss" | "cnops" | "other" | "report" | "prescription" | "clinical_record" | "radiograph" | "clinical_photo" | "lab_result" | "care_consent";
+                            /** @enum {string} */
+                            document_type: "upload" | "report" | "prescription";
+                            title: string;
+                            /** Format: date */
+                            document_date: string;
+                            /** @enum {string} */
+                            content_type: "application/pdf" | "image/jpeg" | "image/png" | "application/json";
+                            size_bytes: number;
+                            /** Format: date-time */
+                            created_at: string;
+                            /** Format: uuid */
+                            created_by: string;
+                            /** Format: date-time */
+                            finalized_at: string;
+                            version: number;
+                            /** @enum {string} */
+                            source: "upload" | "generated";
+                            /** @enum {string} */
+                            status: "stored" | "validated";
+                            /** Format: uuid */
+                            template_id: string | null;
+                            template_version: number | null;
+                        }[];
+                        next_cursor: string | null;
+                        capabilities: {
+                            can_read_administrative: boolean;
+                            can_read_clinical: boolean;
+                            can_read: boolean;
+                            can_upload: boolean;
+                            can_upload_administrative: boolean;
+                            can_upload_clinical: boolean;
+                            can_create_report: boolean;
+                            can_create_prescription: boolean;
+                            can_edit_draft: boolean;
+                            can_edit_report: boolean;
+                            can_edit_prescription: boolean;
+                            can_validate: boolean;
+                            categories: ("identity" | "insurance" | "cnss" | "cnops" | "other" | "report" | "prescription" | "clinical_record" | "radiograph" | "clinical_photo" | "lab_result" | "care_consent")[];
+                        };
+                    };
+                };
+            };
+        };
+    };
+    DocumentsController_templates: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {number} */
+                        schema_version: 1;
+                        /** Format: uuid */
+                        clinic_id: string;
+                        /** Format: uuid */
+                        patient_id: string;
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            version: number;
+                            /** @enum {string} */
+                            type: "report" | "prescription";
+                            label: string;
+                            initial_content: {
+                                /** @enum {string} */
+                                body: "";
+                            };
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    DocumentsController_drafts: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {number} */
+                        schema_version: 1;
+                        /** Format: uuid */
+                        clinic_id: string;
+                        /** Format: uuid */
+                        patient_id: string;
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            clinic_id: string;
+                            /** Format: uuid */
+                            patient_id: string;
+                            /** @enum {string} */
+                            type: "report" | "prescription";
+                            title: string;
+                            /** Format: date */
+                            document_date: string;
+                            /** Format: uuid */
+                            template_id: string;
+                            template_version: number;
+                            content: {
+                                body: string;
+                            };
+                            version: number;
+                            /** Format: date-time */
+                            updated_at: string;
+                            /** Format: uuid */
+                            updated_by: string;
+                        }[];
+                        next_cursor: string | null;
+                        capabilities: {
+                            can_read_administrative: boolean;
+                            can_read_clinical: boolean;
+                            can_read: boolean;
+                            can_upload: boolean;
+                            can_upload_administrative: boolean;
+                            can_upload_clinical: boolean;
+                            can_create_report: boolean;
+                            can_create_prescription: boolean;
+                            can_edit_draft: boolean;
+                            can_edit_report: boolean;
+                            can_edit_prescription: boolean;
+                            can_validate: boolean;
+                            categories: ("identity" | "insurance" | "cnss" | "cnops" | "other" | "report" | "prescription" | "clinical_record" | "radiograph" | "clinical_photo" | "lab_result" | "care_consent")[];
+                        };
+                    };
+                };
+            };
+        };
+    };
+    DocumentsController_createDraft: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    type: "report" | "prescription";
+                    /** Format: uuid */
+                    template_id: string;
+                    template_version: number;
+                    title: string;
+                    /** Format: date */
+                    document_date: string;
+                    content: {
+                        body: string;
+                    };
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        draft: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            clinic_id: string;
+                            /** Format: uuid */
+                            patient_id: string;
+                            /** @enum {string} */
+                            type: "report" | "prescription";
+                            title: string;
+                            /** Format: date */
+                            document_date: string;
+                            /** Format: uuid */
+                            template_id: string;
+                            template_version: number;
+                            content: {
+                                body: string;
+                            };
+                            version: number;
+                            /** Format: date-time */
+                            updated_at: string;
+                            /** Format: uuid */
+                            updated_by: string;
+                        };
+                        replayed: boolean;
+                    };
+                };
+            };
+        };
+    };
+    DocumentsController_upload: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "X-Document-Title": string;
+                "X-Document-Date": string;
+                "X-Document-Category": string;
+                "X-Document-Section": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        item: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            clinic_id: string;
+                            /** Format: uuid */
+                            patient_id: string;
+                            /** @enum {string} */
+                            section: "administrative" | "clinical";
+                            /** @enum {string} */
+                            category: "identity" | "insurance" | "cnss" | "cnops" | "other" | "report" | "prescription" | "clinical_record" | "radiograph" | "clinical_photo" | "lab_result" | "care_consent";
+                            /** @enum {string} */
+                            document_type: "upload" | "report" | "prescription";
+                            title: string;
+                            /** Format: date */
+                            document_date: string;
+                            /** @enum {string} */
+                            content_type: "application/pdf" | "image/jpeg" | "image/png" | "application/json";
+                            size_bytes: number;
+                            /** Format: date-time */
+                            created_at: string;
+                            /** Format: uuid */
+                            created_by: string;
+                            /** Format: date-time */
+                            finalized_at: string;
+                            version: number;
+                            /** @enum {string} */
+                            source: "upload" | "generated";
+                            /** @enum {string} */
+                            status: "stored" | "validated";
+                            /** Format: uuid */
+                            template_id: string | null;
+                            template_version: number | null;
+                        };
+                        replayed: boolean;
+                    };
+                };
+            };
+        };
+    };
+    DocumentsController_versions: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path: {
+                patientId: string;
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {number} */
+                        schema_version: 1;
+                        /** Format: uuid */
+                        clinic_id: string;
+                        /** Format: uuid */
+                        patient_id: string;
+                        /** Format: uuid */
+                        draft_id: string;
+                        items: {
+                            version: number;
+                            title: string;
+                            /** Format: date */
+                            document_date: string;
+                            content: {
+                                body: string;
+                            };
+                            /** Format: date-time */
+                            updated_at: string;
+                            /** Format: uuid */
+                            updated_by: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    DocumentsController_draft: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path: {
+                patientId: string;
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        clinic_id: string;
+                        /** Format: uuid */
+                        patient_id: string;
+                        /** @enum {string} */
+                        type: "report" | "prescription";
+                        title: string;
+                        /** Format: date */
+                        document_date: string;
+                        /** Format: uuid */
+                        template_id: string;
+                        template_version: number;
+                        content: {
+                            body: string;
+                        };
+                        version: number;
+                        /** Format: date-time */
+                        updated_at: string;
+                        /** Format: uuid */
+                        updated_by: string;
+                    };
+                };
+            };
+        };
+    };
+    DocumentsController_updateDraft: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                patientId: string;
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    expected_version: number;
+                    title: string;
+                    /** Format: date */
+                    document_date: string;
+                    content: {
+                        body: string;
+                    };
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        draft: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            clinic_id: string;
+                            /** Format: uuid */
+                            patient_id: string;
+                            /** @enum {string} */
+                            type: "report" | "prescription";
+                            title: string;
+                            /** Format: date */
+                            document_date: string;
+                            /** Format: uuid */
+                            template_id: string;
+                            template_version: number;
+                            content: {
+                                body: string;
+                            };
+                            version: number;
+                            /** Format: date-time */
+                            updated_at: string;
+                            /** Format: uuid */
+                            updated_by: string;
+                        };
+                        replayed: boolean;
+                    };
+                };
+            };
+        };
+    };
+    DocumentsController_validateDraft: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                patientId: string;
+                draftId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    expected_version: number;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        item: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            clinic_id: string;
+                            /** Format: uuid */
+                            patient_id: string;
+                            /** @enum {string} */
+                            section: "administrative" | "clinical";
+                            /** @enum {string} */
+                            category: "identity" | "insurance" | "cnss" | "cnops" | "other" | "report" | "prescription" | "clinical_record" | "radiograph" | "clinical_photo" | "lab_result" | "care_consent";
+                            /** @enum {string} */
+                            document_type: "upload" | "report" | "prescription";
+                            title: string;
+                            /** Format: date */
+                            document_date: string;
+                            /** @enum {string} */
+                            content_type: "application/pdf" | "image/jpeg" | "image/png" | "application/json";
+                            size_bytes: number;
+                            /** Format: date-time */
+                            created_at: string;
+                            /** Format: uuid */
+                            created_by: string;
+                            /** Format: date-time */
+                            finalized_at: string;
+                            version: number;
+                            /** @enum {string} */
+                            source: "upload" | "generated";
+                            /** @enum {string} */
+                            status: "stored" | "validated";
+                            /** Format: uuid */
+                            template_id: string | null;
+                            template_version: number | null;
+                        };
+                        replayed: boolean;
+                    };
+                };
+            };
+        };
+    };
+    DocumentsController_downloadLink: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path: {
+                patientId: string;
+                documentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {number} */
+                        schema_version: 1;
+                        /** Format: uuid */
+                        clinic_id: string;
+                        /** Format: uuid */
+                        patient_id: string;
+                        /** Format: uuid */
+                        document_id: string;
+                        /** Format: uri */
+                        url: string;
+                        /** @enum {number} */
+                        expires_in: 30;
+                        /** @enum {string} */
+                        content_type: "application/pdf" | "image/jpeg" | "image/png";
+                        size_bytes: number;
+                        sha256: string;
+                    };
+                };
+            };
+        };
+    };
+    DocumentsController_content: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path: {
+                patientId: string;
+                documentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    DocumentLibraryController_list: {
+        parameters: {
+            query?: {
+                section?: "administrative" | "clinical";
+                cursor?: unknown;
+                category?: unknown;
+                q?: unknown;
+            };
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        clinic_id: string;
+                        /** Format: uuid */
+                        patient_id: string;
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            clinic_id: string;
+                            /** Format: uuid */
+                            patient_id: string;
+                            category: string;
+                            type: string;
+                            title: string;
+                            /** Format: date */
+                            document_date: string | null;
+                            notes: string;
+                            /** Format: uuid */
+                            related_appointment_id: string | null;
+                            /** @enum {string} */
+                            content_type: "application/pdf" | "image/jpeg" | "image/png";
+                            size_bytes: number;
+                            /** Format: date-time */
+                            created_at: string;
+                            uploaded_by: string;
+                            version: number;
+                            can_edit: boolean;
+                            can_delete: boolean;
+                        }[];
+                        next_cursor: string | null;
+                    };
+                };
+            };
+        };
+    };
+    DocumentLibraryController_options: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        clinic_id: string;
+                        /** Format: uuid */
+                        patient_id: string;
+                        categories: {
+                            id: string;
+                            label: string;
+                            /** @enum {string} */
+                            section: "administrative" | "clinical";
+                            types: {
+                                id: string;
+                                label: string;
+                            }[];
+                        }[];
+                        appointments: {
+                            /** Format: uuid */
+                            id: string;
+                            label: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    DocumentLibraryController_startUpload: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    metadata: {
+                        category: string;
+                        type: string;
+                        /** @default  */
+                        title: string;
+                        /**
+                         * Format: date
+                         * @default null
+                         */
+                        document_date: string | null;
+                        /** @default  */
+                        notes: string;
+                        /**
+                         * Format: uuid
+                         * @default null
+                         */
+                        related_appointment_id: string | null;
+                    };
+                    original_name: string;
+                    /** @enum {string} */
+                    content_type: "application/pdf" | "image/jpeg" | "image/png";
+                    size_bytes: number;
+                    sha256: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {number} */
+                        schema_version: 1;
+                        /** Format: uuid */
+                        clinic_id: string;
+                        /** Format: uuid */
+                        patient_id: string;
+                        /** Format: uuid */
+                        request_key: string;
+                        /** Format: uri */
+                        upload_url: string;
+                        ticket: string;
+                        /** @enum {number} */
+                        expires_in: 1800;
+                    };
+                };
+            };
+        };
+    };
+    DocumentLibraryController_finishUpload: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    ticket: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        item: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            clinic_id: string;
+                            /** Format: uuid */
+                            patient_id: string;
+                            category: string;
+                            type: string;
+                            title: string;
+                            /** Format: date */
+                            document_date: string | null;
+                            notes: string;
+                            /** Format: uuid */
+                            related_appointment_id: string | null;
+                            /** @enum {string} */
+                            content_type: "application/pdf" | "image/jpeg" | "image/png";
+                            size_bytes: number;
+                            /** Format: date-time */
+                            created_at: string;
+                            uploaded_by: string;
+                            version: number;
+                            can_edit: boolean;
+                            can_delete: boolean;
+                        };
+                        replayed: boolean;
+                    };
+                };
+            };
+        };
+    };
+    DocumentLibraryController_upload: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                    /** @description JSON matching LibraryMetadataSchema */
+                    metadata: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        item: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            clinic_id: string;
+                            /** Format: uuid */
+                            patient_id: string;
+                            category: string;
+                            type: string;
+                            title: string;
+                            /** Format: date */
+                            document_date: string | null;
+                            notes: string;
+                            /** Format: uuid */
+                            related_appointment_id: string | null;
+                            /** @enum {string} */
+                            content_type: "application/pdf" | "image/jpeg" | "image/png";
+                            size_bytes: number;
+                            /** Format: date-time */
+                            created_at: string;
+                            uploaded_by: string;
+                            version: number;
+                            can_edit: boolean;
+                            can_delete: boolean;
+                        };
+                        replayed: boolean;
+                    };
+                };
+            };
+        };
+    };
+    DocumentLibraryController_archive: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                patientId: string;
+                documentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    expected_version: number;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        clinic_id: string;
+                        /** Format: uuid */
+                        patient_id: string;
+                        /** @enum {boolean} */
+                        deleted: true;
+                        replayed: boolean;
+                    };
+                };
+            };
+            /** @description Stale metadata version or idempotency conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    DocumentLibraryController_update: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                patientId: string;
+                documentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    expected_version: number;
+                    metadata: Record<string, never>;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        item: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            clinic_id: string;
+                            /** Format: uuid */
+                            patient_id: string;
+                            category: string;
+                            type: string;
+                            title: string;
+                            /** Format: date */
+                            document_date: string | null;
+                            notes: string;
+                            /** Format: uuid */
+                            related_appointment_id: string | null;
+                            /** @enum {string} */
+                            content_type: "application/pdf" | "image/jpeg" | "image/png";
+                            size_bytes: number;
+                            /** Format: date-time */
+                            created_at: string;
+                            uploaded_by: string;
+                            version: number;
+                            can_edit: boolean;
+                            can_delete: boolean;
+                        };
+                        replayed: boolean;
+                    };
+                };
+            };
+            /** @description Stale metadata version or idempotency conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StagingCleanupController_run: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    DemoFakeInboxController_receive: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Demo-Signature": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    provider_event_id: string;
+                    conversation_ref: string;
+                    sequence: number;
+                    /** Format: date-time */
+                    occurred_at: string;
+                    /** @enum {string} */
+                    kind: "message.inbound";
+                    message_ref: string;
+                    /** @enum {string} */
+                    text: "Bonjour, le cabinet est-il ouvert samedi ?" | "Bonjour, puis-je déplacer mon rendez-vous ?" | "Bonjour, je souhaite connaître les horaires.";
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {boolean} */
+                        accepted: true;
+                        /** @enum {string} */
+                        disposition: "recorded-inbound" | "duplicate-event" | "duplicate-message";
+                    };
+                };
+            };
+        };
+    };
+    DemoFakeInboxController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            conversation_ref: string;
+                            message_ref: string;
+                            sequence: number;
+                            /** @enum {string} */
+                            text: "Bonjour, le cabinet est-il ouvert samedi ?" | "Bonjour, puis-je déplacer mon rendez-vous ?" | "Bonjour, je souhaite connaître les horaires.";
+                            /** Format: date-time */
+                            occurred_at: string;
+                            /** Format: date-time */
+                            received_at: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    InquiryContactOutcomeController_list: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        clinic_id: string;
+                        /** Format: uuid */
+                        inquiry_id: string;
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            clinic_id: string;
+                            /** Format: uuid */
+                            inquiry_id: string;
+                            /** @enum {string} */
+                            outcome: "attempted_no_answer" | "reached" | "requested_callback" | "declined" | "unable_to_proceed";
+                            /** Format: date-time */
+                            recorded_at: string;
+                            /** @enum {number} */
+                            event_version: 1;
+                        }[];
+                        truncated: boolean;
+                    };
+                };
+            };
+            /** @description Invalid request, query, identifier or key */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Current active inquiry owner with permitted same-clinic role required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Absent or foreign inquiry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Contact outcome history disabled pending privacy/retention review; provider failures are generic */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    InquiryContactOutcomeController_record: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    outcome: "attempted_no_answer" | "reached" | "requested_callback" | "declined" | "unable_to_proceed";
+                };
+            };
+        };
+        responses: {
+            /** @description Exact idempotent replay */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        item: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            clinic_id: string;
+                            /** Format: uuid */
+                            inquiry_id: string;
+                            /** @enum {string} */
+                            outcome: "attempted_no_answer" | "reached" | "requested_callback" | "declined" | "unable_to_proceed";
+                            /** Format: date-time */
+                            recorded_at: string;
+                            /** @enum {number} */
+                            event_version: 1;
+                        };
+                        replayed: boolean;
+                    };
+                };
+            };
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        item: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            clinic_id: string;
+                            /** Format: uuid */
+                            inquiry_id: string;
+                            /** @enum {string} */
+                            outcome: "attempted_no_answer" | "reached" | "requested_callback" | "declined" | "unable_to_proceed";
+                            /** Format: date-time */
+                            recorded_at: string;
+                            /** @enum {number} */
+                            event_version: 1;
+                        };
+                        replayed: boolean;
+                    };
+                };
+            };
+            /** @description Invalid request, query, identifier or key */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Current active inquiry owner with permitted same-clinic role required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Absent or foreign inquiry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Same scoped key with different payload */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Contact outcome history disabled pending privacy/retention review; provider failures are generic */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    InquiryOwnerReassignmentController_assign: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    expected_owner_user_id: string;
+                    /** Format: uuid */
+                    owner_user_id: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Original receipt returned for an identical replay */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        receipt: {
+                            /** Format: uuid */
+                            inquiry_id: string;
+                            /** Format: uuid */
+                            clinic_id: string;
+                            /** Format: uuid */
+                            previous_owner_user_id: string;
+                            /** Format: uuid */
+                            owner_user_id: string;
+                            changed: boolean;
+                            /** Format: date-time */
+                            recorded_at: string;
+                            /** @enum {number} */
+                            event_version: 1;
+                        };
+                        replayed: boolean;
+                    };
+                };
+            };
+            /** @description Invalid request, query, identifier or key */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Active manager and eligible target membership required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Absent or foreign inquiry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Stale owner or idempotency conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Commands disabled or provider unavailable */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -2984,7 +5887,7 @@ export interface operations {
                         observed_at: string;
                         items: {
                             /** @enum {string} */
-                            kind: "inquiry_created" | "inquiry_follow_up_recorded" | "slot_hold_created" | "slot_hold_released";
+                            kind: "inquiry_created" | "inquiry_follow_up_recorded" | "slot_hold_created" | "slot_hold_released" | "patient_profile_viewed" | "inquiry_follow_up_schedule_changed" | "inquiry_planned_action_changed" | "inquiry_owner_reassigned";
                             actor_display_name: string | null;
                             /** Format: date-time */
                             occurred_at: string;
@@ -3020,6 +5923,2239 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    TeamAccessController_list: {
+        parameters: {
+            query?: {
+                cursor?: unknown;
+                q?: unknown;
+            };
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {number} */
+                        schema_version: 1;
+                        /** Format: uuid */
+                        clinic_id: string;
+                        /** Format: uuid */
+                        current_user_id: string;
+                        items: {
+                            /** Format: uuid */
+                            user_id: string;
+                            display_name: string;
+                            /** Format: email */
+                            email: string;
+                            roles: ("dentist" | "reception" | "assistant" | "manager")[];
+                            active: boolean;
+                            version: number;
+                            /** Format: date-time */
+                            created_at: string;
+                        }[];
+                        next_cursor: string | null;
+                        /** @enum {string} */
+                        clinical_role_notice: "Clinical roles grant application access only; they do not verify professional qualifications.";
+                    };
+                };
+            };
+            /** @description Absent or expired identity */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Active same-clinic manager membership required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Local loopback gate disabled or backend unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TeamAccessController_create: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    display_name: string;
+                    /** Format: email */
+                    email: string;
+                    temporary_password: string;
+                    roles: ("dentist" | "reception" | "assistant" | "manager")[];
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        clinic_id: string;
+                        member: {
+                            /** Format: uuid */
+                            user_id: string;
+                            display_name: string;
+                            /** Format: email */
+                            email: string;
+                            roles: ("dentist" | "reception" | "assistant" | "manager")[];
+                            active: boolean;
+                            version: number;
+                            /** Format: date-time */
+                            created_at: string;
+                        };
+                        replayed: boolean;
+                        /** @enum {string} */
+                        clinical_role_notice: "Clinical roles grant application access only; they do not verify professional qualifications.";
+                    };
+                };
+            };
+            /** @description Invalid body or idempotency key */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Absent or expired identity */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Active same-clinic manager membership required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Email reserved or idempotency conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Local loopback gate disabled or backend unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TeamAccessController_update: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    expected_version: number;
+                    roles: ("dentist" | "reception" | "assistant" | "manager")[];
+                    active: boolean;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        clinic_id: string;
+                        member: {
+                            /** Format: uuid */
+                            user_id: string;
+                            display_name: string;
+                            /** Format: email */
+                            email: string;
+                            roles: ("dentist" | "reception" | "assistant" | "manager")[];
+                            active: boolean;
+                            version: number;
+                            /** Format: date-time */
+                            created_at: string;
+                        };
+                        replayed: boolean;
+                        /** @enum {string} */
+                        clinical_role_notice: "Clinical roles grant application access only; they do not verify professional qualifications.";
+                    };
+                };
+            };
+            /** @description Invalid body or idempotency key */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Absent or expired identity */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Active same-clinic manager membership required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Team member unavailable */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Stale version, last manager, or idempotency conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Local loopback gate disabled or backend unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BookingRequestsController_configuredAvailability: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BookingRequestsController_configuredList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BookingRequestsController_configuredRequest: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BookingRequestsController_demoStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BookingRequestsController_confirmConfigured: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BookingRequestsController_availability: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BookingRequestsController_create: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BookingRequestsController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BookingRequestsController_confirmDemo: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AgendaSettingsController_availability: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AgendaSettingsController_read: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AgendaSettingsController_save: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    LocalInstallmentsController_list: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        clinic_id: string;
+                        /** Format: uuid */
+                        patient_id: string;
+                        /** @enum {boolean} */
+                        synthetic_only: true;
+                        can_write: boolean;
+                        truncated: boolean;
+                        items: {
+                            /** Format: uuid */
+                            plan_id: string;
+                            latest_version: number;
+                            accepted_version: number | null;
+                            agreed_minor: number;
+                            /** @enum {string} */
+                            currency_code: "MAD";
+                            /** @enum {string} */
+                            status: "draft" | "approved" | "accepted";
+                            /** Format: date-time */
+                            created_at: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    LocalInstallmentsController_save: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    plan_id: string | null;
+                    expected_version: number;
+                    reason: string;
+                    invoices: {
+                        /** Format: uuid */
+                        invoice_id: string;
+                        deposit_minor: number;
+                        credited_minor: number;
+                    }[];
+                    lines: {
+                        /** Format: uuid */
+                        invoice_id: string;
+                        /** Format: date */
+                        due_on: string;
+                        amount_minor: number;
+                    }[];
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        plan_id: string;
+                        /** Format: uuid */
+                        patient_id: string;
+                        version: number;
+                        agreed_minor: number;
+                        /** @enum {string} */
+                        currency_code: "MAD";
+                        /** @enum {string} */
+                        status: "draft";
+                        /** @enum {boolean} */
+                        synthetic_only: true;
+                        replayed: boolean;
+                    };
+                };
+            };
+        };
+    };
+    LocalInstallmentsController_detail: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path: {
+                patientId: string;
+                planId: string;
+                version: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        clinic_id: string;
+                        /** Format: uuid */
+                        patient_id: string;
+                        /** Format: uuid */
+                        plan_id: string;
+                        latest_version: number;
+                        accepted_version: number | null;
+                        version: number;
+                        agreed_minor: number;
+                        /** @enum {string} */
+                        currency_code: "MAD";
+                        reason: string;
+                        /** Format: uuid */
+                        created_by: string;
+                        /** Format: date-time */
+                        created_at: string;
+                        snapshot: {
+                            /** @enum {number} */
+                            schema_version: 1;
+                            /** @enum {boolean} */
+                            synthetic_only: true;
+                            /** @enum {string} */
+                            deposit_treatment: "net_allocations_at_version";
+                            /** @enum {string} */
+                            credit_treatment: "posted_credits_at_version";
+                            invoices: {
+                                /** Format: uuid */
+                                invoice_id: string;
+                                deposit_minor: number;
+                                credited_minor: number;
+                                number: string;
+                                total_minor: number;
+                                scheduled_minor: number;
+                            }[];
+                        };
+                        lines: {
+                            /** Format: uuid */
+                            invoice_id: string;
+                            /** Format: date */
+                            due_on: string;
+                            amount_minor: number;
+                            /** Format: uuid */
+                            line_id: string;
+                        }[];
+                        events: {
+                            /** @enum {string} */
+                            action: "approved" | "accepted";
+                            /** Format: uuid */
+                            actor_ref: string;
+                            reference: string;
+                            /** Format: date-time */
+                            created_at: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    LocalInstallmentsController_balances: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path: {
+                patientId: string;
+                planId: string;
+                version: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        clinic_id: string;
+                        /** Format: uuid */
+                        patient_id: string;
+                        /** Format: uuid */
+                        plan_id: string;
+                        version: number;
+                        active: boolean;
+                        /** Format: date */
+                        as_of_date: string;
+                        /** @enum {string} */
+                        time_zone: "Africa/Casablanca";
+                        /** @enum {boolean} */
+                        synthetic_only: true;
+                        requires_revision: boolean;
+                        invoices: {
+                            /** Format: uuid */
+                            invoice_id: string;
+                            invoice_remaining_minor: number;
+                            scheduled_remaining_minor: number;
+                            requires_revision: boolean;
+                        }[];
+                        lines: {
+                            /** Format: uuid */
+                            line_id: string;
+                            /** Format: uuid */
+                            invoice_id: string;
+                            /** Format: date */
+                            due_on: string;
+                            amount_minor: number;
+                            paid_minor: number;
+                            remaining_minor: number;
+                            /** @enum {string} */
+                            payment_state: "unpaid" | "partial" | "paid";
+                            overdue: boolean;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    LocalInstallmentsController_allocate: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                patientId: string;
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    version: number;
+                    /** Format: uuid */
+                    line_id: string;
+                    /** Format: uuid */
+                    payment_id: string;
+                    amount_minor: number;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        allocation_id: string;
+                        /** Format: uuid */
+                        payment_id: string;
+                        /** Format: uuid */
+                        patient_id: string;
+                        /** Format: uuid */
+                        invoice_id: string;
+                        amount_minor: number;
+                        /** @enum {string} */
+                        currency_code: "MAD";
+                        payment_unapplied_minor: number;
+                        invoice_remaining_minor: number;
+                        /** @enum {boolean} */
+                        synthetic_only: true;
+                        replayed: boolean;
+                        /** Format: uuid */
+                        plan_id: string;
+                        version: number;
+                        /** Format: uuid */
+                        line_id: string;
+                        line_paid_minor: number;
+                        line_remaining_minor: number;
+                    };
+                };
+            };
+        };
+    };
+    LocalInstallmentsController_transition: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                patientId: string;
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    version: number;
+                    /** @enum {string} */
+                    action: "approved" | "accepted";
+                    reference: string;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        plan_id: string;
+                        /** Format: uuid */
+                        patient_id: string;
+                        version: number;
+                        /** @enum {string} */
+                        status: "approved" | "accepted";
+                        /** @enum {boolean} */
+                        synthetic_only: true;
+                        replayed: boolean;
+                    };
+                };
+            };
+        };
+    };
+    LocalInstallmentRemindersController_list: {
+        parameters: {
+            query?: {
+                /** @description Literal substring search across patient name and reference; outer whitespace is trimmed. */
+                q?: string;
+                /** @description Cursor line UUID; must accompany after_due. */
+                after_id?: string;
+                /** @description Cursor due date; must accompany after_id. */
+                after_due?: string;
+            };
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        clinic_id: string;
+                        /** @enum {boolean} */
+                        synthetic_only: true;
+                        /** Format: date */
+                        as_of_date: string;
+                        /** @enum {string} */
+                        time_zone: "Africa/Casablanca";
+                        /** @enum {string} */
+                        currency_code: "MAD";
+                        items: {
+                            /** Format: uuid */
+                            line_id: string;
+                            /** Format: uuid */
+                            plan_id: string;
+                            version: number;
+                            /** Format: uuid */
+                            invoice_id: string;
+                            /** Format: uuid */
+                            patient_id: string;
+                            patient_name: string;
+                            patient_reference: string;
+                            /** Format: date */
+                            due_on: string;
+                            amount_minor: number;
+                            paid_minor: number;
+                            remaining_minor: number;
+                            overdue: boolean;
+                            requires_revision: boolean;
+                        }[];
+                        next_cursor: {
+                            /** Format: date */
+                            due_on: string;
+                            /** Format: uuid */
+                            line_id: string;
+                        } | null;
+                    };
+                };
+            };
+        };
+    };
+    LocalPaymentConfigurationController_read: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        clinic_id: string;
+                        /** @enum {boolean} */
+                        synthetic_only: true;
+                        accounts: {
+                            /** Format: uuid */
+                            id: string;
+                            version: number;
+                            label: string;
+                            /** @enum {string} */
+                            kind: "cash_drawer" | "bank" | "clearing";
+                            active: boolean;
+                        }[];
+                        methods: {
+                            /** Format: uuid */
+                            id: string;
+                            version: number;
+                            code: string;
+                            label: string;
+                            /** @enum {string} */
+                            kind: "cash" | "card_terminal" | "bank_transfer" | "cheque" | "custom";
+                            reference_required: boolean;
+                            /** @enum {string} */
+                            settlement_behavior: "at_confirmation" | "separate_verification";
+                            receiving_account: {
+                                /** Format: uuid */
+                                id: string;
+                                label: string;
+                                /** @enum {string} */
+                                kind: "cash_drawer" | "bank" | "clearing";
+                            };
+                            active: boolean;
+                            destination_active: boolean;
+                        }[];
+                        accounts_truncated: boolean;
+                        methods_truncated: boolean;
+                    };
+                };
+            };
+        };
+    };
+    LocalPaymentConfigurationController_account: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    label: string;
+                    /** @enum {string} */
+                    kind: "cash_drawer" | "bank" | "clearing";
+                    active: boolean;
+                    /** Format: uuid */
+                    account_id: string | null;
+                    expected_version: number;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        version: number;
+                        label: string;
+                        /** @enum {string} */
+                        kind: "cash_drawer" | "bank" | "clearing";
+                        active: boolean;
+                        /** Format: uuid */
+                        account_id: string;
+                        /** @enum {boolean} */
+                        synthetic_only: true;
+                        replayed: boolean;
+                    };
+                };
+            };
+        };
+    };
+    LocalPaymentConfigurationController_method: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    code: string;
+                    label: string;
+                    /** @enum {string} */
+                    kind: "cash" | "card_terminal" | "bank_transfer" | "cheque" | "custom";
+                    reference_required: boolean;
+                    /** @enum {string} */
+                    settlement_behavior: "at_confirmation" | "separate_verification";
+                    /** Format: uuid */
+                    method_id: string | null;
+                    expected_version: number;
+                    active: boolean;
+                    /** Format: uuid */
+                    receiving_account_id: string;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        version: number;
+                        code: string;
+                        label: string;
+                        /** @enum {string} */
+                        kind: "cash" | "card_terminal" | "bank_transfer" | "cheque" | "custom";
+                        reference_required: boolean;
+                        /** @enum {string} */
+                        settlement_behavior: "at_confirmation" | "separate_verification";
+                        receiving_account: {
+                            /** Format: uuid */
+                            id: string;
+                            label: string;
+                            /** @enum {string} */
+                            kind: "cash_drawer" | "bank" | "clearing";
+                        };
+                        /** Format: uuid */
+                        method_id: string;
+                        active: boolean;
+                        /** @enum {boolean} */
+                        synthetic_only: true;
+                        replayed: boolean;
+                    };
+                };
+            };
+        };
+    };
+    QuoteDraftsController_services: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {boolean} */
+                        synthetic_only: true;
+                        items: {
+                            /** Format: uuid */
+                            service_id: string;
+                            code: string;
+                            label: string;
+                            category: string | null;
+                            archived: boolean;
+                            price_version: number;
+                            unit_amount_minor: number;
+                            /** @enum {string} */
+                            currency_code: "MAD";
+                            /** Format: date-time */
+                            effective_at: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    QuoteDraftsController_saveService: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    service_id: string | null;
+                    expected_version: number;
+                    code: string;
+                    label: string;
+                    category: string | null;
+                    archived: boolean;
+                    unit_amount_minor: number;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        service_id: string;
+                        code: string;
+                        label: string;
+                        category: string | null;
+                        archived: boolean;
+                        price_version: number;
+                        unit_amount_minor: number;
+                        /** @enum {string} */
+                        currency_code: "MAD";
+                        /** Format: date-time */
+                        effective_at: string;
+                        replayed: boolean;
+                    };
+                };
+            };
+        };
+    };
+    QuoteDraftsController_catalog: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {boolean} */
+                        synthetic_only: true;
+                        items: {
+                            /** Format: uuid */
+                            service_id: string;
+                            label: string;
+                            price_version: number;
+                            unit_amount_minor: number;
+                            /** @enum {string} */
+                            currency_code: "MAD";
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    QuoteDraftsController_create: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    lines: {
+                        /** Format: uuid */
+                        service_id: string;
+                        price_version: number;
+                        quantity: number;
+                    }[];
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        quote_id: string;
+                        /** Format: uuid */
+                        patient_id: string;
+                        /** @enum {number} */
+                        version: 1;
+                        /** @enum {string} */
+                        state: "draft";
+                        /** @enum {string} */
+                        currency_code: "MAD";
+                        total_minor: number;
+                        replayed: boolean;
+                    };
+                };
+            };
+        };
+    };
+    QuoteDraftsController_revise: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                patientId: string;
+                quoteId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    expected_version: number;
+                    lines: {
+                        /** Format: uuid */
+                        service_id: string;
+                        price_version: number;
+                        quantity: number;
+                    }[];
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        quote_id: string;
+                        /** Format: uuid */
+                        patient_id: string;
+                        version: number;
+                        /** @enum {string} */
+                        state: "draft";
+                        /** @enum {string} */
+                        currency_code: "MAD";
+                        total_minor: number;
+                        replayed: boolean;
+                    };
+                };
+            };
+        };
+    };
+    LocalInvoicesController_list: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {boolean} */
+                        synthetic_only: true;
+                        items: {
+                            /** Format: uuid */
+                            invoice_id: string;
+                            /** Format: uuid */
+                            patient_id: string;
+                            /** Format: uuid */
+                            quote_id: string;
+                            quote_version: number;
+                            /** @enum {string} */
+                            state: "draft" | "issued";
+                            number: string | null;
+                            /** Format: date-time */
+                            issued_at: string | null;
+                            /** Format: date-time */
+                            created_at: string;
+                            total_minor: number;
+                            /** @enum {string} */
+                            currency_code: "MAD";
+                            snapshot: {
+                                /** @enum {number} */
+                                schema_version: 1;
+                                /** @enum {boolean} */
+                                synthetic_only: true;
+                                clinic: {
+                                    /** Format: uuid */
+                                    id: string;
+                                    name: string;
+                                };
+                                patient: {
+                                    /** Format: uuid */
+                                    id: string;
+                                    reference: string;
+                                    display_name: string;
+                                };
+                                payer: {
+                                    /** Format: uuid */
+                                    id: string;
+                                    reference: string;
+                                    display_name: string;
+                                };
+                                /** @enum {string} */
+                                payer_basis: "patient_self_synthetic_fixture";
+                                quote: {
+                                    /** Format: uuid */
+                                    id: string;
+                                    version: number;
+                                    /** @enum {string} */
+                                    state: "draft";
+                                    /** @enum {string} */
+                                    currency_code: "MAD";
+                                    total_minor: number;
+                                    details: {
+                                        subtotal_minor: number;
+                                        discount_minor: number;
+                                        tax_minor: number;
+                                        /** Format: date */
+                                        valid_until: string | null;
+                                        lines: {
+                                            line_number: number;
+                                            label: string;
+                                            quantity: number;
+                                            unit_amount_minor: number;
+                                            subtotal_minor: number;
+                                            discount_minor: number;
+                                            tax_minor: number;
+                                            total_minor: number;
+                                            /** Format: uuid */
+                                            service_id?: string;
+                                            price_version?: number;
+                                        }[];
+                                    };
+                                };
+                                /** @enum {string} */
+                                disclaimer: "LOCAL SYNTHETIC DOCUMENT - NOT A STATUTORY INVOICE";
+                            };
+                        }[];
+                        truncated: boolean;
+                    };
+                };
+            };
+        };
+    };
+    LocalInvoicesController_prepare: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    quote_id: string;
+                    quote_version: number;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        invoice_id: string;
+                        /** Format: uuid */
+                        patient_id: string;
+                        total_minor: number;
+                        /** @enum {string} */
+                        currency_code: "MAD";
+                        /** @enum {boolean} */
+                        synthetic_only: true;
+                        replayed: boolean;
+                        /** Format: uuid */
+                        quote_id: string;
+                        quote_version: number;
+                        /** @enum {string} */
+                        state: "draft";
+                    };
+                };
+            };
+        };
+    };
+    LocalInvoicesController_creditContext: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path: {
+                patientId: string;
+                invoiceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        clinic_id: string;
+                        /** Format: uuid */
+                        patient_id: string;
+                        /** Format: uuid */
+                        invoice_id: string;
+                        number: string;
+                        /** @enum {boolean} */
+                        synthetic_only: true;
+                        can_credit: boolean;
+                        total_minor: number;
+                        /** @enum {string} */
+                        currency_code: "MAD";
+                        credited_minor: number;
+                        creditable_minor: number;
+                        allocated_minor: number;
+                        remaining_minor: number;
+                        overpaid_minor: number;
+                        credits_truncated: boolean;
+                        credits: {
+                            /** Format: uuid */
+                            credit_id: string;
+                            number: string;
+                            amount_minor: number;
+                            reason: string;
+                            /** Format: date-time */
+                            issued_at: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    LocalInvoicesController_postCredit: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                patientId: string;
+                invoiceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    amount_minor: number;
+                    reason: string;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        credit_id: string;
+                        /** Format: uuid */
+                        patient_id: string;
+                        /** Format: uuid */
+                        invoice_id: string;
+                        number: string;
+                        amount_minor: number;
+                        /** @enum {string} */
+                        currency_code: "MAD";
+                        credited_minor: number;
+                        invoice_remaining_minor: number;
+                        invoice_overpaid_minor: number;
+                        /** Format: date-time */
+                        issued_at: string;
+                        /** @enum {boolean} */
+                        synthetic_only: true;
+                        replayed: boolean;
+                    };
+                };
+            };
+        };
+    };
+    LocalInvoicesController_creditDocument: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path: {
+                patientId: string;
+                invoiceId: string;
+                creditId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        credit_id: string;
+                        number: string;
+                        amount_minor: number;
+                        reason: string;
+                        /** Format: date-time */
+                        issued_at: string;
+                        /** Format: uuid */
+                        patient_id: string;
+                        /** Format: uuid */
+                        invoice_id: string;
+                        /** @enum {string} */
+                        currency_code: "MAD";
+                        snapshot: {
+                            /** @enum {number} */
+                            schema_version: 1;
+                            /** @enum {boolean} */
+                            synthetic_only: true;
+                            /** Format: uuid */
+                            invoice_id: string;
+                            invoice_number: string;
+                            invoice_total_minor: number;
+                            invoice_snapshot: {
+                                /** @enum {number} */
+                                schema_version: 1;
+                                /** @enum {boolean} */
+                                synthetic_only: true;
+                                clinic: {
+                                    /** Format: uuid */
+                                    id: string;
+                                    name: string;
+                                };
+                                patient: {
+                                    /** Format: uuid */
+                                    id: string;
+                                    reference: string;
+                                    display_name: string;
+                                };
+                                payer: {
+                                    /** Format: uuid */
+                                    id: string;
+                                    reference: string;
+                                    display_name: string;
+                                };
+                                /** @enum {string} */
+                                payer_basis: "patient_self_synthetic_fixture";
+                                quote: {
+                                    /** Format: uuid */
+                                    id: string;
+                                    version: number;
+                                    /** @enum {string} */
+                                    state: "draft";
+                                    /** @enum {string} */
+                                    currency_code: "MAD";
+                                    total_minor: number;
+                                    details: {
+                                        subtotal_minor: number;
+                                        discount_minor: number;
+                                        tax_minor: number;
+                                        /** Format: date */
+                                        valid_until: string | null;
+                                        lines: {
+                                            line_number: number;
+                                            label: string;
+                                            quantity: number;
+                                            unit_amount_minor: number;
+                                            subtotal_minor: number;
+                                            discount_minor: number;
+                                            tax_minor: number;
+                                            total_minor: number;
+                                            /** Format: uuid */
+                                            service_id?: string;
+                                            price_version?: number;
+                                        }[];
+                                    };
+                                };
+                                /** @enum {string} */
+                                disclaimer: "LOCAL SYNTHETIC DOCUMENT - NOT A STATUTORY INVOICE";
+                            };
+                            /** Format: uuid */
+                            patient_id: string;
+                            amount_minor: number;
+                            /** @enum {string} */
+                            currency_code: "MAD";
+                            reason: string;
+                            prior_credited_minor: number;
+                            /** @enum {string} */
+                            disclaimer: "LOCAL SYNTHETIC CREDIT - NOT A STATUTORY DOCUMENT";
+                        };
+                    };
+                };
+            };
+        };
+    };
+    LocalInvoicesController_issue: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                patientId: string;
+                invoiceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": Record<string, never>;
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        invoice_id: string;
+                        /** Format: uuid */
+                        patient_id: string;
+                        total_minor: number;
+                        /** @enum {string} */
+                        currency_code: "MAD";
+                        /** @enum {boolean} */
+                        synthetic_only: true;
+                        replayed: boolean;
+                        /** @enum {string} */
+                        state: "issued";
+                        number: string;
+                        /** Format: date-time */
+                        issued_at: string;
+                    };
+                };
+            };
+        };
+    };
+    LocalPaymentsController_list: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        clinic_id: string;
+                        /** Format: uuid */
+                        patient_id: string;
+                        /** @enum {boolean} */
+                        synthetic_only: true;
+                        payments: {
+                            /** Format: uuid */
+                            payment_id: string;
+                            /** Format: uuid */
+                            patient_id: string;
+                            version: number;
+                            /** @enum {string} */
+                            state: "pending" | "confirmed" | "failed";
+                            /** @enum {string} */
+                            settlement: "pending" | "settled" | "failed";
+                            amount_minor: number;
+                            /** @enum {string} */
+                            currency_code: "MAD";
+                            reference: string | null;
+                            /** Format: date-time */
+                            effective_at: string;
+                            /** Format: date-time */
+                            created_at: string;
+                            method: {
+                                /** Format: uuid */
+                                id: string;
+                                version: number;
+                                code: string;
+                                label: string;
+                                /** @enum {string} */
+                                kind: "cash" | "card_terminal" | "bank_transfer" | "cheque" | "custom";
+                                reference_required: boolean;
+                                /** @enum {string} */
+                                settlement_behavior: "at_confirmation" | "separate_verification";
+                                receiving_account: {
+                                    /** Format: uuid */
+                                    id: string;
+                                    label: string;
+                                    /** @enum {string} */
+                                    kind: "cash_drawer" | "bank" | "clearing";
+                                };
+                            };
+                            payer: {
+                                /** Format: uuid */
+                                id: string;
+                                reference: string;
+                                display_name: string;
+                            };
+                            /** @enum {string} */
+                            payer_basis: "patient_self_synthetic_fixture";
+                            refunded_minor: number;
+                            allocated_minor: number;
+                            unallocated_minor: number;
+                            available_minor: number;
+                            receipt: {
+                                /** Format: uuid */
+                                receipt_id: string;
+                                number: string;
+                                /** Format: date-time */
+                                issued_at: string;
+                            } | null;
+                        }[];
+                        invoices: {
+                            /** Format: uuid */
+                            invoice_id: string;
+                            /** Format: uuid */
+                            patient_id: string;
+                            number: string;
+                            total_minor: number;
+                            /** @enum {string} */
+                            currency_code: "MAD";
+                            allocated_minor: number;
+                            credited_minor: number;
+                            remaining_minor: number;
+                            overpaid_minor: number;
+                        }[];
+                        methods: {
+                            /** Format: uuid */
+                            id: string;
+                            version: number;
+                            code: string;
+                            label: string;
+                            /** @enum {string} */
+                            kind: "cash" | "card_terminal" | "bank_transfer" | "cheque" | "custom";
+                            reference_required: boolean;
+                            /** @enum {string} */
+                            settlement_behavior: "at_confirmation" | "separate_verification";
+                            receiving_account: {
+                                /** Format: uuid */
+                                id: string;
+                                label: string;
+                                /** @enum {string} */
+                                kind: "cash_drawer" | "bank" | "clearing";
+                            };
+                        }[];
+                        payments_truncated: boolean;
+                        invoices_truncated: boolean;
+                        methods_truncated: boolean;
+                    };
+                };
+            };
+        };
+    };
+    LocalPaymentsController_record: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    method_id: string;
+                    method_version: number;
+                    amount_minor: number;
+                    /** @enum {string} */
+                    currency_code: "MAD";
+                    /** Format: date-time */
+                    effective_at: string;
+                    reference: string | null;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        payment_id: string;
+                        /** Format: uuid */
+                        patient_id: string;
+                        amount_minor: number;
+                        /** @enum {string} */
+                        currency_code: "MAD";
+                        /** @enum {boolean} */
+                        synthetic_only: true;
+                        replayed: boolean;
+                        version: number;
+                        /** @enum {string} */
+                        state: "pending" | "confirmed" | "failed";
+                        /** @enum {string} */
+                        settlement: "pending" | "settled" | "failed";
+                    };
+                };
+            };
+        };
+    };
+    LocalPaymentsController_refundContext: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path: {
+                patientId: string;
+                paymentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        clinic_id: string;
+                        /** Format: uuid */
+                        patient_id: string;
+                        /** Format: uuid */
+                        payment_id: string;
+                        /** @enum {boolean} */
+                        synthetic_only: true;
+                        can_refund: boolean;
+                        /** @enum {string} */
+                        state: "pending" | "confirmed" | "failed";
+                        /** @enum {string} */
+                        settlement: "pending" | "settled" | "failed";
+                        amount_minor: number;
+                        /** @enum {string} */
+                        currency_code: "MAD";
+                        refunded_minor: number;
+                        net_paid_minor: number;
+                        allocated_minor: number;
+                        unallocated_minor: number;
+                        allocations_truncated: boolean;
+                        refunds_truncated: boolean;
+                        allocations: {
+                            /** Format: uuid */
+                            allocation_id: string;
+                            /** Format: uuid */
+                            invoice_id: string;
+                            invoice_number: string;
+                            amount_minor: number;
+                            released_minor: number;
+                            remaining_minor: number;
+                        }[];
+                        refunds: {
+                            /** Format: uuid */
+                            refund_id: string;
+                            /** @enum {string} */
+                            kind: "refund" | "reversal";
+                            amount_minor: number;
+                            reason: string;
+                            reference: string;
+                            /** Format: date-time */
+                            effective_at: string;
+                            /** Format: date-time */
+                            created_at: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    LocalPaymentsController_refund: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                patientId: string;
+                paymentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    kind: "refund" | "reversal";
+                    amount_minor: number;
+                    reason: string;
+                    reference: string;
+                    /** Format: date-time */
+                    effective_at: string;
+                    /** @enum {boolean} */
+                    verified: true;
+                    releases: {
+                        /** Format: uuid */
+                        allocation_id: string;
+                        amount_minor: number;
+                    }[];
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        refund_id: string;
+                        /** Format: uuid */
+                        patient_id: string;
+                        /** Format: uuid */
+                        payment_id: string;
+                        /** @enum {string} */
+                        kind: "refund" | "reversal";
+                        amount_minor: number;
+                        /** @enum {string} */
+                        currency_code: "MAD";
+                        refunded_minor: number;
+                        net_paid_minor: number;
+                        released_minor: number;
+                        /** @enum {boolean} */
+                        synthetic_only: true;
+                        replayed: boolean;
+                    };
+                };
+            };
+        };
+    };
+    LocalPaymentsController_document: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+            };
+            path: {
+                patientId: string;
+                paymentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        receipt_id: string;
+                        number: string;
+                        /** Format: date-time */
+                        issued_at: string;
+                        /** Format: uuid */
+                        patient_id: string;
+                        /** Format: uuid */
+                        payment_id: string;
+                        snapshot: {
+                            schema_version: 1 | 2;
+                            /** @enum {boolean} */
+                            synthetic_only: true;
+                            clinic: {
+                                /** Format: uuid */
+                                id: string;
+                                name: string;
+                            };
+                            /** Format: uuid */
+                            payment_id: string;
+                            /** Format: uuid */
+                            patient_id: string;
+                            payer: {
+                                /** Format: uuid */
+                                id: string;
+                                reference: string;
+                                display_name: string;
+                            };
+                            /** @enum {string} */
+                            payer_basis: "patient_self_synthetic_fixture";
+                            method: {
+                                /** Format: uuid */
+                                id: string;
+                                version: number;
+                                code: string;
+                                label: string;
+                                /** @enum {string} */
+                                kind: "cash" | "card_terminal" | "bank_transfer" | "cheque" | "custom";
+                                reference_required: boolean;
+                                /** @enum {string} */
+                                settlement_behavior: "at_confirmation" | "separate_verification";
+                                receiving_account: {
+                                    /** Format: uuid */
+                                    id: string;
+                                    label: string;
+                                    /** @enum {string} */
+                                    kind: "cash_drawer" | "bank" | "clearing";
+                                };
+                            };
+                            amount_minor: number;
+                            /** @enum {string} */
+                            currency_code: "MAD";
+                            reference: string | null;
+                            /** Format: date-time */
+                            effective_at: string;
+                            payment_version: number;
+                            /** @enum {string} */
+                            state: "confirmed";
+                            /** @enum {string} */
+                            settlement: "pending" | "settled";
+                            allocations: {
+                                /** Format: uuid */
+                                allocation_id: string;
+                                /** Format: uuid */
+                                invoice_id: string;
+                                invoice_number: string;
+                                amount_minor: number;
+                            }[];
+                            refunded_minor?: number;
+                            allocated_minor: number;
+                            unapplied_minor: number;
+                            /** @enum {string} */
+                            disclaimer: "LOCAL SYNTHETIC RECEIPT - NOT A STATUTORY DOCUMENT";
+                        };
+                    };
+                };
+            };
+        };
+    };
+    LocalPaymentsController_transition: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                patientId: string;
+                paymentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    expected_version: number;
+                    /** @enum {string} */
+                    action: "confirm" | "fail" | "settle" | "settlement_failed";
+                    /** @enum {boolean} */
+                    verified: true;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        payment_id: string;
+                        /** Format: uuid */
+                        patient_id: string;
+                        amount_minor: number;
+                        /** @enum {string} */
+                        currency_code: "MAD";
+                        /** @enum {boolean} */
+                        synthetic_only: true;
+                        replayed: boolean;
+                        version: number;
+                        /** @enum {string} */
+                        state: "pending" | "confirmed" | "failed";
+                        /** @enum {string} */
+                        settlement: "pending" | "settled" | "failed";
+                    };
+                };
+            };
+        };
+    };
+    LocalPaymentsController_allocate: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                patientId: string;
+                paymentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    invoice_id: string;
+                    amount_minor: number;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        allocation_id: string;
+                        /** Format: uuid */
+                        payment_id: string;
+                        /** Format: uuid */
+                        patient_id: string;
+                        /** Format: uuid */
+                        invoice_id: string;
+                        amount_minor: number;
+                        /** @enum {string} */
+                        currency_code: "MAD";
+                        payment_unapplied_minor: number;
+                        invoice_remaining_minor: number;
+                        /** @enum {boolean} */
+                        synthetic_only: true;
+                        replayed: boolean;
+                    };
+                };
+            };
+        };
+    };
+    LocalPaymentsController_receipt: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Clinic-Id": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                patientId: string;
+                paymentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": Record<string, never>;
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        payment_id: string;
+                        /** Format: uuid */
+                        patient_id: string;
+                        amount_minor: number;
+                        /** @enum {string} */
+                        currency_code: "MAD";
+                        /** @enum {boolean} */
+                        synthetic_only: true;
+                        replayed: boolean;
+                        /** Format: uuid */
+                        receipt_id: string;
+                        number: string;
+                        /** Format: date-time */
+                        issued_at: string;
+                    };
+                };
             };
         };
     };

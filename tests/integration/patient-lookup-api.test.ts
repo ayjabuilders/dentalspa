@@ -2,9 +2,11 @@ import { afterAll,beforeAll,beforeEach,describe,expect,it,vi } from 'vitest';
 import { Test } from '@nestjs/testing';
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
+import type { NextFunction, Request, Response } from 'express';
 import { AppModule } from '../../apps/dental-api/src/app.module';
 import { IDENTITY,type IdentityPort,type StaffRole } from '../../apps/dental-api/src/identity/domain/access';
 import { PATIENT_REPOSITORY,type PatientRepository } from '../../apps/dental-api/src/patients/domain/patient';
+import { safeCorrelation } from '../../apps/dental-api/src/audit/redaction';
 import { A,B,STAFF,PATIENT,P1,P2 } from '../fixtures';
 const patient={id:P1,clinic_id:A,reference:'R-001',display_name:'Alice'};
 const item={...patient,match_basis:'name_prefix' as const};
@@ -17,14 +19,31 @@ const identity:IdentityPort={
 describe('read-only patient lookup HTTP boundary',()=>{
   let app:INestApplication;
   const lookup=vi.fn<PatientRepository['lookup']>();
+  const readOwnProfile=vi.fn<PatientRepository['readOwnProfile']>();
   beforeAll(async()=>{
     const module=await Test.createTestingModule({imports:[AppModule]}).overrideProvider(IDENTITY).useValue(identity)
-      .overrideProvider(PATIENT_REPOSITORY).useValue({lookup,list:async()=>[patient],find:async(_actor:unknown,id:string)=>id===P1?patient:null}).compile();
-    app=module.createNestApplication({logger:false});app.setGlobalPrefix('api/v1');await app.init();
+      .overrideProvider(PATIENT_REPOSITORY).useValue({lookup,list:async()=>[patient],find:async(_actor:unknown,id:string)=>id===P1?patient:null,readOwnProfile,getOwnCommunicationPreferences:async()=>{throw new Error('not used in this test');},setOwnCommunicationPreferences:async()=>{throw new Error('not used in this test');}}).compile();
+    app=module.createNestApplication({logger:false});app.setGlobalPrefix('api/v1');
+    app.use((req:Request & {correlationId?:string},res:Response,next:NextFunction)=>{const correlationId=safeCorrelation(req.headers['x-correlation-id']);req.correlationId=correlationId;res.setHeader('X-Correlation-Id',correlationId);next();});
+    await app.init();
   });
   afterAll(async()=>{await app?.close();});
-  beforeEach(()=>{lookup.mockReset().mockResolvedValue({items:[item],truncated:false});});
+  beforeEach(()=>{lookup.mockReset().mockResolvedValue({items:[item],truncated:false});readOwnProfile.mockReset().mockResolvedValue(patient);});
   const post=(token='reception',clinic=A)=>request(app.getHttpServer()).post('/api/v1/patients/lookup').set('Authorization',`Bearer ${token}`).set('X-Clinic-Id',clinic);
+  it('returns only the linked patient profile with no-store and a server correlation ID',async()=>{
+    const response=await request(app.getHttpServer()).get('/api/v1/me/patient').set('Authorization','Bearer patient').set('X-Clinic-Id',A).expect(200);
+    expect(response.headers['cache-control']).toBe('no-store');expect(response.body).toEqual(patient);
+    expect(readOwnProfile).toHaveBeenCalledOnce();
+    expect(readOwnProfile.mock.calls[0]?.[0]).toMatchObject({userId:PATIENT,clinicId:A,roles:[],patientId:P1});
+    expect(readOwnProfile.mock.calls[0]?.[1]).toMatch(/^[0-9a-f-]{36}$/i);
+    await request(app.getHttpServer()).get('/api/v1/me/patient').set('Authorization','Bearer patient').set('X-Clinic-Id',B).expect(403);
+    expect(readOwnProfile).toHaveBeenCalledOnce();
+  });
+  it('hides adapter rows that do not match the verified account link',async()=>{
+    readOwnProfile.mockResolvedValueOnce({id:P2,clinic_id:B,reference:'R-002',display_name:'Foreign'});
+    const response=await request(app.getHttpServer()).get('/api/v1/me/patient').set('Authorization','Bearer patient').set('X-Clinic-Id',A).expect(404);
+    expect(response.text).not.toContain('Foreign');
+  });
   it('accepts active roles, trims input and returns 200 with no-store',async()=>{
     for(const role of ['reception','manager','dentist']){
       const response=await post(role).send(input).expect(200);expect(response.headers['cache-control']).toBe('no-store');expect(response.body).toEqual({items:[item],truncated:false});

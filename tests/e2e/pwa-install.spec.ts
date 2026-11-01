@@ -2,12 +2,12 @@ import { expect, test } from '@playwright/test';
 
 test('installed display mode hides install guidance', async ({ page }) => {
   await page.addInitScript(() => { Object.defineProperty(navigator, 'standalone', { value: true }); });
-  await page.goto('http://localhost:4200');
+  await page.goto('http://localhost:4204');
   await expect(page.getByRole('button', { name: 'Installer l’application' })).toHaveCount(0);
 });
 
 test('failed native install prompt recovers to browser guidance', async ({ page }) => {
-  await page.goto('http://localhost:4200');
+  await page.goto('http://localhost:4204');
   await page.getByRole('button', { name: 'Installer l’application' }).click();
   await page.evaluate(() => {
     const event = new Event('beforeinstallprompt', { cancelable: true });
@@ -31,7 +31,7 @@ test('an available update requires explicit confirmation before activation', asy
     });
     Object.defineProperty(navigator, 'serviceWorker', { value: container });
   });
-  await page.goto('http://localhost:4200');
+  await page.goto('http://localhost:4204');
   const update = page.getByRole('button', { name: 'Mise à jour disponible' });
   await expect(update).toBeVisible();
   await expect(page.locator('html')).not.toHaveAttribute('data-update-activated');

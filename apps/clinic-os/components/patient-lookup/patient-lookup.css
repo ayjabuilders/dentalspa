@@ -4,3 +4,7 @@
 @media(max-width:1050px){.lookup-grid{grid-template-columns:minmax(0,1fr)}.lookup-preview dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}.lookup-preview .lookup-empty{padding:24px}.lookup-identity-note{max-width:580px}}
 @media(max-width:639px){.lookup-heading{align-items:flex-start;gap:12px}.lookup-heading h1{font-size:26px}.lookup-heading-icon{width:44px;height:44px;border-radius:13px}.lookup-heading .eyebrow{font-size:10px}.lookup-form{padding:20px 16px}.lookup-context{padding:15px}.lookup-submit-row{flex-direction:column}.lookup-input button{min-height:44px;width:44px}.lookup-section-title{padding:18px 16px}.lookup-result-list li{padding:16px;flex-wrap:wrap}.lookup-result-list li>div{flex-basis:calc(100% - 60px)}.lookup-result-list button{margin-inline-start:53px;min-height:44px}.lookup-preview{padding:20px}.lookup-preview dl{grid-template-columns:1fr;gap:0}.lookup-truncated,.lookup-basis-note{padding:15px 16px}}
 @media(prefers-reduced-motion:reduce){.lookup-spin{animation:none}}
+.lookup-privacy-help{margin-block:12px 20px;color:var(--muted);font-size:13px}
+.lookup-privacy-help summary{display:flex;align-items:center;gap:8px;width:fit-content;min-height:44px;cursor:pointer;border-radius:8px;padding:6px 8px}
+.lookup-privacy-help summary:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+.lookup-privacy-help p{max-width:620px;margin:4px 8px 12px;line-height:1.6}

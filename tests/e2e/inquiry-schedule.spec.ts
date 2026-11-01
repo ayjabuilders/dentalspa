@@ -1,6 +1,7 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
+import { selectWorkspace, workspaceChoices, workspaceVerification } from './helpers/workspace-selection';
 import { createDemoIntakeTransport, createHttpIntakeTransport } from '../../apps/clinic-os/components/intake/transport';
-const base = process.env.SCHEDULE_UI_URL ?? 'http://localhost:4200';
+const base = process.env.SCHEDULE_UI_URL ?? 'http://localhost:4204';
 const clinic = '10000000-0000-4000-8000-000000000001'; const user = '10000000-0000-4000-8000-000000000002'; const id = '10000000-0000-4000-8000-000000000011';
 const original = { id, clinic_id: clinic, owner_user_id: user, display_name: 'Lina Synthétique', contact_phone: null, contact_email: null, source: 'phone', status: 'new', created_at: '2026-10-26T09:30:00Z', follow_up_at: '2026-11-12T11:12:13.123456+01:00' };
 const headers = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*', 'Cache-Control': 'no-store' };
@@ -10,26 +11,26 @@ async function connected(page: Page, post: (route: Route) => Promise<void>) {
   await page.route('**/api/v1/**', async route => {
     if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers });
     const url = route.request().url();
-    if (url.endsWith('/me/workspace')) return route.fulfill({ status: 200, headers, json: { user_id: user, clinic_id: clinic, roles: ['reception'], mode: 'connected' } });
+    if (url.endsWith('/me/workspaces')) return route.fulfill({ status: 200, headers, json: workspaceChoices(clinic, ['reception']) }); if (route.request().url().endsWith('/me/workspace')) return route.fulfill({ status: 200, headers, json: workspaceVerification(user, clinic, ['reception']) });
     if (url.endsWith('/follow-up-schedule')) return post(route);
     if (url.endsWith('/owner-worklist')) { worklistReads++; return route.fulfill({ status: 200, headers, json: { observed_at: '2026-10-27T09:00:00Z', overdue: { items: [], truncated: false }, upcoming: { items: [{ ...current, contact_email: undefined, contact_phone: undefined }], truncated: false }, undated: { items: [], truncated: false } } }); }
     if (url.endsWith('/follow-ups')) return route.fulfill({ status: 200, headers, json: { items: [], truncated: false } });
     if (url.endsWith('/'+id)) { detailReads++; return route.fulfill({ status: 200, headers, json: current }); }
     return route.fulfill({ status: 200, headers, json: { items: [current], truncated: false } });
   });
-  await page.goto(base+'/connection'); await page.getByLabel('Adresse e-mail', { exact: true }).fill('staff@example.invalid'); await page.getByLabel('Mot de passe', { exact: true }).fill('synthetic-password'); await page.getByLabel('Identifiant du cabinet de développement').fill(clinic); await page.getByRole('button', { name: 'Se connecter', exact: true }).click(); await page.getByRole('button', { name: 'Ouvrir les demandes du cabinet' }).click(); await expect(page.getByRole('button', { name: 'Replanifier le suivi', exact: true })).toBeVisible();
+  await page.goto(base+'/connection'); await page.getByLabel('Adresse e-mail', { exact: true }).fill('staff@example.invalid'); await page.getByLabel('Mot de passe', { exact: true }).fill('synthetic-password'); await page.getByRole('button', { name: 'Se connecter', exact: true }).click(); await selectWorkspace(page); await page.getByRole('button', { name: 'Ouvrir les demandes du cabinet' }).click(); await expect(page.getByRole('button', { name: 'Replanifier le suivi', exact: true })).toBeVisible();
   return { reads: () => ({ detailReads, worklistReads }), set: (value: string) => { current = { ...current, follow_up_at: value }; } };
 }
 const receipt = (body: { expected_follow_up_at: string | null; follow_up_at: string | null }, changed = true) => ({ receipt: { inquiry_id: id, clinic_id: clinic, owner_user_id: user, previous_follow_up_at: body.expected_follow_up_at, follow_up_at: body.follow_up_at, changed, recorded_at: '2026-10-27T10:00:00Z', event_version: 1 }, replayed: false });
 async function open(page: Page) { await page.getByRole('button', { name: 'Replanifier le suivi', exact: true }).click(); await expect(page.getByLabel('Nouvelle échéance locale')).toBeVisible(); }
 
 test('demo no-change, date edit and current list/worklist refresh', async ({ page }) => {
-  await page.goto(base+'/intake'); await open(page); await page.getByRole('button', { name: 'Enregistrer l’échéance' }).click(); await expect(page.getByRole('dialog')).toContainText('Aucun changement nécessaire');
+  await page.goto(base+'/intake?preview=1'); await open(page); await page.getByRole('button', { name: 'Enregistrer l’échéance' }).click(); await expect(page.getByRole('dialog')).toContainText('Aucun changement nécessaire');
   await page.getByLabel('Sans date', { exact: true }).uncheck(); await page.getByLabel('Nouvelle échéance locale').fill('2030-11-12T10:30'); await page.getByRole('button', { name: 'Enregistrer l’échéance' }).click(); await expect(page.getByRole('dialog')).toContainText('Replanification enregistrée'); await page.getByRole('button', { name: 'Fermer', exact: true }).last().click(); await open(page); await expect(page.getByLabel('Nouvelle échéance locale')).toHaveValue('2030-11-12T10:30');
 });
 
 test('responsive pearl/navy dialog and keyboard targets', async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: 'reduce' }); await page.goto(base+'/intake');
+  await page.emulateMedia({ reducedMotion: 'reduce' }); await page.goto(base+'/intake?preview=1');
   for (const theme of ['pearl','navy']) {
     if (theme === 'navy') await page.getByRole('button', { name: 'Activer le thème sombre' }).click(); await open(page);
     for (const width of [1536,1280,768,390]) { await page.setViewportSize({ width, height: 1000 }); expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true); await page.screenshot({ animations: 'disabled', path: `test-results/inquiry-schedule-${theme}-${width}.png` }); }

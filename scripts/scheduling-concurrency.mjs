@@ -61,6 +61,7 @@ async function fixture(url,work) {
     await query(f.observer,'begin');
     await query(f.observer,'insert into public.clinics(id,name) values($1,$2)',[f.clinic,'Synthetic concurrency evidence']);
     await query(f.observer,'insert into auth.users(id) values($1)',[f.user]);
+    await query(f.observer,"insert into auth.sessions(id,user_id,not_after) values($1,$1,now()+interval '1 hour')",[f.user]);
     await query(f.observer,"insert into public.clinic_memberships(clinic_id,user_id,role,active) values($1,$2,'reception',true)",[f.clinic,f.user]);
     await query(f.observer,'insert into private.scheduling_settings(clinic_id,enabled) values($1,true)',[f.clinic]);
     for(const [id,kind] of [[f.provider,'provider'],[f.provider2,'provider'],[f.chair,'chair'],[f.chair2,'chair']]) {
@@ -95,6 +96,7 @@ async function fixture(url,work) {
         for(const table of ['scheduling_idempotency','scheduling_occupancy','scheduling_holds','outbox_events','audit_events','scheduling_windows','scheduling_resources','scheduling_settings']) await query(f.observer,`delete from private.${table} where clinic_id=$1`,[f.clinic]);
         await query(f.observer,'delete from public.clinic_memberships where clinic_id=$1',[f.clinic]);
         await query(f.observer,'delete from public.clinics where id=$1',[f.clinic]);
+        await query(f.observer,'delete from auth.sessions where user_id=$1',[f.user]);
         await query(f.observer,'delete from auth.users where id=$1',[f.user]);
         await query(f.observer,'commit');
       });
@@ -107,7 +109,7 @@ async function fixture(url,work) {
 
 async function begin(f,client) {
   await query(client,'begin');await query(client,'set local role authenticated');
-  await query(client,"select set_config('request.jwt.claim.sub',$1,true),set_config('request.jwt.claims',$2,true),set_config('request.method','POST',true)",[f.user,JSON.stringify({sub:f.user,role:'authenticated'})]);
+  await query(client,"select set_config('request.jwt.claim.sub',$1,true),set_config('request.jwt.claims',$2,true),set_config('request.method','POST',true)",[f.user,JSON.stringify({sub:f.user,session_id:f.user,role:'authenticated'})]);
   assert.deepEqual((await query(client,'select current_user role,auth.uid() subject')).rows[0],{role:'authenticated',subject:f.user});
 }
 async function create(f,client,body=f.body,key=randomUUID()) {

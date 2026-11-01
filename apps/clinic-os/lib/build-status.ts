@@ -20,6 +20,10 @@ type Queue = { version: number; tasks: QueueTask[] };
 const labels: Record<string, string> = {
   'FOUNDATION-REVIEW': 'Fondation de la plateforme',
   'HOSTED-FOUNDATION': 'Fondation hébergée et restauration',
+  'M16-LOCAL-ASSIGNMENT-PREVIEW': 'Proposition locale d’affectation d’équipe',
+  'M16-LOCAL-STAFFING-CHECKS-DEMO': 'Simulation locale des critères d’équipe',
+  'M16-LOCAL-APPROVAL-INBOX-DEMO': 'Aperçu local de la boîte d’approbations',
+  'M16-LOCAL-DELEGATION-PREVIEW': 'Aperçu local de délégation',
   'INTAKE-CONTRACT': 'Contrat des demandes entrantes',
   'INTAKE-API': 'API des demandes entrantes',
   'INTAKE-UI': 'Interface des demandes',
@@ -68,10 +72,15 @@ const labels: Record<string, string> = {
   'TEAM-ACTIVITY-API': 'Activité récente sécurisée',
   'TEAM-ACTIVITY-UI': 'Journal d’activité Équipe',
   'TEAM-ACTIVITY-INTEGRATE': 'Intégration de l’activité Équipe',
+  'TEAM-ACTIVITY-INQUIRY-OPS': 'Journal des échéances et intentions administratives',
   'PATIENT-LOOKUP-CONTRACT': 'Contrat de recherche patient',
   'PATIENT-LOOKUP-API': 'Recherche patient sécurisée',
   'PATIENT-LOOKUP-UI': 'Interface de recherche patient',
   'PATIENT-LOOKUP-INTEGRATE': 'Intégration de la recherche patient',
+  'CRM-MVP-02-PATIENT-DIRECTORY-CONNECTED-READ': 'Lecture connectée du registre patient',
+  'CRM-MVP-02-PATIENT-REGISTER-ENTRY': 'Accès au registre patient depuis Patients',
+  'CRM-MVP-LOCAL-MIGRATION-CHAIN-PGLITE': 'Vérification locale de toute la chaîne de migrations',
+  'CRM-MVP-FOUNDATION-LOCAL-SCHEMA-CATALOG': 'Catalogue du schéma local de la fondation',
   'PATIENT-SELECTION-DECISION-PACKET': 'Décisions pour la sélection patient',
   'PATIENT-SELECTION-POLICY': 'Politique de sélection patient',
   'SCHEDULING-HOLD-CONTRACT': 'Contrat des options de ressources',
@@ -99,8 +108,11 @@ function phase(id: string) {
   if (id.startsWith('FOUNDATION') || id === 'HOSTED-FOUNDATION') return 'M01 · Fondation';
   if (id.startsWith('INTAKE') || id.startsWith('INQUIRY-FOLLOW-UP') || id.startsWith('INQUIRY-OWNER-WORKLIST') || id.startsWith('INQUIRY-SCHEDULE') || id.startsWith('INQUIRY-OWNER-SEARCH') || id.startsWith('INQUIRY-CONTACT-PREFERENCE') || id.startsWith('INQUIRY-COMMUNICATION-LANGUAGE') || id.startsWith('INQUIRY-COMMUNICATION-TIME-ZONE') || id.startsWith('INQUIRY-PLANNED-ACTION')) return 'M02 · Demandes';
   if (id.startsWith('PATIENT-LOOKUP')) return 'M02 · Recherche patient';
+  if (id.startsWith('CRM-MVP-02-PATIENT')) return 'M02 · Registre patient';
+  if (id === 'CRM-MVP-LOCAL-MIGRATION-CHAIN-PGLITE') return 'M01 · Schéma local';
+  if (id === 'CRM-MVP-FOUNDATION-LOCAL-SCHEMA-CATALOG') return 'M01 · Schéma local';
   if (id.startsWith('PATIENT-SELECTION')) return 'M02 · Sélection patient';
-  if (id.startsWith('TEAM-ROSTER') || id.startsWith('TEAM-ACTIVITY')) return 'M16 · Équipe et accès';
+  if (id.startsWith('TEAM-ROSTER') || id.startsWith('TEAM-ACTIVITY') || id.startsWith('M16-LOCAL')) return 'M16 · Équipe et accès';
   if (id.startsWith('SCHEDULING') || id.startsWith('RESOURCE-RULES') || id.startsWith('APPOINTMENT')) return 'M02 · Planification';
   if (id.startsWith('PWA')) return 'Expérience installable';
   return 'À planifier';
@@ -118,10 +130,15 @@ function titleFromId(id: string) {
 }
 
 function testLinks(id: string): TestLink[] {
+  if (id.startsWith('CRM-MVP-02-PATIENT-DIRECTORY') || id === 'CRM-MVP-02-PATIENT-REGISTER-ENTRY') return [{ ...connectionTest, href: '/connection?view=patients', label: 'Ouvrir le registre patient' }];
   if (id.startsWith('INTAKE') || id.startsWith('INQUIRY-FOLLOW-UP') || id.startsWith('INQUIRY-OWNER-WORKLIST') || id.startsWith('INQUIRY-SCHEDULE') || id.startsWith('INQUIRY-OWNER-SEARCH') || id.startsWith('INQUIRY-CONTACT-PREFERENCE') || id.startsWith('INQUIRY-COMMUNICATION-LANGUAGE') || id.startsWith('INQUIRY-COMMUNICATION-TIME-ZONE') || id.startsWith('INQUIRY-PLANNED-ACTION')) return [intakeTest];
   if (id.startsWith('PATIENT-LOOKUP')) return [connectionTest];
   if (id.startsWith('TEAM-ROSTER')) return [{ href: '/team', label: 'Tester l’annuaire Équipe', kind: 'demo', instruction: 'Annuaire fictif en lecture seule; les rôles d’accès ne prouvent ni qualification ni présence.' }, connectionTest];
-  if (id.startsWith('TEAM-ACTIVITY')) return [{ href: '/team', label: 'Tester l’activité Équipe', kind: 'demo', instruction: 'Journal synthétique borné à quatre actions déjà auditées; ni présence, ni performance, ni audit exhaustif.' }, connectionTest];
+  if (id.startsWith('TEAM-ACTIVITY')) return [{ href: '/team', label: 'Tester l’activité Équipe', kind: 'demo', instruction: 'Journal synthétique borné aux actions déjà auditées : accès profil propre, échéances, intentions et réattributions sans afficher les dossiers; ni présence, ni performance, ni audit exhaustif.' }, connectionTest];
+  if (id === 'M16-LOCAL-ASSIGNMENT-PREVIEW') return [{ href: '/team', label: 'Tester la proposition d’affectation', kind: 'demo', instruction: 'Proposer une tâche administrative fictive à un membre de démonstration. Aperçu en mémoire uniquement; les rôles ne prouvent pas la qualification, rien n’est affecté réellement, envoyé ou enregistré.' }];
+  if (id === 'M16-LOCAL-STAFFING-CHECKS-DEMO') return [{ href: '/team', label: 'Tester les critères d’équipe fictifs', kind: 'demo', instruction: 'Comparer capacité, équipe, horaire et disponibilité d’exemple avant une proposition locale. Ces règles sont fictives et ne déterminent aucune affectation réelle.' }];
+  if (id === 'M16-LOCAL-APPROVAL-INBOX-DEMO') return [{ href: '/team', label: 'Tester la boîte d’approbations fictive', kind: 'demo', instruction: 'Simuler une acceptation ou un refus sur des éléments administratifs fictifs. Aucun droit réel ni statut de tâche ne change; tout disparaît au rechargement.' }];
+  if (id === 'M16-LOCAL-DELEGATION-PREVIEW') return [{ href: '/team', label: 'Tester la délégation fictive', kind: 'demo', instruction: 'Vérifier le blocage d’une tâche non délégable, puis simuler un transfert administratif fictif et la réponse du remplaçant. Aucun état connecté ne change.' }];
   if (id.startsWith('SCHEDULING')) return [schedulingTest];
   if (id === 'PWA-LOCAL-RUNTIME' || id === 'FOUNDATION-REVIEW') return [{ href: '/', label: 'Explorer Clinic OS', kind: 'demo', instruction: 'Tester la navigation, les thèmes, les notifications fictives et le guide d’installation.' }];
   return [];

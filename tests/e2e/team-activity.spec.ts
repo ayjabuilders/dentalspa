@@ -1,6 +1,7 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
+import { selectWorkspace, workspaceChoices, workspaceVerification } from './helpers/workspace-selection';
 import { createTeamTransport } from '../../apps/clinic-os/components/team/transport';
-const base = process.env.TEAM_UI_URL ?? 'http://localhost:4200';
+const base = process.env.TEAM_UI_URL ?? 'http://localhost:4204';
 const clinic = '10000000-0000-4000-8000-000000000001';
 const user = '10000000-0000-4000-8000-000000000002';
 const item = { kind: 'inquiry_created', actor_display_name: 'Acteur synthétique', occurred_at: '2026-10-27T09:00:00Z' };
@@ -15,28 +16,33 @@ async function verified(page: Page, handler: (route: Route) => Promise<void>, ro
   await page.route('**/api/v1/**', async route => {
     if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers });
     const url = route.request().url();
-    if (url.endsWith('/me/workspace')) return route.fulfill({ status: 200, headers, json: { user_id: user, clinic_id: clinic, roles: ['manager'], mode: 'connected' } });
+    if (url.endsWith('/me/workspaces')) return route.fulfill({ status: 200, headers, json: workspaceChoices(clinic, ['manager']) }); if (route.request().url().endsWith('/me/workspace')) return route.fulfill({ status: 200, headers, json: workspaceVerification(user, clinic, ['manager']) });
     if (url.endsWith('/team/roster') && rosterHandler) return rosterHandler(route);
     if (url.endsWith('/team/roster')) return route.fulfill({ status: 200, headers, json: { observed_at: activity.observed_at, members: [], truncated: false } });
     expect(url).toMatch(/\/api\/v1\/team\/activity$/); expect(route.request().method()).toBe('GET'); expect(route.request().headers()['x-clinic-id']).toBe(clinic); count++; return handler(route);
   });
-  await page.goto(`${base}/connection`); await page.getByLabel('Adresse e-mail', { exact: true }).fill('staff@example.invalid'); await page.getByLabel('Mot de passe', { exact: true }).fill('synthetic-password'); await page.getByLabel('Identifiant du cabinet de développement').fill(clinic);
-  await page.getByRole('button', { name: 'Se connecter', exact: true }).click(); await page.getByRole('button', { name: 'Ouvrir les membres du cabinet' }).click();
+  await page.goto(`${base}/connection`); await page.getByLabel('Adresse e-mail', { exact: true }).fill('staff@example.invalid'); await page.getByLabel('Mot de passe', { exact: true }).fill('synthetic-password'); await page.getByRole('button', { name: 'Se connecter', exact: true }).click(); await selectWorkspace(page); await page.getByRole('button', { name: 'Ouvrir les membres du cabinet' }).click();
   await expect(page.getByRole('button', { name: 'Afficher l’activité récente' })).toBeVisible(); expect(count).toBe(0);
   await page.getByRole('button', { name: 'Afficher l’activité récente' }).click(); return () => count;
 }
 
-test('demo journal has four truthful action labels, no inferred contact/booking and no storage', async ({ page }) => {
-  await page.goto(`${base}/team`); await expect(page.locator('.team-activity-timeline>li')).toHaveCount(4);
+test('demo journal has eight truthful action labels, no inferred contact/booking and no storage', async ({ page }) => {
+  await page.goto(`${base}/team?preview=1`); await expect(page.locator('.team-activity-timeline>li')).toHaveCount(8);
   for (const name of ['Demande créée', 'Suivi consigné', 'Option temporaire créée', 'Option temporaire libérée']) await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
   await expect(page.getByText('Membre non affiché', { exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Profil propre consulté', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Échéance de suivi replanifiée', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Prochaine action notée', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Responsable réattribué', exact: true })).toBeVisible();
+  await expect(page.getByText('Compte patient', { exact: true })).toBeVisible();
   await expect(page.getByText(/Événements et noms synthétiques/)).toBeVisible(); await expect(page.getByText(/aperçu non exhaustif/)).toBeVisible();
   await expect(page.getByText('Ne prouve pas un contact réussi')).toBeVisible(); await expect(page.getByText('Aucune réservation confirmée')).toBeVisible();
+  await expect(page.getByText('Intention enregistrée · aucune action exécutée')).toBeVisible();
   expect(await page.evaluate(() => JSON.stringify({ ...localStorage, ...sessionStorage }))).not.toMatch(/Adam|Nora|Lina|inquiry_created/);
 });
 
 test('responsive journal pearl/navy, keyboard focus, motion and reduced-motion', async ({ page }) => {
-  await page.goto(`${base}/team`); await expect(page.locator('.team-activity-timeline>li')).toHaveCount(4);
+  await page.goto(`${base}/team?preview=1`); await expect(page.locator('.team-activity-timeline>li')).toHaveCount(8);
   expect(await page.locator('.team-activity-timeline>li').first().evaluate(el => getComputedStyle(el).animationName)).toBe('team-activity-enter');
   await page.emulateMedia({ reducedMotion: 'reduce' });
   expect(await page.locator('.team-activity-timeline>li').first().evaluate(el => getComputedStyle(el).animationName)).toBe('none');

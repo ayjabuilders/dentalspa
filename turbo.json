@@ -1,6 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": ["docs/WORK_QUEUE.json", "docs/MODULE_PROGRESS.json", "scripts/build-clinic.mjs", "scripts/build-snapshot.mjs"],
+  "globalDependencies": ["docs/WORK_QUEUE.json", "docs/MODULE_PROGRESS.json", "scripts/build-clinic.mjs", "scripts/build-snapshot.mjs", "scripts/validate-hosted-frontend-env.mjs", "scripts/frontend-security-headers.mjs"],
   "tasks": {
     "build": {
       "dependsOn": [
@@ -8,14 +8,20 @@
       ],
       "outputs": [
         ".next/**",
+        ".next-*/**",
         ".build-status/latest.json",
         "!.next/cache/**",
+        "!.next-*/cache/**",
         "dist/**"
       ],
       "env": [
+        "VERCEL",
+        "NEXT_DIST_DIR",
         "NEXT_PUBLIC_SUPABASE_URL",
         "NEXT_PUBLIC_SUPABASE_ANON_KEY",
-        "NEXT_PUBLIC_API_URL"
+        "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
+        "NEXT_PUBLIC_API_URL",
+        "NEXT_PUBLIC_PATIENT_COMMUNICATION_PREFERENCES_ENABLED"
       ]
     },
     "dev": {
@@ -28,8 +34,10 @@
         "ALLOWED_ORIGINS",
         "NEXT_PUBLIC_SUPABASE_URL",
         "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
         "NEXT_PUBLIC_API_URL",
-        "ENABLE_INTAKE_COMMANDS"
+        "ENABLE_INTAKE_COMMANDS",
+        "ENABLE_PATIENT_COMMUNICATION_PREFERENCES"
       ]
     },
     "typecheck": {

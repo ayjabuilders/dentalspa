@@ -4,10 +4,14 @@ set search_path=public,extensions;
 select plan(25);
 insert into public.clinics(id,name) values('f1000000-0000-4000-8000-000000000001','Synthetic worklist A'),('f1000000-0000-4000-8000-000000000002','Synthetic worklist B');
 insert into auth.users(id) values('f2000000-0000-4000-8000-000000000001'),('f2000000-0000-4000-8000-000000000002');
+-- Authenticated fixtures include a live session; all rows roll back with this test.
+insert into auth.sessions(id,user_id,not_after) values('f2000000-0000-4000-8000-000000000001','f2000000-0000-4000-8000-000000000001',now()+interval '1 hour'),('f2000000-0000-4000-8000-000000000002','f2000000-0000-4000-8000-000000000002',now()+interval '1 hour');
 insert into public.clinic_memberships(clinic_id,user_id,role,active) values('f1000000-0000-4000-8000-000000000001','f2000000-0000-4000-8000-000000000001','reception',true),('f1000000-0000-4000-8000-000000000001','f2000000-0000-4000-8000-000000000002','manager',true);
 select set_config('request.jwt.claim.sub','f2000000-0000-4000-8000-000000000001',true);
+select set_config('request.jwt.claims',jsonb_build_object('session_id',nullif(current_setting('request.jwt.claim.sub'),''))::text,true);
 select set_config('request.method','POST',true);
 create function pg_temp.worklist() returns jsonb language sql as $$select public.inquiry_owner_planned_actions('f1000000-0000-4000-8000-000000000001')$$;
+grant execute on function pg_temp.worklist() to authenticated;
 select ok(not has_function_privilege('anon','public.inquiry_owner_planned_actions(uuid)','execute'),'anon has no execute');
 select is((select enabled from private.intake_command_settings),false,'writes remain disabled');
 set local role authenticated;
@@ -33,6 +37,7 @@ select is((pg_temp.worklist()->>'truncated')::boolean,false,'exactly 50 not trun
 update public.inquiries set owner_user_id='f2000000-0000-4000-8000-000000000002' where id='f3000000-0000-4000-8000-000000000051';
 select is(jsonb_array_length(pg_temp.worklist()->'items'),49,'former owner loses reassigned item');
 select set_config('request.jwt.claim.sub','f2000000-0000-4000-8000-000000000002',true);
+select set_config('request.jwt.claims',jsonb_build_object('session_id',nullif(current_setting('request.jwt.claim.sub'),''))::text,true);
 select is(jsonb_array_length(pg_temp.worklist()->'items'),1,'other manager sees only own');
 select is(pg_temp.worklist()->>'owner_user_id','f2000000-0000-4000-8000-000000000002','new owner identity echo');
 select throws_ok($$select public.inquiry_owner_planned_actions('f1000000-0000-4000-8000-000000000002')$$,'42501',null,'privileged foreign membership denied');
@@ -44,6 +49,7 @@ select throws_ok($$select pg_temp.worklist()$$,'42501',null,'privileged assistan
 update public.clinic_memberships set role='dentist',active=false where user_id='f2000000-0000-4000-8000-000000000002';
 select throws_ok($$select pg_temp.worklist()$$,'42501',null,'inactive dentist denied');
 select set_config('request.jwt.claim.sub','',true);
+select set_config('request.jwt.claims',jsonb_build_object('session_id',nullif(current_setting('request.jwt.claim.sub'),''))::text,true);
 select throws_ok($$select pg_temp.worklist()$$,'28000',null,'missing actor denied');
 select is((select count(*)::int from private.inquiry_planned_action_receipts where clinic_id='f1000000-0000-4000-8000-000000000001'),0,'reads create no receipt');
 select is((select count(*)::int from private.audit_events where clinic_id='f1000000-0000-4000-8000-000000000001'),0,'reads create no audit');

@@ -2,11 +2,13 @@ import { CanActivate, ExecutionContext, ForbiddenException, Inject, Injectable, 
 import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
 import { z } from 'zod';
-import { IDENTITY, resolveActor, type Actor, type IdentityPort } from '../domain/access';
+import { IDENTITY, resolveActor, type Actor, type AuthenticatedIdentity, type IdentityPort } from '../domain/access';
 
-export type AccessRule = 'public' | 'staff' | 'patient';
+export type AccessRule = 'public' | 'workspace-list' | 'staff' | 'patient';
 export const Access = (rule: AccessRule) => SetMetadata('access', rule);
 export type AuthorizedRequest = Request & { actor: Actor; correlationId: string };
+export type IdentityRequest = Request & { verifiedIdentity: AuthenticatedIdentity };
+type PolicyRequest = Request & { actor?: Actor; verifiedIdentity?: AuthenticatedIdentity; correlationId?: string };
 @Injectable()
 export class PolicyGuard implements CanActivate {
   constructor(@Inject(Reflector) private readonly reflector: Reflector, @Inject(IDENTITY) private readonly identity: IdentityPort) {}
@@ -15,13 +17,17 @@ export class PolicyGuard implements CanActivate {
     if (rule === 'public') return true;
     // Runtime metadata can outlive or bypass the TypeScript union. Unknown rules
     // must never fall through to an authenticated-but-unrestricted endpoint.
-    if (rule !== 'staff' && rule !== 'patient') throw new ForbiddenException('No supported access policy');
-    const request = context.switchToHttp().getRequest<AuthorizedRequest>();
+    if (rule !== 'workspace-list' && rule !== 'staff' && rule !== 'patient') throw new ForbiddenException('No supported access policy');
+    const request = context.switchToHttp().getRequest<PolicyRequest>();
     const bearer = request.headers.authorization;
     if (!bearer || !/^Bearer \S+$/.test(bearer)) throw new UnauthorizedException();
     const token = bearer.slice(7);
     const userId = await this.identity.verify(token);
     if (!userId || !z.string().uuid().safeParse(userId).success) throw new UnauthorizedException();
+    if (rule === 'workspace-list') {
+      request.verifiedIdentity = { userId, token };
+      return true;
+    }
     const clinicId = request.headers['x-clinic-id'];
     if (typeof clinicId !== 'string' || !z.string().uuid().safeParse(clinicId).success) throw new ForbiddenException('Select an authorized clinic');
     const [memberships, links] = await Promise.all([this.identity.memberships(token, userId), this.identity.patientLinks(token, userId)]);

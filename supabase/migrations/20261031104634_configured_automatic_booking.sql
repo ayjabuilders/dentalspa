@@ -1,0 +1,205 @@
+-- One allocation kernel for staff and automatic public confirmation. The private
+-- kernel is inaccessible to API roles; callers validate their own authority.
+alter table private.configured_booking_requests add column acknowledgement jsonb;
+update private.configured_booking_requests set acknowledgement=jsonb_build_object('request_id',id,'status','request_received','replayed',false);
+alter table private.configured_booking_requests alter column acknowledgement set not null;
+create function private.confirm_configured_booking_request(
+  p_clinic_id uuid,p_request_id uuid,p_command_key uuid,p_expected_revision integer,p_actor_ref uuid
+) returns jsonb language plpgsql security invoker set search_path='' set timezone='UTC' as $$
+declare
+  v_actor uuid:=p_actor_ref; v_now timestamptz;
+  v_request private.configured_booking_requests; v_prior private.configured_booking_confirmations;
+  v_appointment private.configured_appointments;v_settings jsonb;v_visit jsonb;v_pair jsonb;
+  v_date date;v_local timestamp;v_busy_start timestamptz;v_busy_end timestamptz;v_receipt jsonb;
+begin
+  if v_actor is null then raise exception using errcode='28000',message='unauthenticated';end if;
+  perform pg_advisory_xact_lock(hashtextextended('agenda-configuration:'||p_clinic_id::text,0));
+  perform pg_advisory_xact_lock(hashtextextended('scheduling:'||p_clinic_id::text,0));
+  if p_request_id is null or p_command_key is null or p_expected_revision is null or p_expected_revision<1 then
+    raise exception using errcode='22023',message='invalid_confirmation';end if;
+  select * into v_prior from private.configured_booking_confirmations
+    where clinic_id=p_clinic_id and actor_ref=v_actor and command_key=p_command_key;
+  if found then
+    if v_prior.request_id<>p_request_id or v_prior.expected_revision<>p_expected_revision then
+      raise exception using errcode='SH410',message='idempotency_conflict';end if;
+    return v_prior.receipt||jsonb_build_object('replayed',true);
+  end if;
+  select * into v_request from private.configured_booking_requests where clinic_id=p_clinic_id and id=p_request_id for update;
+  if not found then raise exception using errcode='SH404',message='request_not_found';end if;
+  if exists(select 1 from private.configured_appointments where clinic_id=p_clinic_id and request_id=p_request_id) then
+    raise exception using errcode='SH409',message='request_already_confirmed';end if;
+  select configuration into v_settings from private.agenda_configuration_versions where clinic_id=p_clinic_id order by revision desc limit 1;
+  -- Staff must refresh/review the current revision, never silently confirm using
+  -- a changed configuration. An old request remains historically pinned.
+  if (v_settings->>'revision')::integer is distinct from p_expected_revision then
+    raise exception using errcode='SH409',message='configuration_changed';end if;
+  select value into v_visit from jsonb_array_elements(v_settings->'visit_types')
+    where value->>'id'=v_request.visit_type_id::text and value->>'active'='true' and value->>'public_bookable'='true';
+  v_now:=clock_timestamp();v_local:=v_request.starts_at at time zone 'Africa/Casablanca';v_date:=v_local::date;
+  if v_visit is null or v_request.ends_at-v_request.starts_at<>(v_visit->>'duration_minutes')::integer*interval '1 minute'
+    or v_request.starts_at<v_now+(v_settings->>'minimum_notice_minutes')::integer*interval '1 minute'
+    or v_date>(v_now at time zone 'Africa/Casablanca')::date+(v_settings->>'booking_horizon_days')::integer then
+    raise exception using errcode='SH409',message='visit_no_longer_available';end if;
+  v_busy_start:=v_request.starts_at-(v_visit->>'buffer_before_minutes')::integer*interval '1 minute';
+  v_busy_end:=v_request.ends_at+(v_visit->>'buffer_after_minutes')::integer*interval '1 minute';
+  if extract(second from v_local)<>0 or not exists(select 1 from jsonb_array_elements(v_visit->'weekly_windows') w
+    where (w->>'weekday')::integer=extract(isodow from v_local) and v_local>=v_date+(w->>'start')::time
+      and v_request.ends_at at time zone 'Africa/Casablanca'<=v_date+(w->>'end')::time
+      and mod(extract(epoch from (v_local-(v_date+(w->>'start')::time)))::integer,(v_settings->>'slot_step_minutes')::integer*60)=0)
+    or not exists(select 1 from jsonb_array_elements(v_settings->'weekly_windows') w
+      where (w->>'weekday')::integer=extract(isodow from v_local)
+        and v_busy_start at time zone 'Africa/Casablanca'>=v_date+(w->>'start')::time
+        and v_busy_end at time zone 'Africa/Casablanca'<=v_date+(w->>'end')::time) then
+    raise exception using errcode='SH409',message='outside_configured_hours';end if;
+  perform private.scheduling_expire(p_clinic_id,v_now,p_command_key);
+  select pair into v_pair from jsonb_array_elements(v_visit->'resource_pairs') pair
+    where exists(select 1 from private.scheduling_resources r where r.clinic_id=p_clinic_id and r.id=(pair->>'provider_id')::uuid and r.active and r.synthetic_only and r.kind='provider')
+      and exists(select 1 from private.scheduling_resources r where r.clinic_id=p_clinic_id and r.id=(pair->>'chair_id')::uuid and r.active and r.synthetic_only and r.kind='chair')
+      and exists(select 1 from private.scheduling_windows w where w.clinic_id=p_clinic_id and w.resource_id=(pair->>'provider_id')::uuid and w.starts_at<=v_busy_start and w.ends_at>=v_busy_end)
+      and exists(select 1 from private.scheduling_windows w where w.clinic_id=p_clinic_id and w.resource_id=(pair->>'chair_id')::uuid and w.starts_at<=v_busy_start and w.ends_at>=v_busy_end)
+      and not exists(select 1 from jsonb_array_elements(v_settings->'closures') c where c->>'date'=v_date::text
+        and (c->>'resource_id' is null or c->>'resource_id' in (pair->>'provider_id',pair->>'chair_id'))
+        and v_busy_start at time zone 'Africa/Casablanca'<v_date+(c->>'end')::time
+        and v_busy_end at time zone 'Africa/Casablanca'>v_date+(c->>'start')::time)
+      and not exists(select 1 from private.scheduling_occupancy o where o.clinic_id=p_clinic_id
+        and o.resource_id in ((pair->>'provider_id')::uuid,(pair->>'chair_id')::uuid)
+        and o.active and o.period&&tstzrange(v_busy_start,v_busy_end,'[)'))
+    order by pair->>'provider_id',pair->>'chair_id' limit 1;
+  if v_pair is null then raise exception using errcode='SH409',message='resource_unavailable';end if;
+  insert into private.configured_appointments(clinic_id,request_id,configuration_revision,provider_resource_id,chair_resource_id,
+    starts_at,ends_at,busy_starts_at,busy_ends_at,actor_ref)
+    values(p_clinic_id,p_request_id,p_expected_revision,(v_pair->>'provider_id')::uuid,(v_pair->>'chair_id')::uuid,
+      v_request.starts_at,v_request.ends_at,v_busy_start,v_busy_end,v_actor) returning * into v_appointment;
+  insert into private.scheduling_occupancy(clinic_id,appointment_id,resource_id,period) values
+    (p_clinic_id,v_appointment.id,v_appointment.provider_resource_id,tstzrange(v_busy_start,v_busy_end,'[)')),
+    (p_clinic_id,v_appointment.id,v_appointment.chair_resource_id,tstzrange(v_busy_start,v_busy_end,'[)'));
+  v_receipt:=jsonb_build_object('request_id',p_request_id,'appointment_id',v_appointment.id,'status','confirmed','version',1,
+    'starts_at',private.scheduling_time(v_appointment.starts_at),'ends_at',private.scheduling_time(v_appointment.ends_at),'replayed',false);
+  insert into private.configured_booking_confirmations(clinic_id,actor_ref,command_key,request_id,expected_revision,receipt)
+    values(p_clinic_id,v_actor,p_command_key,p_request_id,p_expected_revision,v_receipt);
+  insert into private.audit_events(clinic_id,actor_ref,action,aggregate_id,correlation_id,occurred_at)
+    values(p_clinic_id,v_actor,'ConfiguredBookingConfirmed',v_appointment.id,p_command_key,v_now);
+  insert into private.outbox_events(clinic_id,event_type,event_version,aggregate_type,aggregate_id,correlation_id,actor_ref,occurred_at,payload)
+    values(p_clinic_id,'ConfiguredBookingConfirmed',1,'configured_appointment',v_appointment.id,p_command_key,v_actor,v_now,
+      jsonb_build_object('status','confirmed','request_id',p_request_id,'configuration_revision',p_expected_revision));
+  return v_receipt;
+exception when exclusion_violation then raise exception using errcode='SH409',message='resource_unavailable';
+end $$;
+revoke all on function private.confirm_configured_booking_request(uuid,uuid,uuid,integer,uuid) from public,anon,authenticated;
+create or replace function public.confirm_local_configured_booking_request(p_clinic_id uuid,p_request_id uuid,p_command_key uuid,p_expected_revision integer,p_gate_key text)
+returns jsonb language plpgsql security definer set search_path='' set timezone='UTC' as $$
+declare v_actor uuid:=auth.uid();
+begin
+  if v_actor is null then raise exception using errcode='28000',message='unauthenticated';end if;
+  perform pg_advisory_xact_lock(hashtextextended('agenda-configuration:'||p_clinic_id::text,0));
+  perform pg_advisory_xact_lock(hashtextextended('scheduling:'||p_clinic_id::text,0));
+  -- Share locks also serialize concurrent membership revocation/gate disable.
+  perform 1 from public.clinic_memberships where clinic_id=p_clinic_id and user_id=v_actor
+    and active and role in ('manager','reception') for share;
+  if not found then raise exception using errcode='42501',message='forbidden';end if;
+  perform 1 from private.agenda_configuration_gates where clinic_id=p_clinic_id and enabled and synthetic_only
+    and confirmations_enabled and api_gate_key<>'' and api_gate_key=p_gate_key for share;
+  if not found then raise exception using errcode='PT503',message='local_confirmation_disabled';end if;
+
+  return private.confirm_configured_booking_request(p_clinic_id,p_request_id,p_command_key,p_expected_revision,v_actor);
+end $$;
+revoke all on function public.confirm_local_configured_booking_request(uuid,uuid,uuid,integer,text) from public,anon,authenticated;
+grant execute on function public.confirm_local_configured_booking_request(uuid,uuid,uuid,integer,text) to authenticated;
+create or replace function public.create_local_configured_booking_request(
+  p_clinic_id uuid,p_request_key uuid,p_payload jsonb,p_validated_snapshot jsonb,p_gate_key text
+) returns jsonb language plpgsql security definer set search_path='' set timezone='UTC' as $$
+declare
+  v_prior private.configured_booking_requests;v_row private.configured_booking_requests;
+  v_receipt jsonb;v_confirmation jsonb;v_snapshot jsonb;v_settings jsonb;v_visit jsonb;v_now timestamptz;
+  v_start timestamptz;v_end timestamptz;v_date date;v_revision integer;
+  v_local timestamp;v_busy_start timestamptz;v_busy_end timestamptz;
+  v_system constant uuid:='00000000-0000-4000-8000-000000000001';
+begin
+  perform pg_advisory_xact_lock(hashtextextended('agenda-configuration:'||p_clinic_id::text,0));
+  perform pg_advisory_xact_lock(hashtextextended('scheduling:'||p_clinic_id::text,0));
+  perform 1 from private.agenda_configuration_gates g where g.clinic_id=p_clinic_id
+    and g.enabled and g.synthetic_only and g.public_discovery_enabled and g.public_requests_enabled
+    and g.public_api_gate_key<>'' and g.public_api_gate_key=p_gate_key for share;
+  if not found then raise exception using errcode='PT503',message='local_public_requests_disabled';end if;
+  if p_request_key is null or p_payload is null or jsonb_typeof(p_payload)<>'object'
+    or not(p_payload ?& array['visit_type_id','configuration_revision','starts_at','ends_at','contact_name','contact_email','administrative_consent_version'])
+    or (select count(*) from jsonb_object_keys(p_payload))<>7
+    or p_payload->>'administrative_consent_version' is distinct from 'local-demo-v1'
+    or char_length(btrim(coalesce(p_payload->>'contact_name',''))) not between 1 and 100
+    or coalesce(p_payload->>'contact_email','') !~ '^[^[:space:]@]+@example[.]test$' then
+    raise exception using errcode='22023',message='invalid_synthetic_request';
+  end if;
+  select * into v_prior from private.configured_booking_requests where clinic_id=p_clinic_id and request_key=p_request_key;
+  if found then
+    if v_prior.canonical_payload<>p_payload then raise exception using errcode='SH410',message='idempotency_conflict';end if;
+    return v_prior.acknowledgement||jsonb_build_object('replayed',true);
+  end if;
+  v_start:=(p_payload->>'starts_at')::timestamptz;v_end:=(p_payload->>'ends_at')::timestamptz;
+  v_date:=(v_start at time zone 'Africa/Casablanca')::date;
+  v_revision:=(p_payload->>'configuration_revision')::integer;
+  v_now:=clock_timestamp();
+  v_snapshot:=private.agenda_availability_snapshot(p_clinic_id,v_date);
+  -- The API capability is server-only. A browser cannot assert its own snapshot.
+  if p_validated_snapshot is null or (v_snapshot-'now') is distinct from (p_validated_snapshot-'now') then
+    raise exception using errcode='SH409',message='availability_changed';
+  end if;
+  v_settings:=v_snapshot->'settings';
+  if (v_settings->>'revision')::integer is distinct from v_revision then raise exception using errcode='SH409',message='configuration_changed';end if;
+  if v_settings->>'confirmation_mode'='automatic' and not exists(select 1 from private.agenda_configuration_gates where clinic_id=p_clinic_id and confirmations_enabled) then
+    raise exception using errcode='PT503',message='automatic_confirmation_not_enabled';
+  end if;
+  select value into v_visit from jsonb_array_elements(v_settings->'visit_types')
+    where value->>'id'=p_payload->>'visit_type_id' and value->>'active'='true' and value->>'public_bookable'='true';
+  if v_visit is null or v_start is null or v_end is null or v_end-v_start<>(v_visit->>'duration_minutes')::integer*interval '1 minute'
+    or v_start<v_now+(v_settings->>'minimum_notice_minutes')::integer*interval '1 minute'
+    or v_date>(v_now at time zone 'Africa/Casablanca')::date+(v_settings->>'booking_horizon_days')::integer then
+    raise exception using errcode='22023',message='invalid_public_visit';
+  end if;
+  v_local:=v_start at time zone 'Africa/Casablanca';
+  v_busy_start:=v_start-(v_visit->>'buffer_before_minutes')::integer*interval '1 minute';
+  v_busy_end:=v_end+(v_visit->>'buffer_after_minutes')::integer*interval '1 minute';
+  if extract(second from v_local)<>0 or not exists(select 1 from jsonb_array_elements(v_visit->'weekly_windows') w
+    where (w->>'weekday')::integer=extract(isodow from v_local)
+      and v_local>=v_date+(w->>'start')::time
+      and v_end at time zone 'Africa/Casablanca'<=v_date+(w->>'end')::time
+      and mod(extract(epoch from (v_local-(v_date+(w->>'start')::time)))::integer,(v_settings->>'slot_step_minutes')::integer*60)=0)
+    or not exists(select 1 from jsonb_array_elements(v_settings->'weekly_windows') w
+      where (w->>'weekday')::integer=extract(isodow from v_local)
+        and v_busy_start at time zone 'Africa/Casablanca'>=v_date+(w->>'start')::time
+        and v_busy_end at time zone 'Africa/Casablanca'<=v_date+(w->>'end')::time) then
+    raise exception using errcode='22023',message='outside_configured_hours';
+  end if;
+  if not exists(select 1 from jsonb_array_elements(v_visit->'resource_pairs') pair
+    where exists(select 1 from private.scheduling_resources r where r.clinic_id=p_clinic_id and r.id=(pair->>'provider_id')::uuid and r.active and r.synthetic_only and r.kind='provider')
+      and exists(select 1 from private.scheduling_resources r where r.clinic_id=p_clinic_id and r.id=(pair->>'chair_id')::uuid and r.active and r.synthetic_only and r.kind='chair')
+      and exists(select 1 from private.scheduling_windows w where w.clinic_id=p_clinic_id and w.resource_id=(pair->>'provider_id')::uuid and w.starts_at<=v_busy_start and w.ends_at>=v_busy_end)
+      and exists(select 1 from private.scheduling_windows w where w.clinic_id=p_clinic_id and w.resource_id=(pair->>'chair_id')::uuid and w.starts_at<=v_busy_start and w.ends_at>=v_busy_end)
+      and not exists(select 1 from jsonb_array_elements(v_settings->'closures') c where c->>'date'=v_date::text
+        and (c->>'resource_id' is null or c->>'resource_id' in (pair->>'provider_id',pair->>'chair_id'))
+        and v_busy_start at time zone 'Africa/Casablanca'<v_date+(c->>'end')::time
+        and v_busy_end at time zone 'Africa/Casablanca'>v_date+(c->>'start')::time)
+      and not exists(select 1 from private.scheduling_occupancy o left join private.scheduling_holds h on h.clinic_id=o.clinic_id and h.id=o.hold_id
+        where o.clinic_id=p_clinic_id and o.resource_id in ((pair->>'provider_id')::uuid,(pair->>'chair_id')::uuid)
+          and o.active and (o.appointment_id is not null or (h.status='held' and h.expires_at>v_now)) and o.period&&tstzrange(v_busy_start,v_busy_end,'[)'))) then
+    raise exception using errcode='SH409',message='resource_unavailable';
+  end if;
+  insert into private.configured_booking_requests(clinic_id,request_key,visit_type_id,configuration_revision,
+    starts_at,ends_at,contact_name,contact_email,administrative_consent_version,canonical_payload,acknowledgement)
+    values(p_clinic_id,p_request_key,(p_payload->>'visit_type_id')::uuid,v_revision,v_start,v_end,
+      btrim(p_payload->>'contact_name'),p_payload->>'contact_email','local-demo-v1',p_payload,'{}'::jsonb) returning * into v_row;
+  insert into private.audit_events(clinic_id,actor_ref,action,aggregate_id,correlation_id,occurred_at)
+    values(p_clinic_id,v_system,'ConfiguredBookingRequested',v_row.id,p_request_key,v_now);
+  insert into private.outbox_events(clinic_id,event_type,event_version,aggregate_type,aggregate_id,correlation_id,actor_ref,occurred_at,payload)
+    values(p_clinic_id,'ConfiguredBookingRequested',1,'configured_booking_request',v_row.id,p_request_key,v_system,v_now,
+      jsonb_build_object('status','request_received','configuration_revision',v_revision,'visit_type_id',v_row.visit_type_id));
+  v_receipt:=jsonb_build_object('request_id',v_row.id,'status','request_received','replayed',false);
+  if v_settings->>'confirmation_mode'='automatic' then
+    v_confirmation:=private.confirm_configured_booking_request(p_clinic_id,v_row.id,p_request_key,v_revision,v_system);
+    v_receipt:=jsonb_build_object('request_id',v_row.id,'status','confirmed','appointment_id',v_confirmation->'appointment_id',
+      'starts_at',v_confirmation->'starts_at','ends_at',v_confirmation->'ends_at','replayed',false);
+  end if;
+  update private.configured_booking_requests set acknowledgement=v_receipt where id=v_row.id and clinic_id=p_clinic_id;
+  return v_receipt;
+end $$;
+revoke all on function public.create_local_configured_booking_request(uuid,uuid,jsonb,jsonb,text) from public,anon,authenticated;
+grant execute on function public.create_local_configured_booking_request(uuid,uuid,jsonb,jsonb,text) to anon;

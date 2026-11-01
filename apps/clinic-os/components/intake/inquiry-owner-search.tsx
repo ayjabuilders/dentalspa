@@ -11,9 +11,9 @@ const messages: Record<IntakeFailure,string> = {
   unavailable: 'La réponse n’a pas pu être vérifiée. Réessayez la recherche.',
   disabled: 'Recherche momentanément indisponible. Aucun résultat vérifié.',
   conflict: 'Lecture indisponible. Relancez une recherche.',
-  denied: 'Accès refusé. La recherche et le détail privé ont été effacés.',
+  denied: 'Accès refusé. Les résultats et le détail ne sont plus affichés.',
   expired: 'Session expirée. Connectez-vous à nouveau.',
-  offline: 'Hors connexion. La recherche et le détail privé ont été effacés. Aucun envoi en arrière-plan.',
+  offline: 'Hors connexion. Les résultats et le détail ne sont plus affichés. Aucun envoi en arrière-plan.',
   missing: 'Demande absente, réattribuée ou inaccessible. Relancez une recherche autorisée.',
 };
 const date = (value: string) => new Intl.DateTimeFormat('fr-MA',{ dateStyle:'medium',timeStyle:'short' }).format(new Date(value));
@@ -55,7 +55,7 @@ export function InquiryOwnerSearch({ transport, resetRevision, onInvalidate, onS
   return <section className="owner-search work-panel" aria-labelledby={`${id}-title`}>
     <header className="owner-search-heading"><span className="owner-search-emblem"><Search size={22}/></span><div><p className="eyebrow muted">RETROUVER LE FIL</p><h2 id={`${id}-title`}>Rechercher dans mes demandes</h2></div><span className="owner-search-scope"><ShieldCheck size={15}/>Vos demandes uniquement</span></header>
     <p className="owner-search-intro">Retrouvez aussi une ancienne demande par son nom, au-delà de la liste récente. {transport.mode === 'demo' ? 'Simulation synthétique en mémoire temporaire.' : 'Recherche dans le cabinet vérifié, pour le responsable connecté.'}</p>
-    <form className="owner-search-form" onSubmit={search} noValidate aria-busy={loading}>
+    <p className="owner-search-mobile-intro">Retrouvez une demande récente ou ancienne par son nom.</p><form className="owner-search-form" onSubmit={search} noValidate aria-busy={loading}>
       <label htmlFor={`${id}-name`}>Nom de la demande</label><div className="owner-search-controls"><div className="owner-search-input"><Search size={18}/><input ref={input} id={`${id}-name`} value={name} onChange={event => edit(event.target.value)} aria-invalid={error === 'invalid'} aria-describedby={`${id}-help`} placeholder="Au moins 2 caractères…" autoComplete="off" spellCheck={false}/>{name && <button type="button" aria-label="Effacer le nom recherché" onClick={() => {edit('');input.current?.focus();}}><X size={17}/></button>}</div><Button type="submit" variant="primary" disabled={!online || loading || opening}>{loading ? <LoaderCircle size={17} className="intake-spin"/> : <Search size={17}/>}Rechercher mes demandes</Button></div>
       <p id={`${id}-help`} className="owner-search-help">2 à 80 caractères. Recherche littérale dans le nom uniquement ; les accents peuvent distinguer les résultats. Aucun rapprochement de patients.</p>
     </form>

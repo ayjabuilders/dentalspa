@@ -1,12 +1,13 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
+import { selectWorkspace, workspaceChoices, workspaceVerification } from './helpers/workspace-selection';
 import { createDemoIntakeTransport, createHttpIntakeTransport } from '../../apps/clinic-os/components/intake/transport';
-const base = process.env.FOLLOW_UP_UI_URL ?? 'http://localhost:4200';
+const base = process.env.FOLLOW_UP_UI_URL ?? 'http://localhost:4204';
 const clinic = '10000000-0000-4000-8000-000000000001';
 const user = '10000000-0000-4000-8000-000000000002';
 const inquiryId = '10000000-0000-4000-8000-000000000011';
 const otherId = '10000000-0000-4000-8000-000000000012';
 const recordId = '10000000-0000-4000-8000-000000000021';
-const inquiry = { id: inquiryId, clinic_id: clinic, owner_user_id: user, display_name: 'Lina Exemple', contact_phone: null, contact_email: null, source: 'phone', follow_up_at: null, status: 'new', created_at: '2026-10-26T09:30:00Z' };
+const inquiry = { id: inquiryId, clinic_id: clinic, owner_user_id: user, display_name: 'Salma Alaoui', contact_phone: null, contact_email: null, source: 'phone', follow_up_at: null, status: 'new', created_at: '2026-10-26T09:30:00Z' };
 const record = { id: recordId, clinic_id: clinic, inquiry_id: inquiryId, actor_user_id: user, kind: 'contact_attempt', channel: 'phone', recorded_at: '2026-10-26T10:00:00Z', event_version: 1 };
 const headers = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*', 'Cache-Control': 'no-store' };
 async function verified(page: Page, handler: (route: Route) => Promise<void>) {
@@ -16,17 +17,16 @@ async function verified(page: Page, handler: (route: Route) => Promise<void>) {
   });
   await page.route('**/api/v1/**', async route => {
     if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers });
-    if (route.request().url().endsWith('/me/workspace')) return route.fulfill({ status: 200, headers, json: { user_id: user, clinic_id: clinic, roles: ['reception'], mode: 'connected' } });
-    if (route.request().url().endsWith('/inquiries')) return route.fulfill({ status: 200, headers, json: { items: [inquiry, { ...inquiry, id: otherId, display_name: 'Adam Exemple' }], truncated: false } });
+    if (route.request().url().endsWith('/me/workspaces')) return route.fulfill({ status: 200, headers, json: workspaceChoices(clinic, ['reception']) }); if (route.request().url().endsWith('/me/workspace')) return route.fulfill({ status: 200, headers, json: workspaceVerification(user, clinic, ['reception']) });
+    if (route.request().url().endsWith('/inquiries')) return route.fulfill({ status: 200, headers, json: { items: [inquiry, { ...inquiry, id: otherId, display_name: 'Youssef Benali' }], truncated: false } });
     return handler(route);
   });
   await page.goto(`${base}/connection`);
   await page.getByLabel('Adresse e-mail', { exact: true }).fill('staff@example.invalid');
   await page.getByLabel('Mot de passe', { exact: true }).fill('synthetic-password');
-  await page.getByLabel('Identifiant du cabinet de développement').fill(clinic);
-  await page.getByRole('button', { name: 'Se connecter', exact: true }).click();
+  await page.getByRole('button', { name: 'Se connecter', exact: true }).click(); await selectWorkspace(page);
   await page.getByRole('button', { name: 'Ouvrir les demandes du cabinet' }).click();
-  await expect(page.getByRole('heading', { name: 'Lina Exemple', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Salma Alaoui', exact: true })).toBeVisible();
 }
 async function choose(page: Page) {
   await page.getByRole('button', { name: 'Consigner un suivi', exact: true }).click();
@@ -36,7 +36,7 @@ async function choose(page: Page) {
   await page.getByLabel('Canal observé').selectOption('phone');
 }
 test('demo follow-up is explicit, append-only, bounded to its inquiry and memory-only', async ({ page }) => {
-  await page.goto(`${base}/intake`); await expect(page.getByText('Aucun suivi consigné.', { exact: true })).toBeVisible();
+  await page.goto(`${base}/intake?preview=1`); await expect(page.getByText('Aucun suivi consigné.', { exact: true })).toBeVisible();
   await choose(page);
   await expect(page.getByRole('dialog')).toContainText('Aucun message ne sera envoyé');
   await page.getByRole('button', { name: 'Enregistrer le suivi', exact: true }).click();
@@ -44,12 +44,12 @@ test('demo follow-up is explicit, append-only, bounded to its inquiry and memory
   await expect(page.locator('.follow-up-history')).toContainText('Tentative de contact');
   await expect(page.getByRole('complementary', { name: 'Demande sélectionnée' })).toContainText('Nouvelle demande');
   await expect(page.getByRole('complementary', { name: 'Demande sélectionnée' })).toContainText('Non planifié');
-  await page.getByRole('button', { name: /Adam Exemple/ }).click(); await expect(page.locator('.follow-up-history li')).toHaveCount(0);
-  await page.getByRole('button', { name: /Lina Exemple/ }).click(); await expect(page.locator('.follow-up-history li')).toHaveCount(1);
+  await page.getByRole('button', { name: /Youssef Benali/ }).click(); await expect(page.locator('.follow-up-history li')).toHaveCount(0);
+  await page.getByRole('button', { name: /Salma Alaoui/ }).click(); await expect(page.locator('.follow-up-history li')).toHaveCount(1);
   await page.reload(); await expect(page.getByText('Aucun suivi consigné.', { exact: true })).toBeVisible();
 });
 test('pearl/navy mobile dialog reflows with keyboard focus and reduced motion', async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: 'reduce' }); await page.goto(`${base}/intake`);
+  await page.emulateMedia({ reducedMotion: 'reduce' }); await page.goto(`${base}/intake?preview=1`);
   await choose(page);
   for (const width of [1536, 1280, 768, 390]) {
     await page.setViewportSize({ width, height: 900 });
@@ -80,9 +80,9 @@ test.describe('verified follow-up', () => {
     await expect(page.getByRole('alert')).toContainText('Résultat à vérifier');
     await expect(page.getByLabel('Action constatée')).toBeDisabled();
     await page.getByRole('button', { name: 'Fermer', exact: true }).last().click();
-    await page.getByRole('button', { name: /Adam Exemple/ }).click();
+    await page.getByRole('button', { name: /Youssef Benali/ }).click();
     await page.getByRole('button', { name: 'Reprendre le suivi à vérifier' }).click();
-    await expect(page.locator('.follow-up-target')).toContainText('Lina Exemple');
+    await expect(page.locator('.follow-up-target')).toContainText('Salma Alaoui');
     await page.getByRole('button', { name: 'Fermer', exact: true }).last().click();
     await page.getByRole('button', { name: 'Masquer les demandes' }).click();
     await page.getByRole('button', { name: 'Ouvrir les demandes du cabinet' }).click();
@@ -123,7 +123,7 @@ test.describe('verified follow-up', () => {
     await choose(page); await page.getByRole('button', { name: 'Enregistrer le suivi', exact: true }).click();
     await expect(page.getByRole('alert')).toContainText('n’est pas activé');
     await page.getByRole('button', { name: 'Fermer', exact: true }).last().click();
-    mode = 'denied'; await page.getByRole('button', { name: /Adam Exemple/ }).click();
+    mode = 'denied'; await page.getByRole('button', { name: /Youssef Benali/ }).click();
     await expect(page.getByText('Ce suivi est réservé au responsable autorisé de la demande.', { exact: true })).toBeVisible();
     await context.setOffline(true); await expect(page.locator('.follow-up-history li')).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Réessayer l’historique' })).toBeDisabled(); await context.setOffline(false);

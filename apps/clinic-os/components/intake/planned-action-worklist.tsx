@@ -9,8 +9,8 @@ import './planned-action-worklist.css';
 const labels = { review_inquiry: 'Examiner la demande', review_follow_up: 'Examiner l’historique du suivi' };
 const date = (value:string) => new Intl.DateTimeFormat('fr-MA',{dateStyle:'medium',timeStyle:'short'}).format(new Date(value));
 const messages: Record<IntakeFailure,string> = {
-  offline:'Hors connexion. Les intentions affichées ont été effacées. Relisez-les après reconnexion.',
-  denied:'Accès refusé. Les intentions privées ont été effacées.',
+  offline:'Hors connexion. Reconnectez-vous pour consulter les intentions enregistrées.',
+  denied:'Accès refusé. Les intentions ne sont plus affichées.',
   expired:'Session expirée. Connectez-vous à nouveau.',
   missing:'Cette demande est absente ou inaccessible. Aucun détail actuel n’a été ouvert.',
   unavailable:'Intentions indisponibles. La réponse n’a pas pu être vérifiée.',

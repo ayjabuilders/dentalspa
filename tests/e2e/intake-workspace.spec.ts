@@ -2,15 +2,18 @@ import { expect, test } from '@playwright/test';
 import { createDemoIntakeTransport, createHttpIntakeTransport, inquiryAttempt, IntakeError } from '../../apps/clinic-os/components/intake/transport';
 import type { CreateInquiry } from '../../packages/contracts/src/intake';
 
-const base = process.env.INTAKE_UI_URL ?? 'http://localhost:4200';
+const base = process.env.INTAKE_UI_URL ?? 'http://localhost:4204';
 
 test('intake demo supports source filtering, validated create and selected details without persistence', async ({ page }) => {
-  await page.goto(`${base}/intake`);
+  const apiRequests: string[] = [];
+  page.on('request', request => { if (new URL(request.url()).pathname.startsWith('/api/v1/')) apiRequests.push(request.url()); });
+  await page.goto(`${base}/intake?preview=1`);
   await expect(page.getByRole('heading', { name: 'Vos nouvelles demandes' })).toBeVisible();
   await expect(page.getByText('Aperçu synthétique · mémoire temporaire')).toBeVisible();
+  await expect(page.locator('.intake-row')).toHaveCount(3);
   await page.getByLabel('Filtrer par source').selectOption('website');
   await expect(page.locator('.intake-row')).toHaveCount(1);
-  await expect(page.getByRole('complementary', { name: 'Demande sélectionnée' })).toContainText('Adam Exemple');
+  await expect(page.getByRole('complementary', { name: 'Demande sélectionnée' })).toContainText('Youssef Benali');
   await page.getByLabel('Rechercher une demande').fill('inconnu');
   await expect(page.getByRole('heading', { name: 'Aucune demande trouvée' })).toBeVisible();
   await page.getByRole('button', { name: 'Réinitialiser les filtres' }).click();
@@ -20,6 +23,9 @@ test('intake demo supports source filtering, validated create and selected detai
   await expect(dialog.getByRole('alert')).toContainText('informations sont à vérifier');
   await dialog.getByLabel('Nom du contact').fill('Salma Exemple Test');
   await dialog.getByLabel('Source du premier contact').selectOption('email');
+  await dialog.getByText('Options de démonstration').click();
+  await dialog.getByLabel('Sujet du contact · exemple fictif').selectOption('appointment_example_question');
+  await dialog.getByLabel('Préférence de rappel · exemple fictif').selectOption('morning');
   await dialog.getByLabel('E-mail', { exact: false }).fill('salma@example.invalid');
   await dialog.getByRole('button', { name: 'Enregistrer la demande' }).click();
   await expect(dialog).toHaveCount(0);
@@ -27,15 +33,19 @@ test('intake demo supports source filtering, validated create and selected detai
   const detail = page.getByRole('complementary', { name: 'Demande sélectionnée' });
   await expect(detail.getByRole('heading', { name: 'Salma Exemple Test' })).toBeVisible();
   await expect(detail).toContainText('salma@example.invalid');
+  await expect(detail).toContainText('Question sur un exemple de visite');
+  await expect(detail).toContainText('Matin');
   await expect(detail).toContainText('Aucun message envoyé et aucun rendez-vous confirmé');
   await page.reload();
   await expect(page.locator('.intake-row')).toHaveCount(3);
   await expect(page.getByText('Salma Exemple Test')).toHaveCount(0);
+  await expect(page.getByText('Question sur un exemple de visite')).toHaveCount(0);
+  expect(apiRequests).toEqual([]);
 });
 
 test('intake remains contained in both themes and prevents offline submission', async ({ page, context }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto(`${base}/intake`);
+  await page.goto(`${base}/intake?preview=1`);
   await expect(page.locator('.intake-row')).toHaveCount(3);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.getByRole('button', { name: 'Activer le thème sombre' }).click();

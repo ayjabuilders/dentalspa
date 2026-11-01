@@ -1,0 +1,14 @@
+import {test,expect} from '@playwright/test';
+test('native renewal preserves a quote command after lost response',async({page})=>{
+ test.setTimeout(120000);
+ const email=process.env.LOCAL_INVOICE_EMAIL,password=process.env.LOCAL_INVOICE_PASSWORD,api=process.env.LOCAL_INVOICE_API;
+ test.skip(!email||!password||!api,'Run native invoice API runner --session-renew-browser.');
+ await page.clock.install();let refreshes=0,logins=0;const commands:Array<{key:string|undefined;body:unknown}>=[];
+ page.on('request',r=>{if(r.url().includes('/auth/v1/token'))logins++;});
+ await page.route('**/api/clinic-session',async route=>{const action=route.request().postDataJSON().action,response=await route.fetch().catch(()=>null);if(!response)return route.abort('failed');if(action==='start'&&response.ok()){const data=await response.json();return route.fulfill({response,json:{...data,expires_at:Math.floor(Date.now()/1000)+90}});}if(action==='resume'&&response.ok())refreshes++;return route.fulfill({response});});
+ await page.route('**/api/v1/**',async route=>{const req=route.request(),url=new URL(req.url()),response=await route.fetch({url:api+url.pathname+url.search}).catch(()=>null);if(!response)return route.abort('failed');if(req.method()==='POST'&&url.pathname.endsWith('/quotes')){expect(response.status()).toBe(201);commands.push({key:req.headers()['idempotency-key'],body:req.postDataJSON()});if(commands.length===1)return route.abort('failed');}return route.fulfill({response});});
+ await page.goto('http://localhost:4204/connection?view=patients');await page.getByLabel('Adresse e-mail',{exact:true}).fill(email!);await page.getByLabel('Mot de passe',{exact:true}).fill(password!);await page.getByRole('button',{name:'Se connecter',exact:true}).click();await page.getByRole('button',{name:'Ouvrir la fiche de Salma Alaoui (FICTIF)',exact:true}).click();await page.getByRole('tab',{name:'Devis',exact:true}).click();await page.getByRole('button',{name:'Nouveau devis brouillon',exact:true}).click();
+ const form=page.getByRole('region',{name:'Nouveau devis brouillon',exact:true});await form.getByRole('checkbox').first().check();await form.getByLabel('Quantité',{exact:true}).fill('3');await form.getByRole('button',{name:'Enregistrer le brouillon',exact:true}).click();await expect(form.getByRole('alert')).toContainText('Résultat à vérifier');
+ await page.clock.fastForward(61000);await expect.poll(()=>refreshes).toBeGreaterThan(0);await expect(form).toBeVisible();await expect(form.getByLabel('Quantité',{exact:true})).toHaveValue('3');await expect(form.getByRole('button',{name:'Fermer',exact:true})).toBeDisabled();
+ await form.getByRole('button',{name:'Réessayer la même création',exact:true}).click();await expect(form).toHaveCount(0);expect(commands).toHaveLength(2);expect(commands[0]).toEqual(commands[1]);expect(logins).toBe(1);await expect(page.getByRole('region',{name:'Dossier patient enregistré'})).toContainText('376,50');
+});

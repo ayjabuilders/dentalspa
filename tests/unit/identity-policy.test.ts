@@ -5,7 +5,7 @@ import { PolicyGuard } from '../../apps/dental-api/src/identity/presentation/pol
 import type { IdentityPort } from '../../apps/dental-api/src/identity/domain/access';
 
 describe('runtime route policy declaration', () => {
-  it.each([undefined, 'authenticated', 'Staff', 'admin', ''])('fails closed for unsupported policy %s before identity lookup', async rule => {
+  it.each([undefined, 'authenticated', 'identity', 'Staff', 'admin', ''])('fails closed for unsupported policy %s before identity lookup', async rule => {
     const reflector = new Reflector();
     vi.spyOn(reflector, 'getAllAndOverride').mockReturnValue(rule);
     const identity: IdentityPort = { verify: vi.fn(), memberships: vi.fn(), patientLinks: vi.fn() };

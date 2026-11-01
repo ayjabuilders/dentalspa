@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "reviewedAt": "2026-10-26",
+  "reviewedAt": "2026-11-01",
   "method": "Six capacités PRD de poids égal par module. Livré=1, partiel=0.5, prévu=0. Une preuve et ses tâches liées terminées sont requises pour créditer des points. Mesure de couverture fonctionnelle, pas de temps écoulé ni d’acceptation pour usage réel.",
   "modules": [
     {
@@ -12,9 +12,11 @@
           "label": "Centraliser les demandes des canaux autorisés",
           "state": "partial",
           "taskIds": [
-            "INTAKE-INTEGRATE"
+            "INTAKE-INTEGRATE",
+            "CRM-MVP-08-INBOX-DEMO-LOCAL",
+            "CRM-MVP-08-FAKE-WEBHOOK-ADAPTER"
           ],
-          "evidence": "PR #2 : saisie manuelle et provenance livrées; formulaires et connecteurs de canaux restent à construire."
+          "evidence": "PR #2 : saisie manuelle et provenance livrées. Clinic OS ajoute un aperçu Inbox à cinq conversations marocaines fictives; il ne reçoit pas de messages, n’interroge aucun fournisseur et ne centralise aucun canal réel. Un adaptateur de développement vérifie la signature HMAC de fixtures synthétiques, les doublons et l’ordre d’événements, mais reste en mémoire sans route HTTP, stockage, tenant ou fournisseur. Formulaires et connecteurs de canaux réels restent à construire. Aucun crédit de couverture canal; le critère reste partiel."
         },
         {
           "id": "M01-2",
@@ -47,28 +49,38 @@
           "label": "Gérer responsable, échéance, relances et résultat",
           "state": "partial",
           "taskIds": [
-          "INQUIRY-FOLLOW-UP-INTEGRATE",
-          "INQUIRY-OWNER-WORKLIST-API",
-          "INQUIRY-OWNER-WORKLIST-UI",
-        "INQUIRY-OWNER-WORKLIST-INTEGRATE",
-        "INQUIRY-SCHEDULE-API",
-        "INQUIRY-SCHEDULE-UI",
-        "INQUIRY-SCHEDULE-HISTORY-API",
-        "INQUIRY-SCHEDULE-HISTORY-UI",
-        "INQUIRY-OWNER-SEARCH-API",
-        "INQUIRY-OWNER-SEARCH-UI",
-        "INQUIRY-PLANNED-ACTION-INTEGRATE",
-        "INQUIRY-PLANNED-ACTION-WORKLIST-INTEGRATE",
-        "INQUIRY-PLANNED-ACTION-HISTORY-INTEGRATE"
+            "INQUIRY-FOLLOW-UP-INTEGRATE",
+            "INQUIRY-OWNER-WORKLIST-API",
+            "INQUIRY-OWNER-WORKLIST-UI",
+            "INQUIRY-OWNER-WORKLIST-INTEGRATE",
+            "INQUIRY-SCHEDULE-API",
+            "INQUIRY-SCHEDULE-UI",
+            "INQUIRY-SCHEDULE-HISTORY-API",
+            "INQUIRY-SCHEDULE-HISTORY-UI",
+            "INQUIRY-OWNER-SEARCH-API",
+            "INQUIRY-OWNER-SEARCH-UI",
+            "INQUIRY-PLANNED-ACTION-INTEGRATE",
+            "INQUIRY-PLANNED-ACTION-WORKLIST-INTEGRATE",
+            "INQUIRY-PLANNED-ACTION-HISTORY-INTEGRATE",
+            "INQUIRY-OWNER-REASSIGNMENT-INTEGRATE",
+            "TEAM-ACTIVITY-INQUIRY-OPS",
+            "INQUIRY-CONTACT-OUTCOME-LOCAL-DEMO",
+            "INQUIRY-CONTACT-OUTCOME-API-DEFAULT-OFF"
           ],
-      "evidence": "PR #9–10, #15–17, #21, #23 et #25 : propriétaire initial, recherche serveur de ses anciennes demandes, échéance, historique append-only, vue des échéances, commande bornée du propriétaire actuel, journaux personnels non exhaustifs, prochaine intention administrative sans exécution, liste privée de ces intentions et historique personnel de leurs commandes; réattribution et cycle complet des résultats restent à construire."
+          "evidence": "PR #9–10, #15–17, #21, #23 et #25, plus INQUIRY-OWNER-REASSIGNMENT-INTEGRATE : propriétaire initial, réattribution réservée au gestionnaire avec compare-and-set, idempotence, journal/audit et outbox atomiques, liste et historique des échéances, préférences de communication explicitement déclarées et suivi manuel; le journal récent inclut les changements d’échéance, d’intention et de responsable sans données de demande. Le vocabulaire factuel de résultat est illustré en mémoire pour des demandes marocaines fictives. Un contrat et une API/BD d’historique append-only sont préparés derrière des gates indépendants, par défaut désactivés, avec autorisation SQL multi-tenant limitée au propriétaire actif, idempotence et audit/outbox minimaux. L’activation et la visibilité/rétention de l’historique restent bloquées par la revue confidentialité; aucune UI connectée ou écriture hébergée n’est activée. Qualification et conversion restent à construire. Les tests PGlite/API ciblés passent; pgTAP et contention PostgreSQL réelle restent à exécuter. Le critère reste partiel. Vérification locale du 31/10/2026 : profil synthétique manquant réparé sans modifier les rôles; annuaire HTTP 200, badges de provenance, auto-attribution explicite du gestionnaire, création, transfert, reprise exacte après perte de réponse, suivi factuel, intention et échéance persistés. Preuves : scripts/check-local-intake-pipeline.mjs, .local/qa/intake-pipeline-native.log et .local/qa/intake-actions-unit.log (28 tests). Aucun canal externe ou conversion patient ajouté."
         },
         {
           "id": "M01-6",
           "label": "Séparer prospects, patients confirmés et données de santé",
-          "state": "planned",
-          "taskIds": [],
-          "evidence": ""
+          "state": "partial",
+          "taskIds": [
+            "INQUIRY-PATIENT-DATA-BOUNDARY-LOCAL",
+            "CRM-MVP-02-SYNTHETIC-JOURNEY-PREVIEW",
+            "CRM-MVP-04-MANUAL-CHECKLIST-PREVIEW",
+            "CRM-MVP-02-PATIENT-DIRECTORY-CONNECTED-READ",
+            "CRM-MVP-PATIENT-RECORDS-READ"
+          ],
+          "evidence": "La table inquiries reste distincte du registre patients, sans clé patient ni champ clinique; le contrat et le RPC direct rejettent une association patient ou des champs d’historique/diagnostic. La migration PGlite vérifie les colonnes et l’absence de FK vers patients, avec absence d’effet secondaire. Les aperçus locaux CRM-MVP-02 et CRM-MVP-04 montrent une chronologie et une checklist fictives sans liaison, fichier, écriture ou effet sur l’identité. L’espace /connection permet maintenant, après vérification du cabinet actif, de lire le registre et une fiche minimale par l’API same-clinic existante; les réponses sont no-store et la donnée est effacée au retrait de session. La preuve UI/API utilise des comptes et réponses synthétiques interceptés; aucun test PostgreSQL réel n’a été possible. Cela ne crée ni lien, conversion, contact, chronologie persistante ni contenu clinique, et n’ajoute pas de crédit de complétion CRM avant acceptation locale avec PostgreSQL/RLS. Il reste à approuver puis construire l’association revue, la conversion sans doublon et le domaine clinique séparé. Mise à jour locale du 31 octobre : six profils administratifs, six checklists et six devis brouillons sont persistés; trois rendez-vous synthétiques sont explicitement liés à trois patients. Le seed rejoué ne duplique pas les événements; une session Auth temporaire vérifie les lectures API, le refus inter-cabinets et le rechargement navigateur. Cela ne constitue pas une conversion de prospect ni une vérification d’identité; les pièces jointes, paiements et parcours complet restent absents. État partiel inchangé."
         }
       ]
     },
@@ -79,48 +91,91 @@
         {
           "id": "M02-1",
           "label": "Réservation publique par service, durée et praticien",
-          "state": "planned",
-          "taskIds": [],
-          "evidence": ""
+          "state": "partial",
+          "taskIds": [
+            "PUBLIC-BOOKING-LOCAL-REQUEST-DEMO",
+            "PUBLIC-BOOKING-LOCAL-AVAILABILITY-DEMO",
+            "M02-LOCAL-MOROCCAN-BOOKING-SCENARIOS",
+            "CRM-MVP-CONFIGURED-PUBLIC-REQUEST-ENTRY",
+            "CRM-MVP-CONFIGURED-BOOKING-RECEPTION-READ",
+            "HOSTED-AGENDA-HTTP-ACCEPTANCE"
+          ],
+          "evidence": "La page publique propose une demande locale avec formats/durées et praticiens fictifs, date/moment souhaités et créneaux générés selon un horaire d’exemple. La disponibilité est calculée uniquement dans l’adaptateur local synthétique; le test confirme que le conflit de démo est exclu. Trois profils marocains explicitement fictifs illustrent un créneau proposé, un format court l’après-midi et un dimanche sans disponibilité d’exemple. Playwright vérifie les scénarios à 320 px, sans appel API ni écriture de stockage. Aucune demande n’est transmise et aucune réservation réelle n’est créée. Catalogue, disponibilités et confirmation atomique approuvés restent à construire; critère partiel uniquement. Mise à jour du 31 octobre : le lien public configurable propose des créneaux calculés côté serveur puis enregistre une demande locale avec coordonnées fictives et accord administratif déclaré. Test natif UI/API/PostgreSQL : réponse perdue puis reprise, une seule demande et un seul audit/outbox; accusé request_received, aucune capacité réservée. Le contrôle privé reste masqué. Revue réception, confirmation automatique et ressources unifiées restent en cours; critère partiel. Les demandes du lien configurable sont maintenant visibles par Réception/Gestionnaire du même cabinet, avec type historique et horaire souhaité. Parcours public→réception→agenda vérifié en natif; trois demandes marocaines fictives persistées pour démonstration. Actions de confirmation encore absentes pour cette voie. Hosted Dev 2026-11-01 : paramètres, demande publique, confirmations concurrentes (un succès/un conflit), confirmation automatique, déplacement/annulation et capacités libérées vérifiés via API locale et Supabase hébergé.3 demandes,2 rendez-vous annulés,0 occupation/session après test. Preuves : scripts/check-hosted-agenda-flow.mjs et docs/HOSTED_FOUNDATION_ACTIVATION_PLAN.md. Consentement/contact restent fictifs; ni règles cliniques réelles ni navigateur Vercel validés."
         },
         {
           "id": "M02-2",
           "label": "Contraintes de salles, fauteuils, équipe et équipement",
           "state": "partial",
           "taskIds": [
-            "SCHEDULING-HOLD-INTEGRATE"
+            "SCHEDULING-HOLD-INTEGRATE",
+            "M02-2-LOCAL-RESOURCE-BUNDLE-DEMO"
           ],
-          "evidence": "PR #4 : contraintes praticien/fauteuil; pas encore toutes les salles, équipes et équipements."
+          "evidence": "PR #4 : contraintes connectées praticien/fauteuil; la réservation publique ajoute un scénario fictif lié par praticien avec praticien, salle, fauteuil, équipe et équipement. Les créneaux synthétiques sont écartés si l’un de ces éléments est occupé; tests unitaires et navigateur vérifient le filtrage, l’affichage et l’absence d’appel API/stockage. Les ressources et occupations sont purement illustratives. Inventaire réel, qualification service-ressource, règles d’équipe/équipement, marges et confirmation restent soumis à approbation et contrat transactionnel. Critère partiel uniquement."
         },
         {
           "id": "M02-3",
           "label": "Horaires, marges, jours fermés et urgences",
-          "state": "planned",
-          "taskIds": [],
-          "evidence": ""
+          "state": "partial",
+          "taskIds": [
+            "PUBLIC-BOOKING-LOCAL-AVAILABILITY-DEMO",
+            "CRM-MVP-M02-LOCAL-SYNTHETIC-BOOKING-CONFIRMATION",
+            "CRM-MVP-CONFIGURED-AGENDA-NATIVE",
+            "CRM-MVP-AGENDA-UX-INTEGRATION",
+            "CRM-MVP-CONFIGURED-CONFIRMATION-KERNEL",
+            "CRM-MVP-CONFIGURED-CONFIRMATION-API",
+            "CRM-MVP-CONFIGURED-CONFIRMATION-UI",
+            "CRM-MVP-CONFIGURED-APPOINTMENT-CANCELLATION",
+            "CRM-MVP-CONFIGURED-APPOINTMENT-RESCHEDULING",
+            "CRM-MVP-CONFIGURED-AUTOMATIC-BOOKING",
+            "CRM-MVP-CONFIGURED-PUBLIC-BOOKING"
+          ],
+          "evidence": "La confirmation connectée de démonstration impose uniquement des créneaux fictifs du lundi au samedi, 09:00–12:00 et 14:00–18:00, et 45 minutes; quatre ressources de démonstration sont disponibles. PgTAP local 37/37 et E2E local 1/1 passent. Ces valeurs n’expriment pas la politique du cabinet; marges, exceptions, urgences et horaires approuvés restent absents. Critère partiel. Mise à jour du 31 octobre : paramètres Gestionnaire persistés (horaires, types, durées, marges, visibilité), disponibilité publique calculée depuis leur version enregistrée. Deux types fictifs initialisés; contrôle privé exclu du catalogue public. Parcours natif UI/API/PostgreSQL vérifie sauvegarde, nouvelle révision, disponibilité publique correspondante et isolation cabinet. Confirmation publique configurable et commandes Patient Pass restent incomplètes; critère partiel. UX intégrée : cartes de période, filtres/recherche et navigation temporelle; quatre onglets de paramètres exclusifs. Passage agenda/paramètres sans reconnexion vérifié avec Auth/API/PostgreSQL local; déplacement/annulation persistés revérifiés après refonte. État partiel inchangé. Agenda navigation follow-up: date/period/search/status retained within session across settings/requests; fresh read on return; cleared on session/workspace reset. Browser1/1, typecheck/lint passed. No coverage-state change. Configured confirmation SQL kernel uses common hold/appointment occupancy; native22 checks and2 concurrent races passed. API/UI not connected, gate off, coverage remains partial. Configured confirmation API verified with real local Auth/PostgreSQL and concurrent commands; receipt/error contracts checked. UI not wired, coverage remains partial. Configured staff confirmation now locally enabled and wired public request→reception→agenda; native lost-response retry, occupancy and authoritative rereads verified. Configured move/cancel, automatic mode and Pass remain pending; criterion stays partial. Configured cancellation now wired and natively verified: version2/cancelled, occupancy freed, public slot restored, immutable retry, audit/outbox and authoritative reception/agenda. Concurrent cancellation has one winner. Configured rescheduling and automatic mode remain pending. Configured move now functional: server-calculated type slots, atomic buffered occupancy swap, conflict preserves old booking, native full lifecycle/lost responses and competing moves verified. Automatic booking and Pass remain pending; no whole-module completion claim. Public automatic mode now functional and natively verified, shared allocation kernel with staff flow, immutable initial receipt and one winner under concurrency. Staff-review remains available; Pass and identity/resource alignment still pending. Public booking UX audit (2026-10-31): default route now one connected flow with three steps, separate desktop columns and single-column mobile, date initialized in Casablanca, hidden selectors while entering contact, explicit no-slot next-day action. Old illustrative forms preserved only under /preview. Native browser/API/PostgreSQL lifecycle passed14.9s with confirmation, move, cancel and lost-response retries; mobile390/desktop1280 screenshots inspected. Three availability failure/empty/response-binding tests passed. No hosted changes or new schema; Patient Pass and identity linkage remain incomplete. 2026-10-31 agenda UX: day/week hourly grid with concurrent event lanes, service-family colors/icons and accessible event detail drawer; existing move/cancel commands preserved. Settings overview and modal hours/visit/rules/closure editors, direct selected-service form, discard protection and native save/reload verified. Native configured booking confirmation/move/cancel test passed against local Auth/API/PostgreSQL; settings owner smoke restored original horizon; mocked configuration regression including keyboard focus passed. Desktop/mobile screenshots inspected. Evidence .local/qa/agenda-calendar-native.log, agenda-settings-modal-native.log, agenda-settings-modal-regression.log. No drag-to-create/reschedule, editable color settings, Google synchronization or live release claimed."
         },
         {
           "id": "M02-4",
           "label": "Confirmation, annulation, déplacement et attente",
-          "state": "planned",
-          "taskIds": [],
-          "evidence": ""
+          "state": "partial",
+          "taskIds": [
+            "LOCAL-APPOINTMENT-LIFECYCLE-DEMO",
+            "LOCAL-APPOINTMENT-SESSION-DEMO",
+            "M02-4-LOCAL-WAITLIST-PREFERENCE-DEMO",
+            "M02-4-LOCAL-WAITLIST-ALTERNATIVE-DATE",
+            "CRM-MVP-M02-LOCAL-SYNTHETIC-BOOKING-CONFIRMATION",
+            "CRM-MVP-M02-PUBLIC-TO-RECEPTION-CONFIRMATION-E2E",
+            "CRM-MVP-PATIENT-RECORDS-READ",
+            "CRM-MVP-APPOINTMENT-LIFECYCLE",
+            "CRM-MVP-AGENDA-UX-INTEGRATION",
+            "CRM-MVP-CONFIGURED-CONFIRMATION-KERNEL",
+            "CRM-MVP-CONFIGURED-CONFIRMATION-API",
+            "CRM-MVP-CONFIGURED-CONFIRMATION-UI",
+            "CRM-MVP-CONFIGURED-APPOINTMENT-CANCELLATION",
+            "CRM-MVP-CONFIGURED-APPOINTMENT-RESCHEDULING",
+            "CRM-MVP-CONFIGURED-AUTOMATIC-BOOKING",
+            "HOSTED-AGENDA-HTTP-ACCEPTANCE"
+          ],
+          "evidence": "La confirmation synthétique publique→Réception est persistée. Mise à jour du 31 octobre : agenda connecté avec rendez-vous liés aux dossiers fictifs; Réception/Gestionnaire peuvent déplacer et annuler en base locale. Versions, reprises idempotentes, contraintes praticien/fauteuil et audit/outbox transactionnels sont vérifiés. Annulation libère le créneau et reste visible dans agenda, dossier patient et demandes. Preuves : 18 vérifications PostgreSQL natives, 6 tests HTTP, parcours navigateur natif déplacement→annulation→dossier avec vérification SQL des événements, régression dossier patient réussie. Les anciens aperçus mémoire restent distincts. Réservation publique configurable, commandes Patient Pass, attente connectée, inventaire unifié et notifications restent à terminer; critère partiel. UX intégrée : cartes de période, filtres/recherche et navigation temporelle; quatre onglets de paramètres exclusifs. Passage agenda/paramètres sans reconnexion vérifié avec Auth/API/PostgreSQL local; déplacement/annulation persistés revérifiés après refonte. État partiel inchangé. Configured confirmation SQL kernel uses common hold/appointment occupancy; native22 checks and2 concurrent races passed. API/UI not connected, gate off, coverage remains partial. Configured confirmation API verified with real local Auth/PostgreSQL and concurrent commands; receipt/error contracts checked. UI not wired, coverage remains partial. Configured staff confirmation now locally enabled and wired public request→reception→agenda; native lost-response retry, occupancy and authoritative rereads verified. Configured move/cancel, automatic mode and Pass remain pending; criterion stays partial. Configured cancellation now wired and natively verified: version2/cancelled, occupancy freed, public slot restored, immutable retry, audit/outbox and authoritative reception/agenda. Concurrent cancellation has one winner. Configured rescheduling and automatic mode remain pending. Configured move now functional: server-calculated type slots, atomic buffered occupancy swap, conflict preserves old booking, native full lifecycle/lost responses and competing moves verified. Automatic booking and Pass remain pending; no whole-module completion claim. Public automatic mode now functional and natively verified, shared allocation kernel with staff flow, immutable initial receipt and one winner under concurrency. Staff-review remains available; Pass and identity/resource alignment still pending. UX du 31 octobre : récapitulatif patient/date/heure avant déplacement ou annulation, déplacement initialisé à la date du rendez-vous; retour dossier→agenda conservant les filtres sans reconnexion. Test navigateur ciblé 1/1, types/lint réussis, capture inspectée. Couverture métier partielle inchangée. 2026-10-31 agenda UX: day/week hourly grid with concurrent event lanes, service-family colors/icons and accessible event detail drawer; existing move/cancel commands preserved. Settings overview and modal hours/visit/rules/closure editors, direct selected-service form, discard protection and native save/reload verified. Native configured booking confirmation/move/cancel test passed against local Auth/API/PostgreSQL; settings owner smoke restored original horizon; mocked configuration regression including keyboard focus passed. Desktop/mobile screenshots inspected. Evidence .local/qa/agenda-calendar-native.log, agenda-settings-modal-native.log, agenda-settings-modal-regression.log. No drag-to-create/reschedule, editable color settings, Google synchronization or live release claimed. Hosted Dev 2026-11-01 : paramètres, demande publique, confirmations concurrentes (un succès/un conflit), confirmation automatique, déplacement/annulation et capacités libérées vérifiés via API locale et Supabase hébergé.3 demandes,2 rendez-vous annulés,0 occupation/session après test. Preuves : scripts/check-hosted-agenda-flow.mjs et docs/HOSTED_FOUNDATION_ACTIVATION_PLAN.md. Consentement/contact restent fictifs; ni règles cliniques réelles ni navigateur Vercel validés."
         },
         {
           "id": "M02-5",
           "label": "Rappels et préparation avant visite",
-          "state": "planned",
-          "taskIds": [],
-          "evidence": ""
+          "state": "partial",
+          "taskIds": [
+            "M02-5-LOCAL-REMINDER-CONTENT-PREVIEW",
+            "PATIENT-PASS-LOCAL-VISIT-PREPARATION-DEMO"
+          ],
+          "evidence": "Patient Pass associe à la préparation logistique un aperçu local de texte administratif contenant seulement la date/heure fictive et un rappel de consulter les informations communiquées par le cabinet. Le test mobile vérifie l’absence de conseil clinique, de programmation/envoi et d’appel API/stockage. Le contenu est un exemple sans cadence configurée; l’envoi réel, le consentement/autorité de contact, les canaux, les reprises et la rétention nécessitent une politique approuvée et une implémentation serveur. Critère partiel uniquement."
         },
         {
           "id": "M02-6",
           "label": "Réservation transactionnelle et prévention des conflits",
           "state": "partial",
           "taskIds": [
-            "SCHEDULING-CONCURRENCY-EVIDENCE"
+            "SCHEDULING-CONCURRENCY-EVIDENCE",
+            "CRM-MVP-M02-LOCAL-SYNTHETIC-BOOKING-CONFIRMATION",
+            "CRM-MVP-M02-PUBLIC-TO-RECEPTION-CONFIRMATION-E2E",
+            "HOSTED-AGENDA-HTTP-ACCEPTANCE"
           ],
-          "evidence": "PR #4–5 : options et concurrence vérifiées; confirmation de rendez-vous absente."
+          "evidence": "La confirmation synthétique locale crée le rendez-vous, audit, outbox et reçu idempotent dans une transaction PostgreSQL; les contraintes d’exclusion empêchent les chevauchements praticien/fauteuil. Le parcours public→Réception vérifie la même demande de bout en bout; E2E collision et parcours intégrés passent 2/2. PgTAP natif passe 37/37; contention PostgreSQL à trois sessions 2/2. Ce contrat couvre uniquement ressources/règles fictives; aucun contrat de réservation du cabinet n’est approuvé. Critère partiel. Hosted Dev 2026-11-01 : paramètres, demande publique, confirmations concurrentes (un succès/un conflit), confirmation automatique, déplacement/annulation et capacités libérées vérifiés via API locale et Supabase hébergé.3 demandes,2 rendez-vous annulés,0 occupation/session après test. Preuves : scripts/check-hosted-agenda-flow.mjs et docs/HOSTED_FOUNDATION_ACTIVATION_PLAN.md. Consentement/contact restent fictifs; ni règles cliniques réelles ni navigateur Vercel validés."
         }
       ]
     },
@@ -131,23 +186,29 @@
         {
           "id": "M03-1",
           "label": "Onboarding mobile accessible étape par étape",
-          "state": "planned",
-          "taskIds": [],
-          "evidence": ""
+          "state": "done",
+          "taskIds": [
+            "PATIENT-ONBOARDING-LOCAL"
+          ],
+          "evidence": "Critère du guide d’accueil local satisfait : parcours de trois étapes accessible au clavier et mobile, gestion temporaire du confort de lecture, sans appel réseau ni stockage. Rejoué le 2026-10-30 : deux tests Playwright vérifient progression, focus, retour, fermeture, largeur 320 px, cible tactile 48 px et absence d’appels API/écritures navigateur. Ce crédit couvre le guide de démonstration uniquement; invitation, vérification d’identité et rattachement connecté sont des travaux distincts encore ouverts."
         },
         {
           "id": "M03-2",
           "label": "Formulaires administratifs et consentements minimaux",
-          "state": "planned",
-          "taskIds": [],
-          "evidence": ""
+          "state": "partial",
+          "taskIds": [
+            "PATIENT-COMMUNICATION-PREFERENCES-LOCAL"
+          ],
+          "evidence": "Patient Pass propose un formulaire administratif permettant au patient de déclarer canal de contact, langue et fuseau. L’aperçu local reste en mémoire, disparaît au rechargement et ne vaut ni consentement ni autorisation de contact; le test navigateur local a été relancé (zéro appel API/storage). Un contrat strict et une route de préférences du compte vérifié existent, avec une migration/API désactivée par défaut et audit/outbox minimaux. Les autres formulaires, les textes et versions de consentement, retraits, rétention et revue privacy/legal restent à approuver. Critère partiel seulement."
         },
         {
           "id": "M03-3",
           "label": "Rendez-vous, préparation, documents et prochaine action",
-          "state": "planned",
-          "taskIds": [],
-          "evidence": ""
+          "state": "partial",
+          "taskIds": [
+            "PATIENT-PASS-LOCAL-VISIT-PREPARATION-DEMO"
+          ],
+          "evidence": "Patient Pass local affiche un résumé d’exemple, une préparation logistique minimale, l’absence explicite de document ou consigne de santé partagés et une prochaine étape simulée, y compris pour un scénario d’annulation. Le test mobile vérifie 320 px, aucune requête API et aucun stockage navigateur. Les rendez-vous connectés, les consignes approuvées, documents réellement publiés et prochaines actions du cabinet restent à construire."
         },
         {
           "id": "M03-4",
@@ -166,9 +227,11 @@
         {
           "id": "M03-6",
           "label": "Messagerie administrative accessible et multilingue",
-          "state": "planned",
-          "taskIds": [],
-          "evidence": ""
+          "state": "partial",
+          "taskIds": [
+            "M03-6-LOCAL-ADMIN-MESSAGING-DEMO"
+          ],
+          "evidence": "Patient Pass propose pour le profil fictif sélectionné un échange administratif d’exemple en français ou en arabe (RTL), un état de lecture manipulable et un brouillon éditable prévisualisé uniquement en mémoire. Le choix de langue n’est pas une préférence enregistrée; aucun envoi, API ou stockage navigateur. 20 tests E2E ciblés, dont largeur 320 px et absence d’API/stockage, build/typecheck Patient Pass, ESLint ciblé et inspection navigateur français/arabe passés. L’envoi sécurisé, l’historique relié à un compte vérifié, la politique linguistique et la rétention restent à construire/revoir."
         }
       ]
     },
@@ -180,15 +243,20 @@
           "id": "M04-1",
           "label": "Consultations, constatations et contexte clinique",
           "state": "planned",
-          "taskIds": [],
-          "evidence": ""
+          "taskIds": [
+            "M04-LOCAL-CONSULTATION-WORKSPACE-PREVIEW"
+          ],
+          "evidence": "Un aperçu local M04 présente trois profils fictifs, une demande administrative déclarée, une référence de visite non confirmée et les sections Note, Images et Plan & consentement. L’ouverture du brouillon n’existe qu’en mémoire et reste non signée; aucun constat clinique ou autre contenu médical n’est fourni. Ce prototype ne satisfait pas la consultation, les constatations ou le contexte clinique requis par le PRD : le critère demeure planifié."
         },
         {
           "id": "M04-2",
           "label": "Références aux images, photos et scans indiqués",
-          "state": "planned",
-          "taskIds": [],
-          "evidence": ""
+          "state": "partial",
+          "taskIds": [
+            "CRM-MVP-PATIENT-DOCUMENT-IMPORT-LOCAL",
+            "CRM-MVP-PATIENT-DOCUMENT-LIBRARY"
+          ],
+          "evidence": "2026-11-01 : import local privé PDF/JPEG/PNG (20 Mio) activé dans Patients > Documents, espaces administratif/médical, catégories filtrées par espace. Gestionnaire, dentiste et assistante importent réellement; réception administrative seulement. 37 assertions pgTAP PASS; tests natifs Storage/API: import, reprise idempotente, octets téléchargés identiques et patient inaccessible refusé pour les trois rôles. Browser: gestionnaire et assistante PASS; cycle dentiste import/brouillon/révision/validation/rechargement PASS à 1440 et 390px. Corrections catégorie médicale et proxy binaire. Migration 20261101001222 appliquée localement uniquement. Evidence .local/qa/patient-documents-pgtap.txt, patient-documents-browser.log (2 rôles PASS), patient-documents-clinician2.log (2 PASS). Pas de publication patient, signature électronique ou activation clinique réelle. Imagerie spécialisée et lien à une consultation restent à construire. Bibliothèque locale upload-only vérifiée : 14 catégories avec types prédéfinis, dossiers administratif/médical séparés, import multiple privé, tags/recherche/pagination, aperçu et téléchargement, métadonnées versionnées, retrait avec audit/outbox. 33 assertions PostgreSQL, API Auth/Storage native et parcours navigateur 1440/390px réussis. Formats PDF/JPEG/PNG; pas de lecture native STL/DICOM, signature, génération ou publication patient."
         },
         {
           "id": "M04-3",
@@ -659,16 +727,23 @@
         {
           "id": "M14-1",
           "label": "Catalogue tarifaire du cabinet",
-          "state": "planned",
-          "taskIds": [],
-          "evidence": ""
+          "state": "partial",
+          "taskIds": [
+            "CRM-MVP-LOCAL-FINANCE-CATALOG",
+            "HOSTED-FINANCE-HTTP-ACCEPTANCE"
+          ],
+          "evidence": "Catalogue fictif local connecté : référence interne générée automatiquement, libellé, catégorie au choix (catégories existantes conservées), prix MAD versionné, archivage/restauration; droits gestionnaire et capability serveur. Parcours natif UI/Auth/API/PostgreSQL vérifié avec rechargement, réponse perdue/reprise et deux éditeurs concurrents; anciens devis inchangés. Paramètres fiscaux, acomptes, conditions/moyens de paiement, durées de rendez-vous et approbations réelles restent hors de cette tranche : état partiel. Hosted Dev 2026-11-01 : parcours catalogue/devis brouillon/facture fictive/paiement vérifié via API locale et Supabase hébergé, avec prix figé, numéro unique, replay, règlement préalable à allocation, soldes et refus hors droits. Preuve : scripts/check-hosted-finance-flow.mjs et docs/HOSTED_FOUNDATION_ACTIVATION_PLAN.md. Données fictives isolées, gates et comptes désactivés; fiscalité réelle et navigateur Vercel non validés."
         },
         {
           "id": "M14-2",
           "label": "Devis sur services cliniquement approuvés",
           "state": "planned",
-          "taskIds": [],
-          "evidence": ""
+          "taskIds": [
+            "CRM-MVP-PATIENT-QUOTE-DETAILS",
+            "CRM-MVP-LOCAL-QUOTE-CREATION",
+            "CRM-MVP-LOCAL-QUOTE-REVISION"
+          ],
+          "evidence": "Lecture locale des lignes de devis brouillons persistés, avec quantités, prix et totaux contrôlés; parcours natif API/PostgreSQL/navigateur et isolation vérifiés. Aucun service cliniquement approuvé, création/émission, acceptation ou publication de devis livré : critère prévu inchangé. Création locale de brouillons depuis le catalogue fictif maintenant persistée via API/formulaire; prix figés, calcul serveur, reprise réseau et concurrence native vérifiés. Services cliniquement approuvés, révision/émission/acceptation restent absents : critère prévu inchangé. Révision de brouillons et historique des versions désormais connectés; prix recalculés sur catalogue actuel, versions antérieures intactes, reprise réseau et deux éditeurs concurrents vérifiés. Émission, acceptation et approbation clinique restent absentes."
         },
         {
           "id": "M14-3",
@@ -680,16 +755,27 @@
         {
           "id": "M14-4",
           "label": "Paiements vérifiés, allocations et reçus",
-          "state": "planned",
-          "taskIds": [],
-          "evidence": ""
+          "state": "partial",
+          "taskIds": [
+            "CRM-MVP-06-PAYMENT-METHOD-PREVIEW",
+            "CRM-MVP-LOCAL-INVOICES",
+            "CRM-MVP-LOCAL-PAYMENTS",
+            "HOSTED-FINANCE-HTTP-ACCEPTANCE"
+          ],
+          "evidence": "2026-10-31: Paiements fictifs locaux persistés et autorisés au gestionnaire : configuration comptes/moyens, saisie MAD/date/référence, confirmation et règlement explicites, allocation partielle sans surallocation, disponible relu, reçu numéroté figé. Tests natifs Auth/API/PostgreSQL et navigateur, reprises après réponse perdue, concurrence et isolation vérifiés. Atlas activé uniquement localement; smoke propriétaire en lecture seule passé. Couverture partielle : rôles financiers configurables, remboursements/corrections, échéanciers, rapprochement et activation réelle restent hors de cette livraison. Hosted Dev 2026-11-01 : parcours catalogue/devis brouillon/facture fictive/paiement vérifié via API locale et Supabase hébergé, avec prix figé, numéro unique, replay, règlement préalable à allocation, soldes et refus hors droits. Preuve : scripts/check-hosted-finance-flow.mjs et docs/HOSTED_FOUNDATION_ACTIVATION_PLAN.md. Données fictives isolées, gates et comptes désactivés; fiscalité réelle et navigateur Vercel non validés."
         },
         {
           "id": "M14-5",
           "label": "Soldes, remboursements et corrections",
-          "state": "planned",
-          "taskIds": [],
-          "evidence": ""
+          "state": "partial",
+          "taskIds": [
+            "CRM-MVP-LOCAL-VERIFIED-REFUNDS",
+            "CRM-MVP-LOCAL-FINANCE-CORRECTIONS",
+            "CRM-MVP-LOCAL-INSTALLMENTS",
+            "CRM-MVP-LOCAL-INSTALLMENT-REMINDERS",
+            "CRM-MVP-LOCAL-INSTALLMENT-REMINDER-REVIEW-UI"
+          ],
+          "evidence": "2026-10-31: remboursements/contrepassations synthétiques vérifiés dans le dossier gestionnaire avec permission dédiée, motif/référence et retraits explicites des allocations. Soldes nets recalculés, historique immuable et ancien reçu conservé. Navigateur natif/API/PostgreSQL, reprise réseau et quatre courses de concurrence vérifiés; Atlas activé localement pour le seul gestionnaire fictif. Les avoirs séparés, échéanciers, clôtures et permissions financières généralisées restent à construire; pas de crédit de livraison complète. Avoirs séparés désormais livrés localement : permission dédiée, document numéroté et figé, solde/trop-perçu recalculés, UI dossier et impression navigateur. Native API/PG, navigateur et6 contrôles de concurrence passés; aucun remboursement automatique. Échéanciers, clôtures/rapprochement et droits financiers généralisés restent incomplets. Socle SQL des accords échéanciers versionnés vérifié localement (35 contrôles natifs); interface, affectations aux échéances et acceptation bout en bout restent à livrer. Désactivé pour Atlas. Interface des accords maintenant vérifiée par navigateur/API/PostgreSQL locaux : brouillon depuis soldes factures, échéances datées, approbation/acceptation, révision et historique immuable, reprise sans doublon et reconnexion. Affectation des paiements aux échéances, états dérivés et rappels restent manquants; critère partiel, Atlas non activé. Independent-session installment concurrency accepted locally: scripts/check-local-installment-concurrency.mjs passes9 checks. Real PostgreSQL lock waits verified for competing invoice ownership, same-key creation, stale revisions, approval replay, duplicate acceptance, revision-versus-acceptance ordering and allocation-before-approval balance invalidation. Exact versions/accepted pointer/command/audit/outbox counts verified; failed creation leaves no orphan plan. Fresh isolated clinic removed after test, owner settings unchanged. No new schema or activation. Installment allocations, derived paid/overdue projections and reminders remain unfinished. Local installment allocation kernel delivered: migration20261031160000 adds immutable allocation-to-line links with RLS/revoked direct grants, accepted-version validation, settled-payment/invoice/line caps, exact-key receipts and atomic audit/outbox. Net line balances subtract immutable refund releases; server Casablanca date derives unpaid/partial/paid plus overdue independently. External invoice allocations/credits or baseline changes require explicit revision instead of silent distribution.22 native PostgreSQL rollback checks,4 real competing-session checks, full65 migration chain2/2 and local security advisors passed. Applied only locally; owner installment gate unchanged. API/contracts/UI wiring and reminders remain incomplete; no complete-module credit. Installment allocation API milestone: strict contracts, GET version balances and POST allocations with manager/local-payment gates implemented. Native Auth/HTTP/PostgreSQL runner --payments --installment-allocations passed draft denial, accepted overdue, partial/paid, exact replay, amount caps, strict input/query, process gate, cross-clinic/patient/session and revoked membership denial; exactly two allocation links and temporary fixture cleanup verified. Four derived-balance contract tests, scoped lint and contracts/OpenAPI/API build passed. Evidence .local/qa/installment-allocation-http.log and installment-balance-contract.log. UI allocation actions and reminders remain pending; owner activation unchanged. 2026-10-31 installment settlement UI: patient agreement shows paid/remaining amounts, partial/paid and server-derived overdue status. Modal selects settled available funds, enforces positive amount/payment/line caps, freezes uncertain commands and retries identical key/body. Native browser/Auth/API/PostgreSQL passed oversized-input rejection, lost-response replay without duplicate, paid state and reload, navigation lock, mobile bounds, and exact SQL link counts. Fixed explicit payment-select label association after browser failure. Evidence .local/qa/installment-allocation-ui-native.log; desktop/mobile screenshots inspected; lint and clinic build passed. Temporary fixture removed. Owner Atlas installment activation and reminders still pending; M14 remains partial. 2026-10-31 owner activation: scripts/enable-local-installments.mjs validates loopback Supabase, exact fictitious Atlas clinic, matching existing finance capability and synthetic payment gate before enabling installments; no credentials or records replaced. API rebuilt/restarted locally. Owner browser login confirms eligible invoice and create form. A single labelled draft for Salma was created through UI with two150 MAD installments (300 MAD total), exact persisted sum verified, accepted_version remains null. Existing agreements preserved on repeat. Evidence .local/qa/installment-owner-enabled.log and installment-owner-draft.log; screenshot installment-owner-draft.png. No payment, approval or acceptance was generated. Reminders and broader M14 scope remain incomplete. 2026-10-31 reminder queue backend: migration20261031164207 adds clinic/date index and manager-gated read RPC over current accepted overdue/due-today unpaid lines. Net allocation releases respected; future/draft/paid lines excluded, invoice drift flagged for revision. Strict query/response contracts and GET finance/installment-reminders route added, cursor pages10+1 verified without duplicates. Native Auth/HTTP/PostgreSQL checks pass scope/revocation, partial balance, paid removal and version replacement.66-migration chain2/2, reminder contracts4/4 and local security advisors pass. Evidence .local/qa/installment-reminder-http.log, installment-reminder-chain.log, installment-reminder-contracts.log. UI review queue and manual follow-up tracking remain pending; no outgoing messaging or reminder completion claimed. 2026-10-31: connected manager Échéances queue delivered locally with literal server-side name/reference search across all authorized due lines, 10-row cursor pages, page subtotal, overdue/partial/revision badges and exact accepted agreement version deep link. Returning restores search/page and focus; reads remain scoped/no-store. Native Auth/API/PostgreSQL plus browser 1440/390/320 passed search beyond earlier unrelated rows, cursor continuation, literal wildcard text, exact v2 detail and return; GET-only browser actions, no overflow, screenshots inspected. New migration20261031222313 applied only locally; old RPC retained. 67-migration chain3/3 and focused contracts5/5 passed; role/clinic/anonymous/revoked denials and fixture cleanup verified. Transport tests6/6, scoped lint and clinic package build passed. Evidence .local/qa/installment-reminder-search-qa-summary.log and .local/qa/installment-reminders-native/. Manual follow-up records and message delivery remain unimplemented; no message sent and no complete Finance-module claim."
         },
         {
           "id": "M14-6",
@@ -715,8 +801,10 @@
           "id": "M15-2",
           "label": "Suivi programmé et rappels de maintenance",
           "state": "planned",
-          "taskIds": [],
-          "evidence": ""
+          "taskIds": [
+            "CRM-MVP-15-ADMIN-AFTERCARE-PREVIEW"
+          ],
+          "evidence": "Preuve de portée UX uniquement, insuffisante pour valider ce critère : quatre suivis fictifs affichent des échéances statiques et des états modifiables en mémoire; aucun rappel n’est programmé ni envoyé, et le rechargement restaure les exemples."
         },
         {
           "id": "M15-3",
@@ -729,8 +817,10 @@
           "id": "M15-4",
           "label": "Retours patient et problèmes de service",
           "state": "planned",
-          "taskIds": [],
-          "evidence": ""
+          "taskIds": [
+            "CRM-MVP-15-ADMIN-AFTERCARE-PREVIEW"
+          ],
+          "evidence": "Preuve de portée UX uniquement, insuffisante pour valider ce critère : trois retours privés sont des libellés fictifs; aucun commentaire patient, propriétaire, problème ou résolution n’est conservé."
         },
         {
           "id": "M15-5",
@@ -743,8 +833,10 @@
           "id": "M15-6",
           "label": "Suivi de complétion, absences de réponse et satisfaction",
           "state": "planned",
-          "taskIds": [],
-          "evidence": ""
+          "taskIds": [
+            "CRM-MVP-15-ADMIN-AFTERCARE-PREVIEW"
+          ],
+          "evidence": "Preuve de portée UX uniquement, insuffisante pour valider ce critère : les cinq états requis sont illustrés en mémoire; aucun état ne représente une action réellement exécutée, aucun contact/avis n’est envoyé et aucune donnée n’est persistée."
         }
       ]
     },
@@ -757,40 +849,51 @@
           "label": "Permissions fines par module et action",
           "state": "partial",
           "taskIds": [
-          "FOUNDATION-REVIEW",
-          "TEAM-ROSTER-API",
-          "TEAM-ROSTER-UI",
-          "TEAM-ROSTER-INTEGRATE"
+            "FOUNDATION-REVIEW",
+            "TEAM-ROSTER-API",
+            "TEAM-ROSTER-UI",
+            "TEAM-ROSTER-INTEGRATE",
+            "M16-ACCESS-DECISION-PREVIEW",
+            "CRM-MVP-LOCAL-TEAM-ACCESS",
+            "HOSTED-TEAM-HTTP-ACCEPTANCE"
           ],
-        "evidence": "PR #1 et #12 : gardes cabinet/rôle, annuaire en lecture seule réservé aux Gestionnaires/Dentistes actifs, 21 assertions PostgreSQL; permissions fines pour tous les modules, qualification et validation hébergée restent à construire."
+          "evidence": "PR #1 et #12 : gardes cabinet/rôle, annuaire en lecture seule réservé aux Gestionnaires/Dentistes actifs, 21 assertions PostgreSQL. Un aperçu local liste sept décisions d’accès et d’équipe encore ‘À définir’ sans permettre de les enregistrer ni de les activer; l’E2E démo vérifie l’absence de contrôles, réseau et stockage ainsi que l’affichage mobile. Les permissions fines pour tous les modules, qualifications et validations hébergées restent à construire. Local 2026-11-01 : création de comptes, rôles et désactivation par gestionnaire avec audit/outbox; 26 assertions PostgreSQL et parcours navigateur Auth réel 1440/390px réussis. Aucun envoi d’invitation ni validation de qualification. Hosted Dev 2026-11-01 : création, replay sans doublon, changement de rôle, conflit de version HTTP409, refus assistant/autre cabinet/auto-modification et désactivation de session existante vérifiés via API locale et Supabase hébergé. Migration 20261101060921 corrige le conflit métier PT409; 12 tests unitaires et 26 assertions SQL. Preuve : docs/HOSTED_FOUNDATION_ACTIVATION_PLAN.md, scripts/check-hosted-team-flow.mjs, .local/qa/hosted-team-flow-fixed.log. Gate rétabli, comptes fictifs désactivés; parcours navigateur Vercel et permissions complètes restent ouverts."
         },
         {
           "id": "M16-2",
           "label": "Affectation selon rôle, cabinet, cas et contexte",
-          "state": "planned",
-          "taskIds": [],
-          "evidence": ""
+          "state": "partial",
+          "taskIds": [
+            "M16-LOCAL-ASSIGNMENT-PREVIEW"
+          ],
+          "evidence": "Aperçu local en mémoire uniquement : proposition administrative fictive, choix manuel d’un membre du même cabinet de démonstration. Les critères de capacité, équipe, horaire et disponibilité sont des règles d’exemple sans preuve réelle; les rôles restent informatifs et ne prouvent ni qualification, éligibilité au cas ni autorité clinique. Aucun enregistrement ou transmission; l’affectation réelle et ses règles restent à construire."
         },
         {
           "id": "M16-3",
           "label": "Boîte d’approbations avec responsable et délai",
-          "state": "planned",
-          "taskIds": [],
-          "evidence": ""
+          "state": "partial",
+          "taskIds": [
+            "M16-LOCAL-APPROVAL-INBOX-DEMO"
+          ],
+          "evidence": "Aperçu local de revue administrative avec responsable, échéance, libellé de version et résultat d’acceptation/refus simulé, uniquement en mémoire. Les décisions ne changent aucune permission ou tâche réelle. Autorité, immutabilité, audit/outbox et persistance restent à construire."
         },
         {
           "id": "M16-4",
           "label": "Délégation et suppléance contrôlées",
-          "state": "planned",
-          "taskIds": [],
-          "evidence": ""
+          "state": "partial",
+          "taskIds": [
+            "M16-LOCAL-DELEGATION-PREVIEW"
+          ],
+          "evidence": "Aperçu fictif en mémoire uniquement : une tâche d’exemple non délégable est bloquée; l’autre nécessite un remplaçant qui satisfait les critères d’équipe, capacité, horaire et disponibilité de démonstration, puis une réponse simulée. Aucune affectation réelle, notification ou preuve d’autorité. Politique, autorisation, audit et état connecté restent à construire."
         },
         {
           "id": "M16-5",
           "label": "Horaires, tâches et commentaires internes",
-          "state": "planned",
-          "taskIds": [],
-          "evidence": ""
+          "state": "partial",
+          "taskIds": [
+            "M16-LOCAL-STAFFING-CHECKS-DEMO"
+          ],
+          "evidence": "Simulation locale en mémoire de deux tâches administratives fictives avec horaires, équipes, capacités et disponibilités d’exemple; une étiquette illustre la délégation. Aucun planning, commentaire, tâche ou statut réel n’est enregistré ou transmis. Les horaires, règles, autorité et rôles doivent être définis avant usage connecté."
         },
         {
           "id": "M16-6",
@@ -799,9 +902,13 @@
           "taskIds": [
             "INTAKE-INTEGRATE",
             "TEAM-ACTIVITY-API",
-            "TEAM-ACTIVITY-UI"
+            "TEAM-ACTIVITY-UI",
+            "PATIENT-PROFILE-READ-AUDIT",
+            "TEAM-PATIENT-SELF-ACCESS-AUDIT",
+            "TEAM-ACTIVITY-INQUIRY-OPS",
+            "CRM-MVP-LOCAL-TEAM-ACCESS"
           ],
-          "evidence": "Audit des mutations livrées et journal opérationnel récent en lecture seule pour Gestionnaire (quatre actions, borné et non exhaustif); audit complet des lectures, approbations, exports, rétention et validation hébergée restent à construire."
+          "evidence": "Les mutations livrées et l’activité Gestionnaire récente sont journalisées; la lecture du profil propre est auditée et publiée dans l’outbox de façon atomique après vérification du lien patient. Le journal manager-only inclut l’accès au profil propre et les changements d’échéance, d’intention et de responsable sans nom de patient, identifiant ou valeur de demande. Tests API/base PGlite et navigateur passés. Le critère reste partiel: autres lectures, approbations, exports, rétention et validation hébergée restent à construire; les tests pgTAP ajoutés n’ont pas été exécutés ici. Local 2026-11-01 : création de comptes, rôles et désactivation par gestionnaire avec audit/outbox; 26 assertions PostgreSQL et parcours navigateur Auth réel 1440/390px réussis. Aucun envoi d’invitation ni validation de qualification."
         }
       ]
     },

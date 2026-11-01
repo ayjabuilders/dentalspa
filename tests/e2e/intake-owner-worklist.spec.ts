@@ -1,6 +1,7 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
+import { selectWorkspace, workspaceChoices, workspaceVerification } from './helpers/workspace-selection';
 import { createDemoIntakeTransport, createHttpIntakeTransport } from '../../apps/clinic-os/components/intake/transport';
-const base = process.env.OWNER_WORKLIST_UI_URL ?? 'http://localhost:4200';
+const base = process.env.OWNER_WORKLIST_UI_URL ?? 'http://localhost:4204';
 const clinic = '10000000-0000-4000-8000-000000000001';
 const user = '10000000-0000-4000-8000-000000000002';
 const oldId = '10000000-0000-4000-8000-000000000099';
@@ -16,7 +17,7 @@ async function verified(page: Page, handler: (route: Route) => Promise<void>) {
   });
   await page.route('**/api/v1/**', async route => {
     if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers });
-    if (route.request().url().endsWith('/me/workspace')) return route.fulfill({ status: 200, headers, json: { user_id: user, clinic_id: clinic, roles: ['reception'], mode: 'connected' } });
+    if (route.request().url().endsWith('/me/workspaces')) return route.fulfill({ status: 200, headers, json: workspaceChoices(clinic, ['reception']) }); if (route.request().url().endsWith('/me/workspace')) return route.fulfill({ status: 200, headers, json: workspaceVerification(user, clinic, ['reception']) });
     if (route.request().url().endsWith('/inquiries')) return route.fulfill({ status: 200, headers, json: { items: [], truncated: true } });
     if (route.request().url().endsWith('/follow-ups')) return route.fulfill({ status: 200, headers, json: { items: [], truncated: false } });
     return handler(route);
@@ -24,27 +25,29 @@ async function verified(page: Page, handler: (route: Route) => Promise<void>) {
   await page.goto(`${base}/connection`);
   await page.getByLabel('Adresse e-mail', { exact: true }).fill('staff@example.invalid');
   await page.getByLabel('Mot de passe', { exact: true }).fill('synthetic-password');
-  await page.getByLabel('Identifiant du cabinet de développement').fill(clinic);
-  await page.getByRole('button', { name: 'Se connecter', exact: true }).click();
+  await page.getByRole('button', { name: 'Se connecter', exact: true }).click(); await selectWorkspace(page);
   await page.getByRole('button', { name: 'Ouvrir les demandes du cabinet' }).click();
 }
 test('demo buckets preserve original deadlines after follow-up and allow fresh detail focus', async ({ page }) => {
-  await page.goto(`${base}/intake`);
+  await page.goto(`${base}/intake?preview=1`);
+  await page.getByRole('tab', { name: /Mes échéances/ }).click();
   const list = page.locator('.owner-worklist');
   await expect(list.getByRole('tab', { name: /Échéances passées/ })).toHaveAttribute('aria-selected', 'true');
-  await list.getByRole('button', { name: 'Ouvrir la demande Nora Exemple' }).click();
+  await list.getByRole('button', { name: 'Ouvrir la demande Imane El Idrissi' }).click();
   const panel = page.getByRole('complementary', { name: 'Demande sélectionnée' });
-  await expect(panel).toBeFocused(); await expect(panel.getByRole('heading', { name: 'Nora Exemple' })).toBeVisible();
+  await expect(panel).toBeFocused(); await expect(panel.getByRole('heading', { name: 'Imane El Idrissi' })).toBeVisible();
   await panel.getByRole('button', { name: 'Consigner un suivi', exact: true }).click();
   await page.getByLabel('Action constatée').selectOption('contact_attempt'); await page.getByLabel('Canal observé').selectOption('phone');
   await page.getByRole('button', { name: 'Enregistrer le suivi', exact: true }).click();
   await expect(page.locator('.follow-up-history li')).toHaveCount(1);
-  await expect(list.getByRole('button', { name: 'Ouvrir la demande Nora Exemple' })).toBeVisible();
-  await list.getByRole('tab', { name: /À venir/ }).click(); await expect(list.getByRole('button', { name: 'Ouvrir la demande Adam Exemple' })).toBeVisible();
-  await list.getByRole('tab', { name: /Sans date/ }).click(); await expect(list.getByRole('button', { name: 'Ouvrir la demande Lina Exemple' })).toBeVisible();
+  await page.getByRole('tab', { name: /Mes échéances/ }).click();
+  await expect(list.getByRole('button', { name: 'Ouvrir la demande Imane El Idrissi' })).toBeVisible();
+  await list.getByRole('tab', { name: /À venir/ }).click(); await expect(list.getByRole('button', { name: 'Ouvrir la demande Youssef Benali' })).toBeVisible();
+  await list.getByRole('tab', { name: /Sans date/ }).click(); await expect(list.getByRole('button', { name: 'Ouvrir la demande Salma Alaoui' })).toBeVisible();
 });
 test('responsive pearl/navy tabs support keyboard and do not overflow', async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: 'reduce' }); await page.goto(`${base}/intake`);
+  await page.emulateMedia({ reducedMotion: 'reduce' }); await page.goto(`${base}/intake?preview=1`);
+  await page.getByRole('tab', { name: /Mes échéances/ }).click();
   const list = page.locator('.owner-worklist');
   await list.getByRole('tab', { name: /Échéances passées/ }).focus(); await page.keyboard.press('ArrowRight');
   await expect(list.getByRole('tab', { name: /À venir/ })).toBeFocused(); await expect(list.getByRole('tab', { name: /À venir/ })).toHaveAttribute('aria-selected', 'true');
@@ -65,7 +68,8 @@ test.describe('verified owner worklist', () => {
       requests.push(route.request().url());
       return route.fulfill({ status: 200, headers, json: route.request().url().endsWith('/owner-worklist') ? { ...worklist, observed_at: '2000-01-01T00:00:00Z', overdue: { items: [], truncated: false }, upcoming: { items: [item], truncated: true } } : detail });
     });
-    const list = page.locator('.owner-worklist'); await list.getByRole('tab', { name: /À venir 50\+/ }).click();
+    await page.getByRole('tab', { name: /Mes échéances/ }).click();
+  const list = page.locator('.owner-worklist'); await list.getByRole('tab', { name: /À venir 50\+/ }).click();
     await expect(list.getByText(/Liste partielle/)).toBeVisible(); await expect(list.getByText(/2000/)).toBeVisible();
     await list.getByRole('button', { name: 'Ouvrir la demande Ancienne demande' }).click();
     await expect(page.getByRole('heading', { name: 'Nom actualisé', exact: true })).toBeVisible();
@@ -83,18 +87,20 @@ test.describe('verified owner worklist', () => {
       if (mode === 'missing') return route.fulfill({ status: 404, headers, json: { code: 'not_found' } });
       return route.fulfill({ status: 200, headers, json: { ...detail, id: otherId, display_name: 'Autre détail' } });
     });
-    const list = page.locator('.owner-worklist'); await list.getByRole('button', { name: 'Ouvrir la demande Ancienne demande' }).click(); await waiting;
+    await page.getByRole('tab', { name: /Mes échéances/ }).click();
+  const list = page.locator('.owner-worklist'); await list.getByRole('button', { name: 'Ouvrir la demande Ancienne demande' }).click(); await waiting;
     await expect(list.getByText(/Vérification de l’accès actuel/)).toBeVisible();
     await list.getByRole('button', { name: 'Ouvrir la demande Autre demande' }).click(); await expect(page.getByRole('heading', { name: 'Autre détail', exact: true })).toBeVisible();
     release(); await expect(page.getByRole('heading', { name: 'Nom actualisé', exact: true })).toHaveCount(0);
-    mode = 'missing'; await list.getByRole('button', { name: 'Ouvrir la demande Ancienne demande' }).click();
+    mode = 'missing'; await page.getByRole('tab', { name: /Mes échéances/ }).click(); await list.getByRole('button', { name: 'Ouvrir la demande Ancienne demande' }).click();
     await expect(list.getByRole('alert')).toContainText('absente, réattribuée ou inaccessible');
     await expect(page.getByRole('heading', { name: 'Autre détail', exact: true })).toHaveCount(0);
   });
   test('denied/unavailable/offline/expired are distinct and clear the projection', async ({ page, context }) => {
     let status = 403;
     await verified(page, async route => route.fulfill({ status, headers, json: status === 200 ? worklist : { code: 'unavailable' } }));
-    const list = page.locator('.owner-worklist'); await expect(list.getByText(/n’est pas autorisé/)).toBeVisible();
+    await page.getByRole('tab', { name: /Mes échéances/ }).click();
+  const list = page.locator('.owner-worklist'); await expect(list.getByText(/n’est pas autorisé/)).toBeVisible();
     status = 503; await list.getByRole('button', { name: 'Réessayer les échéances' }).click(); await expect(list.getByText('Les échéances sont indisponibles. Réessayez.', { exact: true })).toBeVisible();
     status = 200; await list.getByRole('button', { name: 'Réessayer les échéances' }).click(); await expect(list.locator('li')).toHaveCount(1);
     await context.setOffline(true); await expect(list.locator('li')).toHaveCount(0); await expect(list.getByRole('button', { name: 'Réessayer les échéances' })).toBeDisabled();

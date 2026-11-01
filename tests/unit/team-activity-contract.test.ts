@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { TeamActivitySchema } from '../../packages/contracts/src';
 
-const event = { kind: 'inquiry_created', actor_display_name: 'Nora Exemple', occurred_at: '2026-10-26T19:00:00.000Z' } as const;
+const event = { kind: 'inquiry_created', actor_display_name: 'Imane El Idrissi', occurred_at: '2026-10-26T19:00:00.000Z' } as const;
 
 describe('team activity v1 contract', () => {
   it('accepts a bounded newest-first operational activity projection', () => {

@@ -1,4 +1,5 @@
 'use client';
+import { createRequestKey } from '../../lib/request-key';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Button, Modal } from '@dental/ui-clinic';
 import { FollowUpChannelSchema, FollowUpKindSchema, RecordFollowUpSchema, type FollowUpList, type Inquiry, type RecordFollowUp } from '@dental/contracts';
@@ -10,7 +11,7 @@ const channels: Record<RecordFollowUp['channel'], string> = { phone: 'Téléphon
 const errors: Record<IntakeFailure, string> = {
   offline: 'Hors connexion. Aucune soumission n’est mise en attente hors ligne.',
   denied: 'Ce suivi est réservé au responsable autorisé de la demande.',
-  expired: 'La session a expiré. Les données de suivi ont été effacées.',
+  expired: 'Votre session a expiré. Reconnectez-vous pour consulter le suivi.',
   missing: 'Cette demande n’est pas accessible.',
   disabled: 'L’enregistrement du suivi n’est pas activé dans cet environnement.',
   conflict: 'Cette clé correspond à une autre soumission. Aucun nouveau suivi n’a été confirmé.',
@@ -69,7 +70,7 @@ export function InquiryFollowUp({ inquiry, transport, onSessionExpired }: { inqu
     event.preventDefault(); if (busy.current || !navigator.onLine || !target) return;
     const parsed = RecordFollowUpSchema.safeParse({ kind, channel });
     if (!parsed.success && !attempt.current) { setMessage('Choisissez explicitement l’action constatée et son canal.'); return; }
-    const command = attempt.current ?? { inquiry: target, body: parsed.data!, key: crypto.randomUUID() };
+    const command = attempt.current ?? { inquiry: target, body: parsed.data!, key: createRequestKey() };
     attempt.current = command; transport.pendingFollowUp.current = command; busy.current = true; setSaving(true); setMessage('');
     const controller = new AbortController(); writeRequest.current = controller;
     let received = false;
@@ -101,7 +102,7 @@ export function InquiryFollowUp({ inquiry, transport, onSessionExpired }: { inqu
       {!visibleHistory.items.length ? <div className="follow-up-empty"><Clock3 size={23}/><p>Aucun suivi consigné.</p><small>Cela ne signifie pas qu’aucun contact externe n’a eu lieu.</small></div> : <ol className="follow-up-history">{visibleHistory.items.map(item => <li key={item.id}><span className="follow-up-dot"/><div><strong>{kinds[item.kind]}</strong><span>{channels[item.channel]} · déclaration manuelle</span><time dateTime={item.recorded_at}>Consigné le {stamp(item.recorded_at)}</time><small>{item.actor_user_id === transport.currentUserId ? 'Par vous' : 'Par un autre membre du cabinet'} · version {item.event_version}</small></div></li>)}</ol>}
       <p className="follow-up-caption">Heure d’enregistrement : {timezone}. Ce n’est pas l’heure de l’action externe. Les entrées ne sont pas modifiables dans cette version.</p>
     </>}
-    <Modal open={open} onOpenChange={value => { if (!busy.current) setOpen(value); }} title="Consigner un suivi" description="Déclaration d’une action déjà effectuée hors de cette application. Aucun message ne sera envoyé.">
+    <Modal mobilePresentation="sheet" open={open} onOpenChange={value => { if (!busy.current) setOpen(value); }} title="Consigner un suivi" description="Déclaration d’une action déjà effectuée hors de cette application. Aucun message ne sera envoyé.">
       <form className="follow-up-form" onSubmit={submit} aria-busy={saving}>
         <div className="follow-up-target"><ShieldCheck size={20}/><div><strong>{target?.display_name}</strong><small>{target ? `Demande du ${stamp(target.created_at)}` : 'Demande sélectionnée'}</small><small>{transport.mode === 'demo' ? 'Simulation synthétique · mémoire temporaire' : 'Cabinet vérifié · saisie synthétique uniquement'}</small></div></div>
         {message && <div className="follow-up-feedback" ref={feedback} tabIndex={-1} role="alert"><AlertCircle size={17}/><p>{message}</p></div>}

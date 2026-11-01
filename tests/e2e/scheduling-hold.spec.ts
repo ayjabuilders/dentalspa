@@ -1,6 +1,7 @@
 import { test, expect, type Page, type Route } from '@playwright/test';
+import { selectWorkspace, workspaceChoices, workspaceVerification } from './helpers/workspace-selection';
 import { createSchedulingTransport } from '../../apps/clinic-os/components/scheduling/transport';
-const base = process.env.SCHEDULING_UI_URL ?? 'http://localhost:4200';
+const base = process.env.SCHEDULING_UI_URL ?? 'http://localhost:4204';
 const clinic = '10000000-0000-4000-8000-000000000001';
 const provider = '10000000-0000-4000-8000-000000000041';
 const chair = '10000000-0000-4000-8000-000000000042';
@@ -20,15 +21,14 @@ async function connect(page: Page, handler: (route: Route) => Promise<void>) {
   });
   await page.route('**/api/v1/**', async route => {
     if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers });
-    if (route.request().url().endsWith('/me/workspace')) return route.fulfill({ status: 200, headers, json: { user_id: clinic, clinic_id: clinic, roles: ['reception'], mode: 'connected' } });
+    if (route.request().url().endsWith('/me/workspaces')) return route.fulfill({ status: 200, headers, json: workspaceChoices(clinic, ['reception']) }); if (route.request().url().endsWith('/me/workspace')) return route.fulfill({ status: 200, headers, json: workspaceVerification(clinic, clinic, ['reception']) });
     if (route.request().url().endsWith('/resources')) return route.fulfill({ status: 200, headers, json: { items: [{ id: provider, kind: 'provider', display_name: 'Praticien test autorisé' }, { id: chair, kind: 'chair', display_name: 'Fauteuil test autorisé' }], observed_at: now(), truncated: false } });
     return handler(route);
   });
   await page.goto(`${base}/connection`);
   await page.getByLabel('Adresse e-mail', { exact: true }).fill('staff@example.invalid');
   await page.getByLabel('Mot de passe', { exact: true }).fill('synthetic-password');
-  await page.getByLabel('Identifiant du cabinet de développement').fill(clinic);
-  await page.getByRole('button', { name: 'Se connecter', exact: true }).click();
+  await page.getByRole('button', { name: 'Se connecter', exact: true }).click(); await selectWorkspace(page);
   await page.getByRole('button', { name: 'Planifier les ressources' }).click();
   expect(await page.locator('.schedule-heading').evaluate(element => getComputedStyle(element).display)).toBe('flex');
 }
@@ -37,7 +37,7 @@ async function availability(route: Route, truncated = false, empty = false) {
   return route.fulfill({ status: 200, headers, json: { ...body, intervals: empty ? [] : [{ starts_at: body.window_starts_at, ends_at: new Date(Date.parse(body.window_starts_at) + 1800000).toISOString() }], observed_at: now(), informational: true, truncated } });
 }
 test('synthetic agenda: explicit resources, proposal, hold, release, no retained data', async ({ page }) => {
-  await page.goto(`${base}/planning`);
+  await page.goto(`${base}/planning?preview=1`); await page.getByText('Explorer la simulation de ressources',{exact:true}).click();
   await expect(page.getByText('Simulation synthétique · mémoire locale uniquement')).toBeVisible();
   await choose(page);
   await expect(page.locator('.schedule-slots li')).toHaveCount(8);
@@ -51,12 +51,65 @@ test('synthetic agenda: explicit resources, proposal, hold, release, no retained
   await page.getByRole('button', { name: 'Libérer l’option' }).click();
   await expect(page.getByRole('heading', { name: 'Option libérée' })).toBeVisible();
   await page.reload();
+  await page.getByText('Explorer la simulation de ressources',{exact:true}).click();
   await expect(page.getByRole('button', { name: 'Charger les ressources' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Option libérée' })).toHaveCount(0);
 });
+test('local fictional appointment can be confirmed, moved and cancelled without backend calls', async ({ page }) => {
+  const apiCalls: string[] = [];
+  page.on('request', request => { if (request.url().includes('/api/v1/')) apiCalls.push(request.url()); });
+  await page.goto(`${base}/planning?preview=1`); await page.getByText('Explorer la simulation de ressources',{exact:true}).click();
+  await expect(page.getByText(/Simulation synthétique · mémoire locale uniquement/)).toBeVisible();
+  await choose(page);
+  await page.getByRole('button', { name: 'Proposer' }).first().click();
+  await page.getByRole('button', { name: 'Poser une option temporaire' }).click();
+  await expect(page.getByRole('heading', { name: 'Option temporaire active' })).toBeVisible();
+  await page.getByLabel('Patient fictif').selectOption('DEMO-003');
+  await page.getByRole('button', { name: 'Confirmer dans la simulation locale' }).click();
+  await expect(page.getByRole('heading', { name: 'Rendez-vous confirmé · démo' })).toBeVisible();
+  await expect(page.getByText('Imane El Idrissi · DEMO-003')).toBeVisible();
+  await page.getByRole('button', { name: 'Déplacer dans la simulation' }).click();
+  await expect(page.getByText('Nouvel horaire disponible · simulation uniquement')).toBeVisible();
+  await page.getByRole('button', { name: 'Déplacer ici' }).first().click();
+  await expect(page.getByRole('heading', { name: 'Horaire déplacé · démo' })).toBeVisible();
+  await page.getByRole('button', { name: 'Annuler ce rendez-vous fictif' }).click();
+  await expect(page.getByRole('heading', { name: 'Rendez-vous annulé · démo' })).toBeVisible();
+  expect(apiCalls).toEqual([]);
+  await page.reload();
+  await page.getByText('Explorer la simulation de ressources',{exact:true}).click();
+  await expect(page.getByRole('heading', { name: 'Rendez-vous annulé · démo' })).toBeVisible();
+  await page.getByRole('button', { name: 'Réinitialiser la démo' }).click();
+  await expect(page.getByRole('heading', { name: 'De la place pour chaque attention.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Rendez-vous annulé · démo' })).toHaveCount(0);
+  expect(apiCalls).toEqual([]);
+});
+test('local appointment simulation opens the matching Patient Pass scenario without creating a booking', async ({ page, context }) => {
+  const apiCalls: string[] = [];
+  page.on('request', request => { if (request.url().includes('/api/v1/')) apiCalls.push(request.url()); });
+  await page.goto(`${base}/planning?preview=1`); await page.getByText('Explorer la simulation de ressources',{exact:true}).click();
+  await choose(page);
+  await page.getByRole('button', { name: 'Proposer' }).first().click();
+  await page.getByRole('button', { name: 'Poser une option temporaire' }).click();
+  await page.getByLabel('Patient fictif').selectOption('DEMO-003');
+  await page.getByRole('button', { name: 'Confirmer dans la simulation locale' }).click();
+  await expect(page.getByRole('heading', { name: 'Rendez-vous confirmé · démo' })).toBeVisible();
+
+  const popupPromise = context.waitForEvent('page');
+  await page.getByRole('link', { name: 'Voir ce scénario dans Patient Pass' }).click();
+  const patientPage = await popupPromise;
+  await expect(patientPage).toHaveURL(/demoPatientId=DEMO-003/);
+  await expect(patientPage.locator('.demo-strip')).toContainText('Démonstration · données fictives');
+  await expect(patientPage.locator('.demo-strip')).toContainText('Imane El Idrissi');
+  await expect(patientPage.getByText('SIMULATION · CONFIRMATION NON RÉELLE')).toBeVisible();
+  await patientPage.getByRole('button', { name: /^(RDV|Rendez-vous)$/ }).click();
+  await expect(patientPage.getByRole('heading', { name: 'Confirmation simulée' })).toBeVisible();
+  await expect(patientPage.getByText('Confirmation simulée dans Clinic OS · aucune réservation réelle')).toBeVisible();
+  expect(apiCalls).toEqual([]);
+  await patientPage.close();
+});
 test('mobile/light/dark reflow, touch targets, keyboard focus and reduced motion', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto(`${base}/planning`); await choose(page);
+  await page.goto(`${base}/planning?preview=1`); await page.getByText('Explorer la simulation de ressources',{exact:true}).click(); await choose(page);
   for (const width of [1536, 1280, 768, 390]) {
     await page.setViewportSize({ width, height: 900 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

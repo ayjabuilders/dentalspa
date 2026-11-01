@@ -1,13 +1,14 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
+import { selectWorkspace, workspaceChoices, workspaceVerification } from './helpers/workspace-selection';
 import { createPatientLookupTransport, PatientLookupError } from '../../apps/clinic-os/components/patient-lookup/transport';
 
-const base = process.env.PATIENT_LOOKUP_UI_URL ?? 'http://localhost:4200';
+const base = process.env.PATIENT_LOOKUP_UI_URL ?? 'http://localhost:4204';
 const userId = '10000000-0000-4000-8000-000000000001';
 const clinicId = '10000000-0000-4000-8000-000000000002';
-const item = { id: '10000000-0000-4000-8000-000000000003', clinic_id: clinicId, reference: 'DEMO-001', display_name: 'Lina Exemple', match_basis: 'reference_exact' as const };
+const item = { id: '10000000-0000-4000-8000-000000000003', clinic_id: clinicId, reference: 'DEMO-001', display_name: 'Salma Alaoui', match_basis: 'reference_exact' as const };
 const headers = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*', 'Content-Type': 'application/json', 'Cache-Control': 'no-store' };
 
-async function verifiedLookup(page: Page, handler: (route: Route) => Promise<void>, expirySeconds = 3600) {
+async function verifiedLookup(page: Page, handler: (route: Route) => Promise<void>, expirySeconds = 3600, entryPath = '/connection') {
   const calls: { url: string; method: string; body: unknown }[] = [];
   await page.route('https://lookup-auth.example.invalid/**', async route => {
     if (route.request().method() === 'OPTIONS') { await route.fulfill({ status: 204, headers }); return; }
@@ -17,20 +18,25 @@ async function verifiedLookup(page: Page, handler: (route: Route) => Promise<voi
   await page.route('**/api/v1/**', async route => {
     if (route.request().method() === 'OPTIONS') { await route.fulfill({ status: 204, headers }); return; }
     calls.push({ url: route.request().url(), method: route.request().method(), body: route.request().postDataJSON() });
-    if (route.request().url().endsWith('/me/workspace')) await route.fulfill({ status: 200, headers, json: { user_id: userId, clinic_id: clinicId, roles: ['reception'], mode: 'connected' } });
-    else if (route.request().url().endsWith('/patients/lookup')) await handler(route);
+    if (route.request().url().endsWith('/me/workspaces')) await route.fulfill({ status: 200, headers, json: workspaceChoices(clinicId, ['reception']) });
+    else if (route.request().url().endsWith('/me/workspace')) await route.fulfill({ status: 200, headers, json: workspaceVerification(userId, clinicId, ['reception']) });
+    else if (route.request().url().endsWith('/patients/lookup') || route.request().url().endsWith('/patients') || /\/patients\/[0-9a-f-]+$/i.test(new URL(route.request().url()).pathname)) await handler(route);
     else await route.fulfill({ status: 500, headers, json: { message: 'Unexpected request' } });
   });
-  await page.goto(`${base}/connection`);
+  await page.goto(`${base}${entryPath}`);
   await page.getByLabel('Adresse e-mail', { exact: true }).fill('staff@example.invalid');
   await page.getByLabel('Mot de passe', { exact: true }).fill('synthetic-password');
-  await page.getByLabel('Identifiant du cabinet de développement').fill(clinicId);
-  await page.getByRole('button', { name: 'Se connecter', exact: true }).click();
+  await page.getByRole('button', { name: 'Se connecter', exact: true }).click(); await selectWorkspace(page);
   await expect(page.getByRole('heading', { name: 'Accès au cabinet vérifié' })).toBeVisible();
-  expect(calls).toHaveLength(1);
-  await page.getByRole('button', { name: 'Rechercher un patient du cabinet' }).click();
-  await expect(page.getByRole('heading', { name: 'Rechercher un patient', exact: true })).toBeVisible();
-  expect(calls).toHaveLength(1);
+  if (entryPath.includes('view=patients')) {
+    await expect(page.getByRole('heading', { name: 'Répertoire patient connecté' })).toBeVisible();
+    await expect(page.getByText('Salma Alaoui', { exact: true })).toBeVisible();
+    expect(calls.at(-1)).toMatchObject({ method: 'GET', url: expect.stringMatching(/\/api\/v1\/patients$/) });
+  } else {
+    expect(calls).toHaveLength(2);
+    await page.getByRole('button', { name: 'Rechercher un patient du cabinet' }).click();
+    await expect(page.getByRole('heading', { name: 'Rechercher un patient', exact: true })).toBeVisible();
+  }
   return calls;
 }
 
@@ -49,20 +55,20 @@ test.describe('verified patient lookup browser flow', () => {
     await page.getByRole('radio', { name: /Référence exacte/ }).focus();
     expect(await page.locator('.lookup-modes label').first().evaluate(element => getComputedStyle(element).boxShadow)).not.toBe('none');
     await page.getByLabel('Référence complète', { exact: true }).fill('  DEMO-001  ');
-    expect(calls).toHaveLength(1);
+    expect(calls).toHaveLength(2);
     await page.getByRole('button', { name: 'Rechercher', exact: true }).click();
     await expect(page.locator('.lookup-result-list li')).toHaveCount(1);
-    expect(calls[1]).toMatchObject({ method: 'POST', body: { mode: 'reference_exact', query: 'DEMO-001' } });
-    expect(calls[1]!.url).not.toContain('DEMO-001');
+    expect(calls[2]).toMatchObject({ method: 'POST', body: { mode: 'reference_exact', query: 'DEMO-001' } });
+    expect(calls[2]!.url).not.toContain('DEMO-001');
     await expect(page.getByRole('complementary', { name: 'Aperçu du résultat consulté' })).toContainText('Aucun résultat n’est retenu automatiquement');
-    await page.getByRole('button', { name: 'Voir l’aperçu de Lina Exemple' }).click();
+    await page.getByRole('button', { name: 'Voir l’aperçu de Salma Alaoui' }).click();
     const preview = page.getByRole('complementary', { name: 'Aperçu du résultat consulté' });
-    await expect(preview.getByRole('heading', { name: 'Lina Exemple' })).toBeVisible();
+    await expect(preview.getByRole('heading', { name: 'Salma Alaoui' })).toBeVisible();
     await expect(preview).toContainText('Identité non vérifiée');
     await page.getByLabel('Référence complète', { exact: true }).fill('DEMO-002');
     await expect(page.locator('.lookup-result-list li')).toHaveCount(0);
-    await expect(preview).not.toContainText('Lina Exemple');
-    expect(calls).toHaveLength(2);
+    await expect(preview).not.toContainText('Salma Alaoui');
+    expect(calls).toHaveLength(3);
     expect(await page.evaluate(() => JSON.stringify({ local: { ...localStorage }, session: { ...sessionStorage }, href: location.href }))).not.toMatch(/DEMO-00|Lina|synthetic-access-token/);
     await page.getByRole('button', { name: 'Se déconnecter', exact: true }).first().click();
     await expect(page.locator('.patient-lookup')).toHaveCount(0);
@@ -167,6 +173,37 @@ test('patient lookup transport protects body-only queries, clinic and response s
   await expect(transport.lookup({ mode: 'reference_exact', query: 'DEMO-001' })).rejects.toEqual(new PatientLookupError('expired'));
   expect(sent).toHaveLength(1);
 });
+
+  test('connected patient directory reads the active clinic profile without linking or caching it', async ({ page }) => {
+    test.skip(process.env.PATIENT_LOOKUP_CONFIGURED !== '1', 'Requires an isolated build with synthetic Supabase URL https://lookup-auth.example.invalid and a synthetic public key.');
+    const record = { id: item.id, clinic_id: clinicId, display_name: item.display_name, reference: item.reference };
+    const calls = await verifiedLookup(page, async route => {
+      const url = new URL(route.request().url());
+      if (url.pathname.endsWith('/patients') || url.pathname.endsWith(`/patients/${item.id}`)) {
+        expect(route.request().headers()['x-clinic-id']).toBe(clinicId);
+        expect(route.request().headers().authorization).toBe('Bearer synthetic-access-token');
+      }
+      if (url.pathname.endsWith('/patients')) await route.fulfill({ status: 200, headers, json: [record] });
+      else if (url.pathname.endsWith(`/patients/${item.id}`)) await route.fulfill({ status: 200, headers, json: record });
+      else if (url.pathname.endsWith('/patients/lookup')) await route.fulfill({ status: 200, headers, json: { items: [item], truncated: false } });
+      else await route.fulfill({ status: 404, headers, json: { message: 'Not found' } });
+    }, 3600, '/connection?view=patients');
+
+    await expect(page.getByRole('heading', { name: 'Répertoire patient connecté' })).toBeVisible();
+    await expect(page.getByText('Salma Alaoui', { exact: true })).toBeVisible();
+    expect(calls.at(-1)).toMatchObject({ method: 'GET', url: expect.stringMatching(/\/api\/v1\/patients$/) });
+
+    await page.getByRole('button', { name: 'Ouvrir la fiche de Salma Alaoui' }).click();
+    await expect(page.getByRole('heading', { name: 'Salma Alaoui', exact: true })).toBeVisible();
+    await expect(page.getByRole('complementary', { name: 'Fiche administrative minimale' }).getByText('DEMO-001', { exact: true })).toBeVisible();
+    await expect(page.getByText(/aucun lien patient, rendez-vous ou changement de dossier/i)).toBeVisible();
+    expect(calls.at(-1)).toMatchObject({ method: 'GET', url: expect.stringMatching(/\/api\/v1\/patients\/[0-9a-f-]+$/) });
+    expect(JSON.stringify(calls)).not.toContain('phone');
+    expect(await page.evaluate(() => localStorage.length + sessionStorage.length)).toBe(0);
+
+    await page.getByRole('button', { name: 'Se déconnecter', exact: true }).last().click();
+    await expect(page.getByText('Salma Alaoui', { exact: true })).toHaveCount(0);
+  });
 
 test('disposed lookup ignores a late response even when fetch does not honor abort', async () => {
   let release: ((response: Response) => void) | undefined;

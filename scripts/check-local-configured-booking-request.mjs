@@ -1,0 +1,92 @@
+import assert from 'node:assert/strict';
+import {randomUUID} from 'node:crypto';
+import {readFileSync} from 'node:fs';
+import pg from 'pg';
+const db=new pg.Client({host:'127.0.0.1',port:54322,database:'postgres',user:'postgres',password:'postgres'});
+const clinic='10000000-0000-4000-8000-000000000001';let checks=0;
+async function check(name,fn){await fn();checks++;console.log(`PASS ${name}`);}
+async function fails(code,fn){await db.query('savepoint failure');let error;try{await fn();}catch(e){error=e;}await db.query('rollback to savepoint failure');assert.equal(error?.code,code);}
+await db.connect();
+try{
+  await db.query('begin');
+  const installed=(await db.query("select to_regclass('private.configured_booking_requests') is not null as present")).rows[0].present;
+  if(!installed)await db.query(readFileSync(new URL('../supabase/migrations/20261031093745_configured_booking_requests.sql',import.meta.url),'utf8'));
+  const readInstalled=(await db.query("select to_regprocedure('public.list_local_configured_booking_requests(uuid)') is not null as present")).rows[0].present;
+  if(!readInstalled)await db.query(readFileSync(new URL('../supabase/migrations/20261031095537_configured_booking_reception_read.sql',import.meta.url),'utf8'));
+  if(!(await db.query("select exists(select 1 from information_schema.columns where table_schema='private' and table_name='configured_booking_requests' and column_name='acknowledgement') present")).rows[0].present)await db.query(readFileSync(new URL('../supabase/migrations/20261031104634_configured_automatic_booking.sql',import.meta.url),'utf8'));
+  const gate=randomUUID();await db.query('update private.agenda_configuration_gates set public_requests_enabled=true,public_api_gate_key=$2 where clinic_id=$1',[clinic,gate]);
+  const date=(await db.query("select to_char(current_date+7+((8-extract(isodow from current_date)::integer)%7),'YYYY-MM-DD') as date")).rows[0].date;
+  const snapshot=(await db.query('select private.agenda_availability_snapshot($1,$2) snapshot',[clinic,date])).rows[0].snapshot;
+  const visit=snapshot.settings.visit_types.find(v=>v.active&&v.public_bookable);
+  assert.ok(visit,'Run local configured agenda setup first');
+  const interval=(await db.query("select private.scheduling_time(($1::date+time '09:00') at time zone 'Africa/Casablanca') starts_at,private.scheduling_time((($1::date+time '09:00') at time zone 'Africa/Casablanca')+$2*interval '1 minute') ends_at",[date,visit.duration_minutes])).rows[0];
+  const payload={visit_type_id:visit.id,configuration_revision:snapshot.settings.revision,...interval,contact_name:'Salma — test fictif',contact_email:'salma@example.test',administrative_consent_version:'local-demo-v1'};
+  const key=randomUUID();
+  const create=async(body=payload,requestKey=key,snap=snapshot,capability=gate)=>(await db.query('select public.create_local_configured_booking_request($1,$2,$3,$4,$5) receipt',[clinic,requestKey,body,snap,capability])).rows[0].receipt;
+  await db.query('set local role anon');
+  await check('disabled capability denied',()=>fails('PT503',()=>create(payload,key,snapshot,'wrong')));
+  await check('real email domains rejected',()=>fails('22023',()=>create({...payload,contact_email:'example@gmail.com'})));
+  await check('changed snapshot rejected',()=>fails('SH409',()=>create(payload,key,{...snapshot,resources:[]})));
+  await check('non-public control rejected',()=>fails('22023',()=>create({...payload,visit_type_id:'81000000-0000-4000-8000-000000000002'})));
+  await check('outside configured hours rejected',()=>fails('22023',()=>create({...payload,starts_at:`${date}T03:00:00Z`,ends_at:`${date}T03:30:00Z`})));
+  let receipt;
+  await check('request persisted without claiming confirmation',async()=>{receipt=await create();assert.equal(receipt.status,'request_received');assert.equal(receipt.replayed,false);});
+  await check('lost response replay survives stale snapshot',async()=>assert.deepEqual(await create(payload,key,null),{...receipt,replayed:true}));
+  await check('changed payload cannot reuse request key',()=>fails('SH410',()=>create({...payload,contact_name:'Youssef fictif'})));
+  await check('anonymous cannot read stored contact details',()=>fails('42501',()=>db.query('select * from private.configured_booking_requests')));
+  await db.query('reset role');
+  await check('single audit and minimal outbox',async()=>{
+    const result=(await db.query('select (select count(*)::integer from private.audit_events where correlation_id=$1) audit,(select count(*)::integer from private.outbox_events where correlation_id=$1) outbox',( [key]))).rows[0];
+    assert.deepEqual(result,{audit:1,outbox:1});
+    const event=(await db.query('select payload from private.outbox_events where correlation_id=$1',[key])).rows[0].payload;
+    assert.ok(!JSON.stringify(event).includes('salma'));assert.ok(!JSON.stringify(event).includes('contact'));
+  });
+  await db.query('savepoint automatic_fixture');
+  const automatic={...snapshot.settings,revision:snapshot.settings.revision+1,confirmation_mode:'automatic'};
+  await db.query('insert into private.agenda_configuration_versions(clinic_id,revision,configuration,actor_ref,request_key) values($1,$2,$3,$4,$5)',[clinic,automatic.revision,automatic,randomUUID(),randomUUID()]);
+  await db.query('update private.agenda_configuration_gates set confirmations_enabled=false,api_gate_key=$2 where clinic_id=$1',[clinic,gate]);
+  const autoSnapshot=(await db.query('select private.agenda_availability_snapshot($1,$2) s',[clinic,date])).rows[0].s;
+  const autoPayload={...payload,configuration_revision:automatic.revision},autoKey=randomUUID();
+  await db.query('set local role anon');
+  await check('automatic mode fails closed when confirmation gate off',()=>fails('PT503',()=>create(autoPayload,autoKey,autoSnapshot)));
+  await check('anonymous cannot call allocation kernel directly',()=>fails('42501',()=>db.query('select private.confirm_configured_booking_request($1,$2,$3,$4,$5)',[clinic,receipt.request_id,randomUUID(),automatic.revision,randomUUID()])));
+  await db.query('reset role');await db.query('update private.agenda_configuration_gates set confirmations_enabled=true where clinic_id=$1',[clinic]);await db.query('set local role anon');
+  let autoReceipt;
+  await check('automatic request atomically returns confirmed booking',async()=>{autoReceipt=await create(autoPayload,autoKey,autoSnapshot);assert.equal(autoReceipt.status,'confirmed');assert.equal(autoReceipt.starts_at,autoPayload.starts_at);assert.ok(autoReceipt.appointment_id);});
+  await check('automatic lost response replays without availability read',async()=>assert.deepEqual(await create(autoPayload,autoKey,null),{...autoReceipt,replayed:true}));
+  await check('automatic changed payload cannot reuse key',()=>fails('SH410',()=>create({...autoPayload,contact_name:'Changed'},autoKey,null)));
+  await check('automatic competitor with stale snapshot conflicts',()=>fails('SH409',()=>create(autoPayload,randomUUID(),autoSnapshot)));
+  await db.query('reset role');
+  await check('automatic appointment has two occupancy rows and minimal system events',async()=>{
+    assert.equal((await db.query('select count(*)::int n from private.scheduling_occupancy where appointment_id=$1 and active',[autoReceipt.appointment_id])).rows[0].n,2);
+    const events=(await db.query('select actor_ref,payload from private.outbox_events where correlation_id=$1',[autoKey])).rows;assert.equal(events.length,2);assert.ok(events.every(event=>event.actor_ref==='00000000-0000-4000-8000-000000000001'));assert.ok(!JSON.stringify(events).includes('salma'));
+  });
+  const fresh=(await db.query('select private.agenda_availability_snapshot($1,$2) s',[clinic,date])).rows[0].s;await db.query('set local role anon');
+  await check('automatic competitor with fresh occupied snapshot also conflicts',()=>fails('SH409',()=>create(autoPayload,randomUUID(),fresh)));
+  await db.query('reset role');
+  const later=(await db.query("select private.scheduling_time(($1::date+time '15:00') at time zone 'Africa/Casablanca') starts_at,private.scheduling_time((($1::date+time '15:00') at time zone 'Africa/Casablanca')+$2*interval '1 minute') ends_at",[date,visit.duration_minutes])).rows[0];
+  await db.query("create function private.fail_auto_confirmation_test() returns trigger language plpgsql as $$begin if new.event_type='ConfiguredBookingConfirmed' then raise exception 'synthetic failure';end if;return new;end$$;create trigger fail_auto_confirmation_test before insert on private.outbox_events for each row execute function private.fail_auto_confirmation_test()");
+  const autoFailure=randomUUID();await db.query('set local role anon');
+  await check('automatic confirmation event failure aborts public request',()=>fails('P0001',()=>create({...autoPayload,...later},autoFailure,fresh)));
+  await db.query('reset role');await check('failed automatic write leaves no request or events',async()=>{
+    assert.equal((await db.query('select count(*)::int n from private.configured_booking_requests where request_key=$1',[autoFailure])).rows[0].n,0);
+    assert.equal((await db.query('select count(*)::int n from private.outbox_events where correlation_id=$1',[autoFailure])).rows[0].n,0);
+  });
+  await db.query('rollback to savepoint automatic_fixture');
+  await db.query("create function private.fail_configured_request_test() returns trigger language plpgsql as $$begin if new.event_type='ConfiguredBookingRequested' then raise exception 'synthetic failure';end if;return new;end$$; create trigger fail_configured_request_test before insert on private.outbox_events for each row execute function private.fail_configured_request_test()");
+  const failedKey=randomUUID();await db.query('set local role anon');
+  await check('outbox failure aborts request',()=>fails('P0001',()=>create(payload,failedKey)));
+  await db.query('reset role');
+  await check('no request retained after failed outbox',async()=>assert.equal((await db.query('select count(*)::integer n from private.configured_booking_requests where request_key=$1',[failedKey])).rows[0].n,0));
+  const actor=randomUUID();await db.query('insert into auth.users(id) values($1)',[actor]);
+  await db.query("insert into public.clinic_memberships(clinic_id,user_id,role,active) values($1,$2,'reception',true)",[clinic,actor]);
+  await db.query("select set_config('request.jwt.claim.sub',$1,true)",[actor]);await db.query('set local role authenticated');
+  await check('reception reads its own request with pinned type name',async()=>{
+    const result=(await db.query('select public.list_local_configured_booking_requests($1) list',[clinic])).rows[0].list;
+    const row=result.items.find(item=>item.id===receipt.request_id);assert.equal(row.contact_email,payload.contact_email);assert.equal(row.visit_name,visit.name);assert.equal(row.configuration_revision,payload.configuration_revision);assert.ok(!('canonical_payload' in row));
+  });
+  await check('foreign clinic request list denied',()=>fails('42501',()=>db.query("select public.list_local_configured_booking_requests('10000000-0000-4000-8000-000000000002')")));
+  await db.query('reset role');await db.query('update public.clinic_memberships set active=false where user_id=$1',[actor]);await db.query('set local role authenticated');
+  await check('inactive reception request list denied',()=>fails('42501',()=>db.query('select public.list_local_configured_booking_requests($1)',[clinic])));
+  console.log(`${checks} native checks passed; all test changes rolled back. Staff-review request does not reserve; automatic mode reserves atomically.`);
+}finally{await db.query('rollback');await db.end();}

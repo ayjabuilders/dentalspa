@@ -9,10 +9,21 @@ describe('module progress evidence', () => {
   it('covers all PRD modules and gives no functional points to UI-only previews', () => {
     const result = calculateProgress(ledger, queue.tasks, ids);
     expect(Object.keys(result)).toHaveLength(21);
-    expect(result.M01?.percent).toBe(25);
-    expect(result.M02?.percent).toBe(17);
-    expect(result.M16?.percent).toBe(17);
-    for (const id of ['M03', 'M04', 'M06', 'M09', 'M14', 'M17', 'M21']) expect(result[id]?.percent).toBe(0);
+    expect(result.M01?.percent).toBe(33);
+    // Public configured booking is still active, so its dependent criterion
+    // must remain awaiting rather than receiving partial delivery credit.
+    expect(result.M02?.percent).toBe(42);
+    expect(result.M02?.criteria.find(item => item.id === 'M02-3')?.state).toBe('awaiting');
+    expect(result.M16?.percent).toBe(50);
+    // Catalogue and recorded local payments each earn partial credit;
+    // active installment work and quote issuance do not earn points.
+    expect(result.M14?.percent).toBe(17);
+    expect(result.M14?.criteria.find(item => item.id === 'M14-4')?.state).toBe('partial');
+    expect(result.M14?.criteria.find(item => item.id === 'M14-5')?.state).toBe('awaiting');
+    // Private document import earns partial imaging-reference credit only.
+    expect(result.M04?.percent).toBe(8);
+    expect(result.M04?.criteria.find(item => item.id === 'M04-2')?.state).toBe('partial');
+    for (const id of ['M06', 'M09', 'M17', 'M21']) expect(result[id]?.percent).toBe(0);
   });
   it('does not credit a task that is blocked or merely in verification', () => {
     for (const state of ['blocked', 'verification']) {
@@ -32,10 +43,15 @@ describe('module progress evidence', () => {
   });
   it('changes points only when recorded criterion status and delivery evidence support it', () => {
     const updated = structuredClone(ledger);
-    updated.modules[0]!.criteria[0]!.state = 'done';
+    const firstCriterion = updated.modules[0]!.criteria[0]!;
+    firstCriterion.state = 'done';
+    const baseline = calculateProgress(ledger, queue.tasks, ids).M01!;
+    const tasksById = new Map(queue.tasks.map(task => [task.id, task.state]));
+    const isVerified = firstCriterion.taskIds.every(taskId => tasksById.get(taskId) === 'done');
+    const expectedPoints = baseline.points + (isVerified ? .5 : 0);
     const result = calculateProgress(updated, queue.tasks, ids);
-    expect(result.M01?.points).toBe(2);
-    expect(result.M01?.percent).toBe(33);
-    expect(calculateProgress(ledger, queue.tasks, ids).M01?.percent).toBe(25);
+    expect(result.M01?.points).toBe(expectedPoints);
+    expect(result.M01?.percent).toBe(Math.round(expectedPoints / 6 * 100));
+    expect(baseline.percent).toBe(33);
   });
 });

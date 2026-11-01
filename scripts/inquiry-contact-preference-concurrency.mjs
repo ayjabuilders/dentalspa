@@ -34,6 +34,7 @@ async function fixture(url,work){
   await query(f.observer,'begin');
   await query(f.observer,'insert into public.clinics(id,name) values($1,$2)',[f.clinic,'Synthetic preference contention']);
   await query(f.observer,'insert into auth.users(id) values($1)',[f.user]);
+  await query(f.observer,"insert into auth.sessions(id,user_id,not_after) values($1,$1,now()+interval '1 hour')",[f.user]);
   await query(f.observer,"insert into public.clinic_memberships(clinic_id,user_id,role,active) values($1,$2,'reception',true)",[f.clinic,f.user]);
   await query(f.observer,"insert into public.inquiries(id,clinic_id,owner_user_id,display_name,source) values($1,$2,$3,'Synthetic preference subject','phone')",[f.inquiry,f.clinic,f.user]);
   await query(f.observer,'update private.intake_command_settings set enabled=true where singleton');await query(f.observer,'commit');
@@ -52,7 +53,7 @@ async function fixture(url,work){
    await query(f.observer,'delete from private.outbox_deliveries where event_id in(select event_id from private.outbox_events where clinic_id=$1)',[f.clinic]);
    await query(f.observer,'delete from private.consumed_events where event_id in(select event_id from private.outbox_events where clinic_id=$1)',[f.clinic]);
    for(const table of ['inquiry_contact_preference_receipts','inquiry_contact_preferences','audit_events','outbox_events'])await query(f.observer,`delete from private.${table} where clinic_id=$1`,[f.clinic]);
-   await query(f.observer,'delete from public.inquiries where clinic_id=$1',[f.clinic]);await query(f.observer,'delete from public.clinic_memberships where clinic_id=$1',[f.clinic]);await query(f.observer,'delete from public.clinics where id=$1',[f.clinic]);await query(f.observer,'delete from auth.users where id=$1',[f.user]);
+   await query(f.observer,'delete from public.inquiries where clinic_id=$1',[f.clinic]);await query(f.observer,'delete from public.clinic_memberships where clinic_id=$1',[f.clinic]);await query(f.observer,'delete from public.clinics where id=$1',[f.clinic]);await query(f.observer,'delete from auth.sessions where user_id=$1',[f.user]);await query(f.observer,'delete from auth.users where id=$1',[f.user]);
    if(f.priorEnabled!==undefined)await query(f.observer,'update private.intake_command_settings set enabled=$1 where singleton',[f.priorEnabled]);
    await query(f.observer,'commit');
   });
@@ -62,7 +63,7 @@ async function fixture(url,work){
  if(failure)throw failure;
 }
 
-async function begin(f,client){await query(client,'begin');await query(client,'set local role authenticated');await query(client,"select set_config('request.jwt.claim.sub',$1,true),set_config('request.jwt.claims',$2,true),set_config('request.method','POST',true)",[f.user,JSON.stringify({sub:f.user,role:'authenticated'})]);assert.deepEqual((await query(client,'select current_user role,auth.uid() subject')).rows[0],{role:'authenticated',subject:f.user});}
+async function begin(f,client){await query(client,'begin');await query(client,'set local role authenticated');await query(client,"select set_config('request.jwt.claim.sub',$1,true),set_config('request.jwt.claims',$2,true),set_config('request.method','POST',true)",[f.user,JSON.stringify({sub:f.user,session_id:f.user,role:'authenticated'})]);assert.deepEqual((await query(client,'select current_user role,auth.uid() subject')).rows[0],{role:'authenticated',subject:f.user});}
 async function command(f,client,key,preference){return(await query(client,'select public.set_inquiry_contact_preference($1,$2,$3,$4::jsonb,$5) result',[f.clinic,f.inquiry,key,JSON.stringify({expected_revision:0,preference}),randomUUID()])).rows[0].result;}
 function launch(f,operation){const pending=operation().then(value=>({ok:true,value}),error=>({ok:false,code:error.code??'UNKNOWN'}));f.pending.push(pending);return pending;}
 async function assertCommitted(f,result){

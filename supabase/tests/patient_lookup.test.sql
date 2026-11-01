@@ -4,6 +4,8 @@ set search_path=public,extensions;
 select plan(24);
 insert into public.clinics(id,name) values('b1000000-0000-4000-8000-000000000001','Synthetic lookup A'),('b1000000-0000-4000-8000-000000000002','Synthetic lookup B');
 insert into auth.users(id) values('b2000000-0000-4000-8000-000000000001'),('b2000000-0000-4000-8000-000000000002'),('b2000000-0000-4000-8000-000000000003');
+-- Authenticated fixtures include a live session; all rows roll back with this test.
+insert into auth.sessions(id,user_id,not_after) values('b2000000-0000-4000-8000-000000000001','b2000000-0000-4000-8000-000000000001',now()+interval '1 hour'),('b2000000-0000-4000-8000-000000000002','b2000000-0000-4000-8000-000000000002',now()+interval '1 hour'),('b2000000-0000-4000-8000-000000000003','b2000000-0000-4000-8000-000000000003',now()+interval '1 hour');
 insert into public.clinic_memberships(clinic_id,user_id,role,active) values
  ('b1000000-0000-4000-8000-000000000001','b2000000-0000-4000-8000-000000000001','reception',true),
  ('b1000000-0000-4000-8000-000000000001','b2000000-0000-4000-8000-000000000002','assistant',true),
@@ -16,6 +18,7 @@ select is((select prosecdef from pg_proc where oid='public.lookup_patients(uuid,
 select is((select provolatile::text from pg_proc where oid='public.lookup_patients(uuid,jsonb)'::regprocedure),'s','RPC is stable and read-only');
 set local role authenticated;
 select set_config('request.jwt.claim.sub','b2000000-0000-4000-8000-000000000001',true);
+select set_config('request.jwt.claims',jsonb_build_object('session_id',nullif(current_setting('request.jwt.claim.sub'),''))::text,true);
 select set_config('request.method','POST',true);
 select is(jsonb_array_length(public.lookup_patients('b1000000-0000-4000-8000-000000000001','{"mode":"reference_exact","query":"R-001"}')->'items'),1,'exact reference is clinic scoped');
 select is(public.lookup_patients('b1000000-0000-4000-8000-000000000001','{"mode":"reference_exact","query":"R-001"}')->'items'->0->>'id','b3000000-0000-4000-8000-000000000001','foreign same-reference record is absent');
@@ -34,11 +37,14 @@ select set_config('request.method','GET',true);
 select throws_ok($$select public.lookup_patients('b1000000-0000-4000-8000-000000000001','{"mode":"name_prefix","query":"Al"}')$$,'22023',null,'URL encoded GET denied');
 select set_config('request.method','POST',true);
 select set_config('request.jwt.claim.sub','b2000000-0000-4000-8000-000000000002',true);
+select set_config('request.jwt.claims',jsonb_build_object('session_id',nullif(current_setting('request.jwt.claim.sub'),''))::text,true);
 select throws_ok($$select public.lookup_patients('b1000000-0000-4000-8000-000000000001','{"mode":"name_prefix","query":"Al"}')$$,'42501',null,'assistant-only lookup denied');
 select is((select count(*)::integer from public.patients where clinic_id='b1000000-0000-4000-8000-000000000001'),22,'foundation assistant reads unchanged');
 select set_config('request.jwt.claim.sub','b2000000-0000-4000-8000-000000000003',true);
+select set_config('request.jwt.claims',jsonb_build_object('session_id',nullif(current_setting('request.jwt.claim.sub'),''))::text,true);
 select throws_ok($$select public.lookup_patients('b1000000-0000-4000-8000-000000000001','{"mode":"name_prefix","query":"Al"}')$$,'42501',null,'inactive manager denied');
 select set_config('request.jwt.claim.sub','',true);
+select set_config('request.jwt.claims',jsonb_build_object('session_id',nullif(current_setting('request.jwt.claim.sub'),''))::text,true);
 select throws_ok($$select public.lookup_patients('b1000000-0000-4000-8000-000000000001','{"mode":"name_prefix","query":"Al"}')$$,'28000',null,'missing subject denied');
 set local role anon;
 select throws_ok($$select public.lookup_patients('b1000000-0000-4000-8000-000000000001','{"mode":"name_prefix","query":"Al"}')$$,'42501',null,'anonymous RPC denied');
@@ -46,6 +52,7 @@ reset role;
 update public.clinic_memberships set active=false where user_id='b2000000-0000-4000-8000-000000000001';
 set local role authenticated;
 select set_config('request.jwt.claim.sub','b2000000-0000-4000-8000-000000000001',true);
+select set_config('request.jwt.claims',jsonb_build_object('session_id',nullif(current_setting('request.jwt.claim.sub'),''))::text,true);
 select throws_ok($$select public.lookup_patients('b1000000-0000-4000-8000-000000000001','{"mode":"name_prefix","query":"Al"}')$$,'42501',null,'revoked membership denied');
 reset role;
 select is((select count(*)::integer from public.patients where clinic_id in ('b1000000-0000-4000-8000-000000000001','b1000000-0000-4000-8000-000000000002')),23,'lookup did not create patients');

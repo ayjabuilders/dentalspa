@@ -1,0 +1,66 @@
+import assert from 'node:assert/strict';
+import {randomUUID} from 'node:crypto';
+import {readFileSync} from 'node:fs';
+import pg from 'pg';
+const db=new pg.Client({host:'127.0.0.1',port:54322,user:'postgres',password:'postgres',database:'postgres'});
+const clinic=randomUUID(),patient=randomUUID(),otherPatient=randomUUID(),account=randomUUID(),gate=randomUUID(),recordKey=randomUUID(),confirmKey=randomUUID();let checks=0;
+async function check(name,fn){await fn();checks++;console.log('PASS '+name);}
+async function fails(code,fn){await db.query('savepoint expected_failure');let error;try{await fn();}catch(e){error=e;}await db.query('rollback to savepoint expected_failure');assert.equal(error?.code,code);}
+await db.connect();try{
+  await db.query('begin');
+  if(!(await db.query("select to_regclass('private.finance_payments') is not null present")).rows[0].present)await db.query(readFileSync(new URL('../supabase/migrations/20261031121221_local_payment_entries.sql',import.meta.url),'utf8').replace(/^begin;\s*$/m,'').replace(/^commit;\s*$/m,''));
+  const actor=(await db.query("select user_id from public.clinic_memberships where active and role='manager' limit 1")).rows[0].user_id;
+  await db.query("insert into public.clinics(id,name) values($1,'Encaissements QA FICTIF')",[clinic]);
+  await db.query("insert into public.patients(clinic_id,id,reference,display_name) values($1,$2,'QA-1','Salma FICTIF'),($1,$3,'QA-2','Yassine FICTIF')",[clinic,patient,otherPatient]);
+  await db.query("insert into public.clinic_memberships(clinic_id,user_id,role,active) values($1,$2,'manager',true)",[clinic,actor]);
+  await db.query('insert into private.finance_draft_gates(clinic_id,enabled,api_gate_key) values($1,true,$2)',[clinic,gate]);
+  await db.query('insert into private.local_payment_settings(clinic_id,enabled) values($1,true)',[clinic]);
+  await db.query("insert into private.finance_receiving_accounts(clinic_id,id,label,kind) values($1,$2,'Destination QA','bank')",[clinic,account]);
+  await db.query("select set_config('request.jwt.claim.sub',$1,true)",[actor]);await db.query('set local role authenticated');
+  const methodBody={method_id:null,expected_version:0,code:'TRANSFER',label:'Virement fictif',kind:'bank_transfer',active:true,reference_required:true,settlement_behavior:'separate_verification',receiving_account_id:account};
+  const method=(await db.query('select public.save_local_payment_method($1,$2::jsonb,$3,$4) r',[clinic,JSON.stringify(methodBody),randomUUID(),gate])).rows[0].r;
+  const instant=(await db.query('select public.save_local_payment_method($1,$2::jsonb,$3,$4) r',[clinic,JSON.stringify({...methodBody,code:'CASH',kind:'cash',reference_required:false,settlement_behavior:'at_confirmation'}),randomUUID(),gate])).rows[0].r;
+  const body={method_id:method.method_id,method_version:1,amount_minor:12550,currency_code:'MAD',effective_at:new Date().toISOString(),reference:'DEMO-TRANSFER-1'};
+  const record=async(payload=body,key=recordKey,patientId=patient)=>(await db.query('select public.record_local_payment($1,$2,$3::jsonb,$4,$5) r',[clinic,patientId,JSON.stringify(payload),key,gate])).rows[0].r;
+  let payment,confirmed;
+  const transition=async(action='confirm',version=1,key=confirmKey,id=payment.payment_id,verified=true,patientId=patient)=>(await db.query('select public.transition_local_payment($1,$2,$3,$4,$5,$6,$7,$8) r',[clinic,patientId,id,version,action,verified,key,gate])).rows[0].r;
+  await check('records exact minor units as pending, never automatically confirmed',async()=>{payment=await record();assert.equal(payment.state,'pending');assert.equal(payment.settlement,'pending');assert.equal(payment.amount_minor,12550);assert.equal(payment.version,1);});
+  await check('record retry returns original receipt',async()=>assert.deepEqual(await record(),{...payment,replayed:true}));
+  await check('same key different amount rejected',()=>fails('SH410',()=>record({...body,amount_minor:1})));
+  await check('invalid money currency time and sensitive extras rejected',async()=>{for(const changed of [{amount_minor:0},{amount_minor:1.5},{amount_minor:1000000000001},{currency_code:'EUR'},{effective_at:'2099-01-01T00:00:00Z'},{effective_at:'2026-99-99T00:00:00Z'},{reference:null},{reference:'REAL-REFERENCE'},{pan:'1234'},{payer_id:otherPatient}])await fails('22023',()=>record({...body,...changed},randomUUID()));});
+  await check('foreign patient denied',()=>fails('PT404',()=>record(body,randomUUID(),'20000000-0000-4000-8000-000000000001')));
+  await check('verification assertion required',()=>fails('22023',()=>transition('confirm',1,randomUUID(),payment.payment_id,false)));
+  await check('cannot settle before confirmation',()=>fails('SH409',()=>transition('settle',1,randomUUID())));
+  await check('wrong patient cannot mutate payment',()=>fails('PT404',()=>transition('confirm',1,randomUUID(),payment.payment_id,true,otherPatient)));
+  await db.query('select public.save_local_payment_method($1,$2::jsonb,$3,$4)',[clinic,JSON.stringify({...methodBody,method_id:method.method_id,expected_version:1,label:'Nouvelle configuration',settlement_behavior:'at_confirmation'}),randomUUID(),gate]);
+  await check('old method version rejected for new payment',()=>fails('SH409',()=>record(body,randomUUID())));
+  await check('existing transfer keeps separate settlement despite method change',async()=>{confirmed=await transition();assert.equal(confirmed.state,'confirmed');assert.equal(confirmed.settlement,'pending');assert.equal(confirmed.version,2);});
+  await check('confirmation retry exact and stale transition conflicts',async()=>{assert.deepEqual(await transition(),{...confirmed,replayed:true});await fails('SH409',()=>transition('confirm',1,randomUUID()));});
+  await check('record retry survives later method and payment state',async()=>assert.deepEqual(await record(),{...payment,replayed:true}));
+  await check('explicit settlement advances only settlement status',async()=>{const result=await transition('settle',2,randomUUID());assert.equal(result.state,'confirmed');assert.equal(result.settlement,'settled');assert.equal(result.version,3);});
+  await check('settled payment cannot be failed or settled twice',async()=>{await fails('SH409',()=>transition('settlement_failed',3,randomUUID()));await fails('SH409',()=>transition('settle',3,randomUUID()));});
+  const cash=await record({...body,method_id:instant.method_id,reference:null},randomUUID());
+  await check('immediate method settles only on explicit confirmation',async()=>{assert.equal(cash.state,'pending');const result=await transition('confirm',1,randomUUID(),cash.payment_id);assert.equal(result.settlement,'settled');});
+  const failed=await record({...body,method_id:instant.method_id,reference:null},randomUUID());
+  await check('failed payment cannot later be confirmed',async()=>{assert.equal((await transition('fail',1,randomUUID(),failed.payment_id)).state,'failed');await fails('SH409',()=>transition('confirm',2,randomUUID(),failed.payment_id));});
+  // Create another separate-settlement entry against an explicitly new method version.
+  const deferred=(await db.query('select public.save_local_payment_method($1,$2::jsonb,$3,$4) r',[clinic,JSON.stringify({...methodBody,code:'CHEQUE',kind:'cheque'}),randomUUID(),gate])).rows[0].r;
+  const cheque=await record({...body,method_id:deferred.method_id},randomUUID());await transition('confirm',1,randomUUID(),cheque.payment_id);
+  await check('failed settlement preserves confirmation separately',async()=>{const result=await transition('settlement_failed',2,randomUUID(),cheque.payment_id);assert.equal(result.state,'confirmed');assert.equal(result.settlement,'failed');});
+  await db.query('reset role');
+  await check('immutable snapshot contains original method payer and collector',async()=>{const row=(await db.query('select snapshot,collected_by,amount_minor::int amount from private.finance_payments where clinic_id=$1 and id=$2',[clinic,payment.payment_id])).rows[0];assert.equal(row.snapshot.method.label,'Virement fictif');assert.equal(row.snapshot.method.settlement_behavior,'separate_verification');assert.equal(row.snapshot.payer.id,patient);assert.equal(row.collected_by,actor);assert.equal(row.amount,12550);});
+  await check('stored payment and event history reject mutation',async()=>{await fails('55000',()=>db.query('update private.finance_payments set amount_minor=1 where clinic_id=$1',[clinic]));await fails('55000',()=>db.query('delete from private.finance_payment_events where clinic_id=$1',[clinic]));});
+  await db.query("create function pg_temp.fail_payment_outbox() returns trigger language plpgsql as $$ begin if new.event_type='LocalPaymentStateRecorded' then raise exception 'injected failure';end if;return new;end $$");
+  await db.query('create trigger qa_payment_outbox before insert on private.outbox_events for each row execute function pg_temp.fail_payment_outbox()');await db.query('set local role authenticated');
+  const atomic=await record({...body,method_id:instant.method_id,reference:null},randomUUID());const atomicKey=randomUUID();
+  await check('outbox failure rolls back state event and command',()=>fails('P0001',()=>transition('confirm',1,atomicKey,atomic.payment_id)));
+  await db.query('reset role');await db.query('drop trigger qa_payment_outbox on private.outbox_events');
+  await check('failed command leaves only pending event and no receipt',async()=>{assert.equal((await db.query('select count(*)::int n from private.finance_payment_events where clinic_id=$1 and payment_id=$2',[clinic,atomic.payment_id])).rows[0].n,1);assert.equal((await db.query('select count(*)::int n from private.finance_payment_commands where clinic_id=$1 and request_key=$2',[clinic,atomicKey])).rows[0].n,0);});
+  await db.query('set local role authenticated');await check('private payment tables inaccessible',()=>fails('42501',()=>db.query('select * from private.finance_payments')));
+  await db.query('reset role');await db.query('savepoint disabled');await db.query('update private.local_payment_settings set enabled=false where clinic_id=$1',[clinic]);await db.query('set local role authenticated');
+  await check('disabled gate blocks even replay',()=>fails('PT503',()=>record()));await db.query('rollback to savepoint disabled');
+  await db.query('update public.clinic_memberships set active=false where clinic_id=$1',[clinic]);await db.query('set local role authenticated');
+  await check('revoked manager cannot replay',()=>fails('42501',()=>record()));
+  await db.query('reset role');await db.query('set local role anon');await check('anonymous RPC denied',()=>fails('42501',()=>record()));
+  console.log(checks+' native payment checks passed; all fixtures and gate changes rolled back.');
+}finally{await db.query('rollback');await db.end();}

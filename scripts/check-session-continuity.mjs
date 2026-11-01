@@ -1,0 +1,32 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {chromium,expect} from '@playwright/test';
+const check=expect.configure({timeout:30000});
+const credentials=JSON.parse(readFileSync('.local/owner-demo-access.json','utf8'));
+const browser=await chromium.launch();
+try{
+ const context=await browser.newContext(),page=await context.newPage();let logins=0,workspaceChecks=0,resumes=0;
+ await page.clock.install();
+ page.on('request',request=>{if(request.url().endsWith('/api/clinic-session')&&request.postDataJSON()?.action==='resume')resumes++;if(request.url().includes('/auth/v1/token'))logins++;if(request.url().includes('/api/v1/me/workspace'))workspaceChecks++;});
+ await page.goto('http://localhost:4204/connection?view=agenda-settings');
+ await page.getByLabel('Adresse e-mail',{exact:true}).fill(credentials.email);await page.getByLabel('Mot de passe',{exact:true}).fill(credentials.password);await page.getByRole('button',{name:'Se connecter',exact:true}).click();
+ const nav=page.getByRole('navigation',{name:'Modules du cabinet'});await check(nav).toBeVisible();
+ const cookie=(await context.cookies()).find(c=>c.name==='clinic_os_refresh');assert.ok(cookie,'Refresh cookie missing');assert.equal(cookie.httpOnly,true);assert.equal(cookie.sameSite,'Strict');assert.equal(cookie.path,'/api/clinic-session');assert.equal(await page.evaluate(()=>globalThis.document.cookie.includes('clinic_os_refresh')),false);
+ assert.equal(await page.evaluate(()=>Object.keys(globalThis.localStorage).some(k=>/auth|token|supabase/i.test(k))),false);
+ const denied=await context.request.post('http://localhost:4204/api/clinic-session',{headers:{Origin:'http://evil.invalid','X-Clinic-Session':'1'},data:{action:'resume'}});assert.equal(denied.status(),403);assert.equal(denied.headers()['cache-control'],'no-store, private');
+ const missingOrigin=await context.request.post('http://localhost:4204/api/clinic-session',{headers:{'X-Clinic-Session':'1'},data:{action:'resume'}});assert.equal(missingOrigin.status(),403);
+ const before=workspaceChecks;await page.reload();await check(nav).toBeVisible({timeout:30000});await check(page.getByRole('heading',{name:'Paramètres de l’agenda',exact:true})).toBeVisible();assert.equal(logins,1);assert.ok(workspaceChecks>before,'Rights were not rechecked');
+ await nav.getByRole('button',{name:'Patients',exact:true}).click();await page.reload();await check(nav).toBeVisible({timeout:30000});await check(page.getByRole('region',{name:'Patients autorisés'}).getByRole('button').first()).toBeVisible();assert.equal(logins,1);
+ const other=await context.newPage();await Promise.all([page.reload(),other.goto('http://localhost:4204/connection?view=patients')]);await check(nav).toBeVisible({timeout:30000});await check(other.getByRole('navigation',{name:'Modules du cabinet'})).toBeVisible({timeout:30000});
+ await page.getByRole('button',{name:'Se déconnecter',exact:true}).click();await check(other.getByRole('navigation',{name:'Modules du cabinet'})).toHaveCount(0);await check(other.getByRole('button',{name:'Se connecter',exact:true})).toBeEnabled();await other.close();await check(page.getByRole('form',{name:'Connexion au cabinet'})).toBeVisible();await check(page.getByRole('button',{name:'Se connecter',exact:true})).toBeEnabled();assert.equal((await context.cookies()).some(c=>c.name==='clinic_os_refresh'),false);
+ const afterLogout=resumes;await page.clock.fastForward(3600000);assert.equal(resumes,afterLogout,'Renewal timer still active after logout');await page.clock.setSystemTime(new Date());
+ await page.reload();await check(page.getByRole('button',{name:'Se connecter',exact:true})).toBeEnabled();await check(nav).toHaveCount(0);
+ await context.addCookies([{name:'clinic_os_refresh',value:'invalid-synthetic-refresh',domain:'localhost',path:'/api/clinic-session',httpOnly:true,sameSite:'Strict'}]);await page.reload();await check(page.getByRole('button',{name:'Se connecter',exact:true})).toBeEnabled();await check(nav).toHaveCount(0);assert.equal((await context.cookies()).some(c=>c.name==='clinic_os_refresh'),false);
+ await page.getByLabel('Adresse e-mail',{exact:true}).fill(credentials.email);await page.getByLabel('Mot de passe',{exact:true}).fill(credentials.password);await page.getByRole('button',{name:'Se connecter',exact:true}).click();await check(nav).toBeVisible();
+ await page.route('**/api/clinic-session',route=>route.request().postDataJSON()?.action==='logout'?route.abort('failed'):route.continue());
+ await page.getByRole('button',{name:'Se déconnecter',exact:true}).click();await check(page.getByRole('button',{name:'Se connecter',exact:true})).toBeEnabled();
+ assert.equal(await page.evaluate(()=>globalThis.sessionStorage.getItem('clinic-logout-pending')),'1');
+ await page.reload();await check(page.getByRole('button',{name:'Se connecter',exact:true})).toBeEnabled();await check(nav).toHaveCount(0);
+ await page.unroute('**/api/clinic-session');await page.reload();await check(page.getByRole('button',{name:'Se connecter',exact:true})).toBeEnabled();await check(nav).toHaveCount(0);assert.equal((await context.cookies()).some(c=>c.name==='clinic_os_refresh'),false);
+ console.log('PASS local session restore across settings/patient reloads, rights recheck, HttpOnly cookie, no JS token storage, CSRF rejection, concurrent-tab restoration, cross-tab logout, stopped renewal timer, failed-network logout recovery and invalid refresh rejection.');
+}finally{await browser.close();}

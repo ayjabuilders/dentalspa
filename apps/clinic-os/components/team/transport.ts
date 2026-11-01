@@ -1,3 +1,4 @@
+import {sessionFetch as fetch} from '../../lib/renewing-session';
 import { TeamActivitySchema, type TeamActivity, TeamRosterSchema, type TeamRoster } from '@dental/contracts';
 export type TeamFailure = 'expired' | 'denied' | 'offline' | 'unavailable';
 export class TeamError extends Error { constructor(public kind: TeamFailure) { super(kind); } }
@@ -63,19 +64,23 @@ export function createDemoTeamTransport(): TeamTransport {
       signal?.throwIfAborted(); if (life.closed) throw new TeamError('expired');
       const now = Date.now();
       return TeamActivitySchema.parse({ observed_at: new Date(now).toISOString(), truncated: false, items: [
-        { kind: 'inquiry_follow_up_recorded', actor_display_name: 'Adam Exemple', occurred_at: new Date(now - 300000).toISOString() },
-        { kind: 'slot_hold_released', actor_display_name: 'Nora Exemple', occurred_at: new Date(now - 1800000).toISOString() },
+        { kind: 'inquiry_follow_up_recorded', actor_display_name: 'Youssef Benali', occurred_at: new Date(now - 300000).toISOString() },
+        { kind: 'inquiry_follow_up_schedule_changed', actor_display_name: 'Mehdi Amrani', occurred_at: new Date(now - 600000).toISOString() },
+        { kind: 'inquiry_planned_action_changed', actor_display_name: 'Salma Alaoui', occurred_at: new Date(now - 900000).toISOString() },
+        { kind: 'inquiry_owner_reassigned', actor_display_name: 'Youssef Benali', occurred_at: new Date(now - 1200000).toISOString() },
+        { kind: 'slot_hold_released', actor_display_name: 'Imane El Idrissi', occurred_at: new Date(now - 1800000).toISOString() },
         { kind: 'slot_hold_created', actor_display_name: null, occurred_at: new Date(now - 3600000).toISOString() },
-        { kind: 'inquiry_created', actor_display_name: 'Lina Exemple', occurred_at: new Date(now - 7200000).toISOString() },
+        { kind: 'inquiry_created', actor_display_name: 'Salma Alaoui', occurred_at: new Date(now - 7200000).toISOString() },
+        { kind: 'patient_profile_viewed', actor_display_name: null, occurred_at: new Date(now - 10800000).toISOString() },
       ] });
     },
     async roster(signal) {
       signal?.throwIfAborted(); if (life.closed) throw new TeamError('expired');
       return TeamRosterSchema.parse({ observed_at: new Date().toISOString(), truncated: false, members: [
-        { user_id: '10000000-0000-4000-8000-000000000011', clinic_id: '10000000-0000-4000-8000-000000000001', display_name: 'Adam Exemple', roles: ['manager'] },
-        { user_id: '10000000-0000-4000-8000-000000000012', clinic_id: '10000000-0000-4000-8000-000000000001', display_name: 'Lina Exemple', roles: ['assistant', 'reception'] },
-        { user_id: '10000000-0000-4000-8000-000000000013', clinic_id: '10000000-0000-4000-8000-000000000001', display_name: 'Nora Exemple', roles: ['dentist', 'manager'] },
-        { user_id: '10000000-0000-4000-8000-000000000014', clinic_id: '10000000-0000-4000-8000-000000000001', display_name: 'Yanis Exemple', roles: ['reception'] },
+        { user_id: '10000000-0000-4000-8000-000000000011', clinic_id: '10000000-0000-4000-8000-000000000001', display_name: 'Youssef Benali', roles: ['manager'] },
+        { user_id: '10000000-0000-4000-8000-000000000012', clinic_id: '10000000-0000-4000-8000-000000000001', display_name: 'Salma Alaoui', roles: ['assistant', 'reception'] },
+        { user_id: '10000000-0000-4000-8000-000000000013', clinic_id: '10000000-0000-4000-8000-000000000001', display_name: 'Imane El Idrissi', roles: ['dentist', 'manager'] },
+        { user_id: '10000000-0000-4000-8000-000000000014', clinic_id: '10000000-0000-4000-8000-000000000001', display_name: 'Mehdi Amrani', roles: ['reception'] },
       ] });
     },
   };

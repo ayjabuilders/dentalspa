@@ -1,0 +1,27 @@
+/* Adopted Pearl visual system: adapters only, keeping existing module behavior and layout contracts. */
+.connected-shell[data-ds="pearl"],.dialog[data-ds="pearl"] {
+  --canvas:var(--ds-canvas);--surface:var(--ds-surface);--raised:#fcfaff;--soft:var(--ds-soft);
+  --ink:var(--ds-ink);--muted:var(--ds-muted);--primary:var(--ds-primary);--line:var(--ds-line);
+  --boundary:var(--ds-border);--focus:var(--ds-focus);--positive:var(--ds-success);--danger:var(--ds-danger);
+  --gold:var(--ds-warning);--font:var(--ds-font);--heading:var(--ds-heading);
+  color:var(--ds-ink);font-family:var(--ds-font);color-scheme:light;
+}
+.connected-shell[data-ds="pearl"] :where(h1,h2,h3),.dialog[data-ds="pearl"] :where(h1,h2,h3){font-family:var(--ds-heading);letter-spacing:-.035em;color:var(--ds-ink)}
+.connected-shell[data-ds="pearl"] :where(h1){font-weight:800}.connected-shell[data-ds="pearl"] :where(h2,h3){font-weight:750}
+.connected-shell[data-ds="pearl"] :where(.work-panel,.team-roster-card,.finance-catalog-panel,.recorded-appointments,.agenda-settings){border-color:var(--ds-line);border-radius:var(--ds-radius-lg);box-shadow:var(--ds-shadow)}
+.connected-shell[data-ds="pearl"] :where(.pill,.intake-count){border-radius:8px;background:var(--ds-soft);color:var(--ds-primary)}
+.connected-shell[data-ds="pearl"] .button,.dialog[data-ds="pearl"] .button{border-radius:var(--ds-radius-sm);font-family:var(--ds-font);font-weight:750;transition:background var(--ds-fast),border-color var(--ds-fast),box-shadow var(--ds-fast);}
+.connected-shell[data-ds="pearl"] .button-primary,.dialog[data-ds="pearl"] .button-primary{background:var(--ds-primary);color:white;border-color:var(--ds-primary);box-shadow:0 4px 12px #6942cb1c}
+.connected-shell[data-ds="pearl"] .button-primary:hover:not(:disabled),.dialog[data-ds="pearl"] .button-primary:hover:not(:disabled){background:var(--ds-primary-hover);border-color:var(--ds-primary-hover);transform:none}
+.connected-shell[data-ds="pearl"] .button-secondary,.dialog[data-ds="pearl"] .button-secondary{background:var(--ds-surface);border-color:var(--ds-border);color:var(--ds-primary)}
+.connected-shell[data-ds="pearl"] .button-secondary:hover:not(:disabled),.dialog[data-ds="pearl"] .button-secondary:hover:not(:disabled){background:var(--ds-soft);transform:none}
+.connected-shell[data-ds="pearl"] :where(input:not([type=checkbox]):not([type=radio]),select,textarea),.dialog[data-ds="pearl"] :where(input:not([type=checkbox]):not([type=radio]),select,textarea){border-radius:var(--ds-radius-sm);border-color:var(--ds-border);color:var(--ds-ink);font-family:var(--ds-font);accent-color:var(--ds-primary)}
+.connected-shell[data-ds="pearl"] :where(input[type=checkbox],input[type=radio]),.dialog[data-ds="pearl"] :where(input[type=checkbox],input[type=radio]){accent-color:var(--ds-primary)}
+.connected-shell[data-ds="pearl"] :where(button,a,input,select,textarea):focus-visible,.dialog[data-ds="pearl"] :where(button,a,input,select,textarea):focus-visible{outline:3px solid var(--ds-focus);outline-offset:3px}
+.connected-shell[data-ds="pearl"] :where([role=tablist]) [role=tab]{transition:background var(--ds-fast),border-color var(--ds-fast),box-shadow var(--ds-fast)}
+.connected-shell[data-ds="pearl"] :where([role=tablist]:not(.patient-hub-tabs)) [role=tab][aria-selected=true]{color:var(--ds-primary);border-color:var(--ds-primary)}
+.connected-shell[data-ds="pearl"] :where(table){border-color:var(--ds-line)}.connected-shell[data-ds="pearl"] :where(th){background:#faf7fd;color:var(--ds-muted);font-weight:750}.connected-shell[data-ds="pearl"] :where(td){border-color:var(--ds-line)}
+.dialog[data-ds="pearl"]{border:1px solid var(--ds-line);border-radius:var(--ds-radius-lg);background:var(--ds-surface);box-shadow:0 24px 90px #28183835}
+.dialog[data-ds="pearl"] .dialog-heading{border-color:var(--ds-line)}.dialog[data-ds="pearl"] .dialog-heading p{color:var(--ds-muted)}.dialog-overlay[data-ds="pearl"]{background:#19102566;backdrop-filter:blur(4px)}
+.dialog[data-ds="pearl"][data-theme="dark"]{--raised:var(--ds-surface);color-scheme:dark}.dialog[data-ds="pearl"][data-theme="dark"] .button-primary{color:#20152f}
+@media(prefers-reduced-motion:reduce){.connected-shell[data-ds="pearl"] *,.dialog[data-ds="pearl"] *{transition:none!important;animation:none!important;scroll-behavior:auto!important}}

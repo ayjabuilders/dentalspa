@@ -1,6 +1,7 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
+import { selectWorkspace, workspaceChoices, workspaceVerification } from './helpers/workspace-selection';
 import { createDemoIntakeTransport, createHttpIntakeTransport } from '../../apps/clinic-os/components/intake/transport';
-const base = process.env.HISTORY_UI_URL ?? 'http://localhost:4200';
+const base = process.env.HISTORY_UI_URL ?? 'http://localhost:4204';
 const clinic = '10000000-0000-4000-8000-000000000001', user = '10000000-0000-4000-8000-000000000002', id = '10000000-0000-4000-8000-000000000011', other = '10000000-0000-4000-8000-000000000012';
 const inquiry = { id, clinic_id: clinic, owner_user_id: user, display_name: 'Lina Synthétique', contact_phone: null, contact_email: null, source: 'phone', status: 'new', created_at: '2026-10-26T09:30:00Z', follow_up_at: null };
 const item = { previous_follow_up_at: null, follow_up_at: '2030-11-12T10:30:00Z', changed: true, recorded_at: '2026-10-27T10:00:00.123456Z', event_version: 1 };
@@ -11,7 +12,7 @@ async function connected(page: Page, handler: (route: Route) => Promise<void>) {
   await page.route('https://schedule-auth.example.invalid/**', route => route.fulfill({ status: 200, headers, json: { access_token: 'synthetic-token', token_type: 'bearer', refresh_token: 'synthetic-refresh', expires_in: 3600, expires_at: Math.floor(Date.now()/1000)+3600, user: { id: user, aud: 'authenticated', role: 'authenticated', email: 'staff@example.invalid', app_metadata: {}, user_metadata: {}, created_at: inquiry.created_at } } }));
   await page.route('**/api/v1/**', async route => {
     if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers }); const url = route.request().url();
-    if (url.endsWith('/me/workspace')) return route.fulfill({ status: 200, headers, json: { user_id: user, clinic_id: clinic, roles: ['reception'], mode: 'connected' } });
+    if (url.endsWith('/me/workspaces')) return route.fulfill({ status: 200, headers, json: workspaceChoices(clinic, ['reception']) }); if (route.request().url().endsWith('/me/workspace')) return route.fulfill({ status: 200, headers, json: workspaceVerification(user, clinic, ['reception']) });
     if (url.endsWith('/history')) { reads++; return handler(route); }
     if (url.endsWith('/follow-up-schedule')) return route.abort('failed');
     if (url.endsWith('/owner-worklist')) return route.fulfill({ status: 200, headers, json: { observed_at: '2026-10-27T09:00:00Z', overdue: { items: [], truncated: false }, upcoming: { items: [], truncated: false }, undated: { items: [], truncated: false } } });
@@ -19,11 +20,11 @@ async function connected(page: Page, handler: (route: Route) => Promise<void>) {
     if (url.endsWith('/'+id)) return route.fulfill({ status: 200, headers, json: inquiry });
     return route.fulfill({ status: 200, headers, json: { items: [inquiry,{ ...inquiry,id:other,display_name:'Adam Synthétique' }], truncated: false } });
   });
-  await page.goto(base+'/connection'); await page.getByLabel('Adresse e-mail', { exact: true }).fill('staff@example.invalid'); await page.getByLabel('Mot de passe', { exact: true }).fill('synthetic-password'); await page.getByLabel('Identifiant du cabinet de développement').fill(clinic); await page.getByRole('button', { name: 'Se connecter', exact: true }).click(); await page.getByRole('button', { name: 'Ouvrir les demandes du cabinet' }).click(); await expect(page.locator('.schedule-history-disclosure')).toBeVisible(); expect(reads).toBe(0); return () => reads;
+  await page.goto(base+'/connection'); await page.getByLabel('Adresse e-mail', { exact: true }).fill('staff@example.invalid'); await page.getByLabel('Mot de passe', { exact: true }).fill('synthetic-password'); await page.getByRole('button', { name: 'Se connecter', exact: true }).click(); await selectWorkspace(page); await page.getByRole('button', { name: 'Ouvrir les demandes du cabinet' }).click(); await expect(page.locator('.schedule-history-disclosure')).toBeVisible(); expect(reads).toBe(0); return () => reads;
 }
 
 test('demo history follows stored no-op receipts and cannot replay them', async ({ page }) => {
-  await page.goto(base+'/intake'); await page.locator('.schedule-history-disclosure').click(); await expect(page.locator('.schedule-history')).toContainText('Aucun résultat de commande');
+  await page.goto(base+'/intake?preview=1'); await page.locator('.schedule-history-disclosure').click(); await expect(page.locator('.schedule-history')).toContainText('Aucun résultat de commande');
   await page.getByRole('button', { name: 'Replanifier le suivi', exact: true }).click(); await page.getByRole('button', { name: 'Enregistrer l’échéance' }).click(); await expect(page.getByRole('dialog')).toContainText('Aucun changement nécessaire'); await page.getByRole('button', { name: 'Fermer', exact: true }).last().click();
   await expect(page.locator('.schedule-history-disclosure')).toHaveAttribute('aria-expanded','false'); await page.locator('.schedule-history-disclosure').click(); await expect(page.locator('.schedule-history-entry-heading')).toHaveText('Sans changement'); await expect(page.locator('.schedule-history-scroll li')).toHaveCount(1);
   await expect(page.locator('.schedule-history')).toContainText('Vos actions récentes uniquement'); await expect(page.locator('.schedule-history')).toContainText('pas l’échéance actuelle'); await expect(page.locator('.schedule-history').getByRole('button', { name: /Rejouer|Exporter|Modifier/ })).toHaveCount(0);

@@ -1,3 +1,4 @@
+import {sessionFetch as fetch} from '../../lib/renewing-session';
 import { PatientLookupRequestSchema, PatientLookupResponseSchema, type PatientLookupRequest, type PatientLookupResponse } from '@dental/contracts';
 
 export type PatientLookupFailure = 'invalid' | 'expired' | 'denied' | 'offline' | 'unavailable';

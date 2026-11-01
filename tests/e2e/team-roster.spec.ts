@@ -1,6 +1,7 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
+import { selectWorkspace, workspaceChoices, workspaceVerification } from './helpers/workspace-selection';
 import { createTeamTransport } from '../../apps/clinic-os/components/team/transport';
-const base = process.env.TEAM_UI_URL ?? 'http://localhost:4200';
+const base = process.env.TEAM_UI_URL ?? 'http://localhost:4204';
 const clinic = '10000000-0000-4000-8000-000000000001';
 const user = '10000000-0000-4000-8000-000000000002';
 const member = { user_id: user, clinic_id: clinic, display_name: 'Nora Synthétique', roles: ['dentist', 'manager'] };
@@ -15,28 +16,134 @@ async function verified(page: Page, handler: (route: Route) => Promise<void>) {
   await page.route('**/api/v1/**', async route => {
     if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers });
     calls.push(route.request().url());
-    if (route.request().url().endsWith('/me/workspace')) return route.fulfill({ status: 200, headers, json: { user_id: user, clinic_id: clinic, roles: ['manager'], mode: 'connected' } });
+    if (route.request().url().endsWith('/me/workspaces')) return route.fulfill({ status: 200, headers, json: workspaceChoices(clinic, ['manager']) }); if (route.request().url().endsWith('/me/workspace')) return route.fulfill({ status: 200, headers, json: workspaceVerification(user, clinic, ['manager']) });
     return handler(route);
   });
   await page.goto(`${base}/connection`); await page.getByLabel('Adresse e-mail', { exact: true }).fill('staff@example.invalid');
-  await page.getByLabel('Mot de passe', { exact: true }).fill('synthetic-password'); await page.getByLabel('Identifiant du cabinet de développement').fill(clinic);
-  await page.getByRole('button', { name: 'Se connecter', exact: true }).click(); await expect(page.getByRole('button', { name: 'Ouvrir les membres du cabinet' })).toBeVisible();
-  expect(calls).toHaveLength(1); await page.getByRole('button', { name: 'Ouvrir les membres du cabinet' }).click(); return calls;
+  await page.getByLabel('Mot de passe', { exact: true }).fill('synthetic-password'); await page.getByRole('button', { name: 'Se connecter', exact: true }).click(); await selectWorkspace(page); await expect(page.getByRole('button', { name: 'Ouvrir les membres du cabinet' })).toBeVisible();
+  expect(calls).toHaveLength(2);
+  expect(calls.map(url => new URL(url).pathname)).toEqual(['/api/v1/me/workspaces', '/api/v1/me/workspace']);
+  await page.getByRole('button', { name: 'Ouvrir les membres du cabinet' }).click(); await expect(page.locator('.team-access-decision-preview')).toHaveCount(0); return calls;
 }
 test('synthetic team shows grouped access roles and loaded-only search without management actions', async ({ page }) => {
-  await page.goto(`${base}/team`); await expect(page.getByRole('heading', { name: 'Membres du cabinet', exact: true })).toBeVisible();
+  await page.goto(`${base}/team?preview=1`); await expect(page.getByRole('heading', { name: 'Membres du cabinet', exact: true })).toBeVisible();
   await expect(page.locator('.team-roster-list>li')).toHaveCount(4);
   await expect(page.getByText('Démonstration synthétique · mémoire temporaire')).toBeVisible();
   await page.getByLabel('Filtrer les rôles d’accès chargés').selectOption('manager'); await expect(page.locator('.team-roster-list>li')).toHaveCount(2);
-  await page.getByLabel('Rechercher parmi les membres chargés').fill('Nora'); await expect(page.locator('.team-roster-list>li')).toHaveCount(1);
+  await page.getByLabel('Rechercher parmi les membres chargés').fill('Imane'); await expect(page.locator('.team-roster-list>li')).toHaveCount(1);
   await expect(page.locator('.team-roster-roles li')).toHaveText(['Dentiste', 'Gestionnaire']);
   await page.getByLabel('Rechercher parmi les membres chargés').fill('Absent'); await expect(page.getByRole('heading', { name: 'Aucun résultat dans la liste chargée' })).toBeVisible();
   await page.getByRole('button', { name: 'Réinitialiser les filtres' }).click(); await expect(page.locator('.team-roster-list>li')).toHaveCount(4);
   await expect(page.getByRole('button', { name: /Inviter|Modifier|Approuver/ })).toHaveCount(0);
   expect(await page.evaluate(() => JSON.stringify({ ...localStorage, ...sessionStorage }))).not.toMatch(/Nora|Adam|Lina|Yanis/);
 });
+test('M16 decision preview stays unresolved, demo-only, responsive and creates no persisted state', async ({ page }) => {
+  const apiRequests: string[] = [];
+  page.on('request', request => { if (/\/api\/|supabase/i.test(request.url())) apiRequests.push(`${request.method()} ${request.url()}`); });
+  await page.addInitScript(() => {
+    const writes: string[] = [];
+    Object.defineProperty(window, '__teamPreviewStorageWrites', { value: writes });
+    const patchStorage = (method: 'setItem' | 'removeItem' | 'clear') => {
+      const original = Storage.prototype[method] as (this: Storage, ...args: string[]) => void;
+      Object.defineProperty(Storage.prototype, method, { configurable: true, writable: true, value: function (this: Storage, ...args: string[]) {
+        writes.push(`${this === window.localStorage ? 'local' : 'session'}:${method}:${String(args[0] ?? '')}`);
+        return original.apply(this, args);
+      } });
+    };
+    patchStorage('setItem'); patchStorage('removeItem'); patchStorage('clear');
+  });
+  await page.goto(`${base}/team?preview=1`);
+  const panel = page.locator('.team-access-decision-preview');
+  await expect(panel.getByRole('heading', { name: 'Questions d’accès et d’équipe' })).toBeVisible();
+  await expect(panel.locator('.team-access-decision-list>li')).toHaveCount(7);
+  await expect(panel.locator('.team-access-decision-status')).toHaveText(Array(7).fill('À définir'));
+  await expect(panel.getByText(/aucune règle d’accès n’est activée ni décidée ici/)).toBeVisible();
+  await expect(panel.locator('button, input, select, textarea')).toHaveCount(0);
+  for (const width of [390, 320]) {
+    await page.setViewportSize({ width, height: 844 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    expect(await panel.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
+  }
+  expect(apiRequests).toEqual([]);
+  const writes = await page.evaluate(() => (window as unknown as { __teamPreviewStorageWrites: string[] }).__teamPreviewStorageWrites);
+  // Supabase's imported auth SDK probes browser storage with a random lswt-* key, then removes it.
+  expect(writes.filter(write => !write.includes(':lswt-'))).toEqual([]);
+  expect(await page.evaluate(() => Object.keys(localStorage).concat(Object.keys(sessionStorage)).filter(key => key.startsWith('lswt-')))).toEqual([]);
+});
+test('fictional admin assignment proposal is session-only and resets without sending or saving', async ({ page }) => {
+  const apiRequests: string[] = [];
+  page.on('request', request => { if (/\/api\//.test(request.url())) apiRequests.push(request.url()); });
+  await page.goto(`${base}/team?preview=1`);
+  await expect(page.getByRole('heading', { name: 'Aperçu d’affectation' })).toBeVisible();
+  await expect(page.getByText(/Règles, capacités, équipes, horaires et disponibilités entièrement fictifs/)).toBeVisible();
+  await page.getByLabel('Tâche d’exemple').selectOption('office-supplies-demo');
+  await expect(page.getByRole('button', { name: 'Ajouter à l’aperçu' })).toBeDisabled();
+  await expect(page.locator('.team-assignment-candidates .team-assignment-no-match').filter({ hasText: 'Déjà occupé dans le scénario' })).toBeVisible();
+  await page.getByLabel('Créneau d’exemple').selectOption('15:00');
+  await page.getByLabel('Membre correspondant aux critères fictifs').selectOption('10000000-0000-4000-8000-000000000013');
+  await page.getByRole('button', { name: 'Ajouter à l’aperçu' }).click();
+  await expect(page.locator('.team-assignment-list').getByText('Imane El Idrissi · Dentiste, Gestionnaire · Support administratif de démonstration', { exact: true })).toBeVisible();
+  await expect(page.getByText('Vérifier les fournitures de bureau · 15:00')).toBeVisible();
+  await expect(page.getByText('Non transmise', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Effacer' }).click();
+  await expect(page.getByText('Aucune proposition dans cette session.')).toBeVisible();
+  expect(apiRequests).toEqual([]);
+  expect(await page.evaluate(() => JSON.stringify({ ...localStorage, ...sessionStorage }))).not.toMatch(/Salma|fournitures|welcome-demo/);
+  await page.getByRole('button', { name: 'Ajouter à l’aperçu' }).click();
+  await page.reload();
+  await expect(page.getByText('Aucune proposition dans cette session.')).toBeVisible();
+  expect(apiRequests).toEqual([]);
+});
+test('fictional approval inbox only simulates administrative decisions in memory', async ({ page }) => {
+  const apiRequests: string[] = [];
+  page.on('request', request => { if (/\/api\//.test(request.url())) apiRequests.push(request.url()); });
+  await page.goto(`${base}/team?preview=1`);
+  const inbox = page.locator('.team-approval-preview');
+  await expect(inbox.getByRole('heading', { name: 'Aperçu de la boîte d’approbations' })).toBeVisible();
+  await expect(inbox.locator('.team-approval-list>li')).toHaveCount(2);
+  await expect(inbox.getByText(/ne représentent ni les permissions d’un membre réel, ni une approbation du cabinet/)).toBeVisible();
+  await inbox.getByRole('button', { name: 'Simuler l’acceptation' }).first().click();
+  await expect(inbox.getByText('Acceptée dans cet aperçu')).toBeVisible();
+  await inbox.getByRole('button', { name: 'Simuler le refus' }).click();
+  await expect(inbox.getByText('Refusée dans cet aperçu')).toBeVisible();
+  await expect(inbox.getByRole('button', { name: /Simuler l’acceptation|Simuler le refus/ })).toHaveCount(0);
+  expect(apiRequests).toEqual([]);
+  expect(await page.evaluate(() => JSON.stringify({ ...localStorage, ...sessionStorage }))).not.toMatch(/welcome-copy-demo|office-supplies-demo|Acceptée|Refusée/);
+  await inbox.getByRole('button', { name: 'Réinitialiser les décisions de démo' }).click();
+  await expect(inbox.getByText('À revoir dans la démo')).toHaveCount(2);
+  await inbox.getByRole('button', { name: 'Simuler l’acceptation' }).first().click();
+  await page.reload();
+  await expect(page.locator('.team-approval-preview').getByText('À revoir dans la démo')).toHaveCount(2);
+  expect(apiRequests).toEqual([]);
+});
+test('fictional delegation checks sample policy and recipient acceptance without assigning real work', async ({ page }) => {
+  const apiRequests: string[] = [];
+  page.on('request', request => { if (/\/api\//.test(request.url())) apiRequests.push(request.url()); });
+  await page.goto(`${base}/team?preview=1`);
+  const delegation = page.locator('.team-delegation-preview');
+  await expect(delegation.getByRole('heading', { name: 'Aperçu de délégation' })).toBeVisible();
+  await expect(delegation.getByText('désactivée pour cette tâche fictive')).toBeVisible();
+  await expect(delegation.getByRole('button', { name: 'Simuler la proposition' })).toBeDisabled();
+  await delegation.getByLabel('Tâche de délégation d’exemple').selectOption('office-supplies-demo');
+  await delegation.getByLabel('Créneau de délégation d’exemple').selectOption('14:00');
+  await expect(delegation.getByRole('button', { name: 'Simuler la proposition' })).toBeDisabled();
+  await expect(delegation.locator('.team-delegation-no-match').filter({ hasText: 'Déjà occupé dans le scénario' })).toBeVisible();
+  await delegation.getByLabel('Créneau de délégation d’exemple').selectOption('15:00');
+  await delegation.getByLabel('Membre remplaçant fictif').selectOption('10000000-0000-4000-8000-000000000013');
+  await delegation.getByRole('button', { name: 'Simuler la proposition' }).click();
+  await expect(delegation.getByText('Youssef Benali → Imane El Idrissi')).toBeVisible();
+  await delegation.getByRole('button', { name: 'Simuler l’acceptation du remplaçant' }).click();
+  await expect(delegation.getByText('Acceptée dans cet aperçu')).toBeVisible();
+  expect(apiRequests).toEqual([]);
+  expect(await page.evaluate(() => JSON.stringify({ ...localStorage, ...sessionStorage }))).not.toMatch(/Imane|Youssef|office-supplies-demo|Acceptée/);
+  await delegation.getByRole('button', { name: 'Effacer cette proposition' }).click();
+  await expect(delegation.getByText('Aucune proposition de délégation dans cette session.')).toBeVisible();
+  await page.reload();
+  await expect(page.locator('.team-delegation-preview').getByText('Aucune proposition de délégation dans cette session.')).toBeVisible();
+  expect(apiRequests).toEqual([]);
+});
 test('responsive pearl/navy layout, keyboard focus and touch controls', async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: 'reduce' }); await page.goto(`${base}/team`); await expect(page.locator('.team-roster-list>li')).toHaveCount(4);
+  await page.emulateMedia({ reducedMotion: 'reduce' }); await page.goto(`${base}/team?preview=1`); await expect(page.locator('.team-roster-list>li')).toHaveCount(4);
   for (const width of [1536, 1280, 768, 390]) {
     await page.setViewportSize({ width, height: 900 }); expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.screenshot({ animations: 'disabled', path: `test-results/team-pearl-${width}.png` });
@@ -46,6 +153,23 @@ test('responsive pearl/navy layout, keyboard focus and touch controls', async ({
   expect((await page.getByLabel('Filtrer les rôles d’accès chargés').boundingBox())!.height).toBeGreaterThanOrEqual(44);
   await page.getByRole('button', { name: 'Activer le thème sombre' }).click();
   for (const width of [1536, 1280, 768, 390]) { await page.setViewportSize({ width, height: 900 }); await page.screenshot({ animations: 'disabled', path: `test-results/team-navy-${width}.png` }); }
+  const preview = page.locator('.team-assignment-preview'); await preview.scrollIntoViewIfNeeded();
+  await page.setViewportSize({ width: 390, height: 844 }); expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  expect((await page.getByLabel('Tâche d’exemple').boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  expect((await page.getByRole('button', { name: 'Ajouter à l’aperçu' }).boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  await page.screenshot({ animations: 'disabled', path: 'test-results/team-assignment-navy-390.png' });
+  await page.getByRole('button', { name: 'Activer le thème clair' }).click();
+  await page.screenshot({ animations: 'disabled', path: 'test-results/team-assignment-pearl-390.png' });
+  const approvals = page.locator('.team-approval-preview'); await approvals.scrollIntoViewIfNeeded();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  expect((await approvals.getByRole('button', { name: 'Simuler l’acceptation' }).first().boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  await page.screenshot({ animations: 'disabled', path: 'test-results/team-approval-pearl-390.png' });
+  await page.getByRole('button', { name: 'Activer le thème sombre' }).click();
+  await page.screenshot({ animations: 'disabled', path: 'test-results/team-approval-navy-390.png' });
+  const delegation = page.locator('.team-delegation-preview'); await delegation.scrollIntoViewIfNeeded();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  expect((await delegation.getByLabel('Tâche de délégation d’exemple').boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  await page.screenshot({ animations: 'disabled', path: 'test-results/team-delegation-navy-390.png' });
 });
 test.describe('verified team roster', () => {
   test.skip(process.env.TEAM_CONFIGURED !== '1', 'Requires isolated synthetic authentication build.');

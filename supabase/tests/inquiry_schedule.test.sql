@@ -4,11 +4,15 @@ set search_path=public,extensions;
 select plan(22);
 insert into public.clinics(id,name) values('c1000000-0000-4000-8000-000000000001','Synthetic Schedule A'),('c1000000-0000-4000-8000-000000000002','Synthetic Schedule B');
 insert into auth.users(id) values('c2000000-0000-4000-8000-000000000001'),('c2000000-0000-4000-8000-000000000002');
+-- Authenticated fixtures include a live session; all rows roll back with this test.
+insert into auth.sessions(id,user_id,not_after) values('c2000000-0000-4000-8000-000000000001','c2000000-0000-4000-8000-000000000001',now()+interval '1 hour'),('c2000000-0000-4000-8000-000000000002','c2000000-0000-4000-8000-000000000002',now()+interval '1 hour');
 insert into public.clinic_memberships(clinic_id,user_id,role,active) values('c1000000-0000-4000-8000-000000000001','c2000000-0000-4000-8000-000000000001','reception',true),('c1000000-0000-4000-8000-000000000001','c2000000-0000-4000-8000-000000000002','manager',true);
 insert into public.inquiries(id,clinic_id,owner_user_id,display_name,source) values('c3000000-0000-4000-8000-000000000001','c1000000-0000-4000-8000-000000000001','c2000000-0000-4000-8000-000000000001','Synthetic Contact','phone');
 select set_config('request.jwt.claim.sub','c2000000-0000-4000-8000-000000000001',true);
+select set_config('request.jwt.claims',jsonb_build_object('session_id',nullif(current_setting('request.jwt.claim.sub'),''))::text,true);
 select set_config('request.method','POST',true);
 create function pg_temp.schedule(p jsonb,k uuid default 'c4000000-0000-4000-8000-000000000001') returns jsonb language sql as $$select public.set_inquiry_follow_up_schedule('c1000000-0000-4000-8000-000000000001','c3000000-0000-4000-8000-000000000001',k,p,'c5000000-0000-4000-8000-000000000001')$$;
+grant execute on function pg_temp.schedule(jsonb,uuid) to authenticated;
 select ok(not has_function_privilege('anon','public.set_inquiry_follow_up_schedule(uuid,uuid,uuid,jsonb,uuid)','EXECUTE'),'anonymous execution denied');
 select throws_ok($$select pg_temp.schedule('{"expected_follow_up_at":null,"follow_up_at":null}')$$,'PT503',null,'database default-off');
 update private.intake_command_settings set enabled=true;
@@ -24,8 +28,10 @@ select is((select count(*)::int from private.inquiry_schedule_receipts where cli
 select is((select count(*)::int from private.outbox_events e cross join lateral jsonb_object_keys(e.payload) where e.clinic_id='c1000000-0000-4000-8000-000000000001'),3,'minimal three-field event payload');
 select throws_ok($$update private.inquiry_schedule_receipts set receipt='{}' where clinic_id='c1000000-0000-4000-8000-000000000001'$$,'55000',null,'receipt update forbidden');
 select set_config('request.jwt.claim.sub','c2000000-0000-4000-8000-000000000002',true);
+select set_config('request.jwt.claims',jsonb_build_object('session_id',nullif(current_setting('request.jwt.claim.sub'),''))::text,true);
 select throws_ok($$select pg_temp.schedule('{"expected_follow_up_at":null,"follow_up_at":null}')$$,'PT404',null,'other manager cannot modify owner deadline');
 select set_config('request.jwt.claim.sub','c2000000-0000-4000-8000-000000000001',true);
+select set_config('request.jwt.claims',jsonb_build_object('session_id',nullif(current_setting('request.jwt.claim.sub'),''))::text,true);
 update public.inquiries set owner_user_id='c2000000-0000-4000-8000-000000000002' where id='c3000000-0000-4000-8000-000000000001';
 select throws_ok($$select pg_temp.schedule('{"expected_follow_up_at":null,"follow_up_at":"2026-11-02T10:00:00.123456Z"}')$$,'PT404',null,'former owner cannot replay');
 update public.inquiries set owner_user_id='c2000000-0000-4000-8000-000000000001' where id='c3000000-0000-4000-8000-000000000001';

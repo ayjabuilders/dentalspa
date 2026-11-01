@@ -4,8 +4,11 @@ set search_path=public,extensions;
 select plan(25);
 insert into public.clinics(id,name) values('91000000-0000-4000-8000-000000000001','Synthetic Worklist A'),('91000000-0000-4000-8000-000000000002','Synthetic Worklist B');
 insert into auth.users(id) values('92000000-0000-4000-8000-000000000001'),('92000000-0000-4000-8000-000000000002');
+-- Authenticated fixtures include a live session; all rows roll back with this test.
+insert into auth.sessions(id,user_id,not_after) values('92000000-0000-4000-8000-000000000001','92000000-0000-4000-8000-000000000001',now()+interval '1 hour'),('92000000-0000-4000-8000-000000000002','92000000-0000-4000-8000-000000000002',now()+interval '1 hour');
 insert into public.clinic_memberships(clinic_id,user_id,role,active) values('91000000-0000-4000-8000-000000000001','92000000-0000-4000-8000-000000000001','reception',true),('91000000-0000-4000-8000-000000000001','92000000-0000-4000-8000-000000000002','manager',true);
 select set_config('request.jwt.claim.sub','92000000-0000-4000-8000-000000000001',true);
+select set_config('request.jwt.claims',jsonb_build_object('session_id',nullif(current_setting('request.jwt.claim.sub'),''))::text,true);
 select set_config('request.method','POST',true);
 select is((select enabled from private.intake_command_settings),false,'read projections require no write enablement');
 select ok(not has_function_privilege('anon','public.inquiry_owner_worklist(uuid)','EXECUTE'),'anonymous execution denied');

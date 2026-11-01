@@ -1,0 +1,5 @@
+.demo-profile-switcher{display:grid;gap:9px;margin:0 0 22px;padding:15px 16px;border:1px solid var(--ds-line);border-radius:15px;background:#fff}
+.demo-profile-switcher label{font-size:12px;font-weight:700;color:var(--ds-primary)}
+.demo-profile-switcher select{min-height:48px;width:100%;padding:10px 12px;border:1px solid var(--ds-border);border-radius:11px;background:#fff;color:var(--ink);font:inherit}
+.demo-profile-switcher small{font-size:12px;line-height:1.55;color:var(--ds-muted)}
+.demo-profile-switcher :focus-visible{outline:3px solid var(--ds-primary);outline-offset:2px}

@@ -6,10 +6,10 @@ import type { Inquiry, InquiryScheduleHistory as HistoryData } from '@dental/con
 import { IntakeError, type IntakeFailure, type IntakeTransport } from './transport';
 import './inquiry-schedule-history.css';
 const messages: Record<IntakeFailure,string> = {
-  offline: 'Hors connexion. L’historique et le détail privé ont été effacés.',
+  offline: 'Hors connexion. L’historique et le détail ne sont plus affichés.',
   denied: 'Historique non autorisé. L’accès actuel à cette demande a été refusé.',
   expired: 'Session expirée. Connectez-vous à nouveau pour consulter cet historique.',
-  missing: 'Demande absente, réattribuée ou inaccessible. Le détail privé a été effacé.',
+  missing: 'Demande absente, réattribuée ou inaccessible. Le détail n’est plus affiché.',
   unavailable: 'Historique indisponible. La réponse n’a pas pu être vérifiée.',
   disabled: 'Historique indisponible. La lecture ne dépend pas de l’activation des écritures.',
   invalid: 'Historique indisponible pour cette demande.',

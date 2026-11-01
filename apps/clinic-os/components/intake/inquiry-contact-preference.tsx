@@ -1,4 +1,5 @@
 'use client';
+import { createRequestKey } from '../../lib/request-key';
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { Button, Modal } from '@dental/ui-clinic';
 import { LoaderCircle, MessageSquareText, RefreshCw, ShieldCheck } from 'lucide-react';
@@ -9,10 +10,10 @@ const labels: Record<InquiryContactPreference,string> = { phone:'Téléphone', e
 const label = (value: InquiryContactPreference | null) => value === null ? 'Aucune préférence consignée' : labels[value];
 const boundary = 'Déclaration manuelle. Elle ne vaut pas consentement, ne vérifie pas les coordonnées et n’envoie aucun message.';
 const messages: Record<IntakeFailure,string> = {
-  offline:'Hors connexion. Le détail privé et la tentative ont été effacés. Aucun envoi automatique.',
-  denied:'Accès refusé. Le détail privé et la tentative ont été effacés.',
+  offline:'Hors connexion. Les informations ne sont plus affichées. Aucun envoi automatique.',
+  denied:'Accès refusé. Les informations ne sont plus affichées.',
   expired:'Session expirée. Connectez-vous à nouveau.',
-  missing:'Demande absente, réattribuée ou inaccessible. Le détail privé a été effacé.',
+  missing:'Demande absente, réattribuée ou inaccessible. Le détail n’est plus affiché.',
   unavailable:'Préférence indisponible. Aucun état actuel vérifié ; réessayez la lecture.',
   disabled:'L’enregistrement est désactivé dans cet environnement.',
   invalid:'Choisissez une préférence explicitement déclarée ou l’action d’effacement.',
@@ -55,7 +56,7 @@ export function InquiryContactPreference({ inquiry, transport }: { inquiry: Inqu
   }
   async function submit(event:FormEvent){
     event.preventDefault();if(busy.current || !online)return;let command=transport.pendingPreference.current;const verifying=command!==null;
-    if(!command){if(!fresh || conflict)return;const parsed=SetInquiryContactPreferenceSchema.safeParse({expected_revision:fresh.revision,preference:clearing?null:choice});if(!parsed.success){setMessage(messages.invalid);return;}command={id:fresh.inquiry_id,displayName:inquiry?.display_name,body:parsed.data,key:crypto.randomUUID()};transport.pendingPreference.current=command;setPending(command);}
+    if(!command){if(!fresh || conflict)return;const parsed=SetInquiryContactPreferenceSchema.safeParse({expected_revision:fresh.revision,preference:clearing?null:choice});if(!parsed.success){setMessage(messages.invalid);return;}command={id:fresh.inquiry_id,displayName:inquiry?.display_name,body:parsed.data,key:createRequestKey()};transport.pendingPreference.current=command;setPending(command);}
     busy.current=true;setSaving(true);setState(null);setError(null);setMessage('');request.current?.abort();const controller=new AbortController();request.current=controller;let received=false;
     try{
       const result=await transport.setContactPreference(command.id,command.body,command.key,controller.signal);received=true;
@@ -79,7 +80,7 @@ export function InquiryContactPreference({ inquiry, transport }: { inquiry: Inqu
     <p className="contact-preference-boundary">{boundary}</p>
     {loading && !open?<p role="status" className="contact-preference-status"><LoaderCircle size={17} className="intake-spin"/>Lecture de la préférence…</p>:error && !open?<div role="status" className="contact-preference-status"><p>{messages[error]}</p>{owned && !['offline','denied','expired','missing'].includes(error)&&<Button onClick={()=>inquiry && void read(inquiry,false)} disabled={!online}>Relire la préférence</Button>}</div>:visible?<div className="contact-preference-value"><span>État actuellement lu</span><strong>{label(visible.preference)}</strong>{visible.updated_at&&<small>Mis à jour le <time dateTime={visible.updated_at}>{timestamp(visible.updated_at)}</time> · {zone}</small>}</div>:null}
     {(owned || pending)&&<Button onClick={start} disabled={!online || saving}><MessageSquareText size={17}/>{pending?'Vérifier la préférence':'Consigner une préférence'}</Button>}
-    <Modal open={open} onOpenChange={next=>{if(!busy.current && !next)close();}} title="Consigner une préférence" description={boundary}>
+    <Modal mobilePresentation="sheet" open={open} onOpenChange={next=>{if(!busy.current && !next)close();}} title="Consigner une préférence" description={boundary}>
       <form className="contact-preference-form" onSubmit={submit} aria-busy={loading || saving}>
         <div className="contact-preference-target"><ShieldCheck size={21}/><div><strong>{targetName}</strong><small>{transport.mode==='demo'?'Simulation synthétique · mémoire temporaire':'Responsable actuel · cabinet vérifié'}</small></div></div>
         {loading&&<p role="status"><LoaderCircle size={18} className="intake-spin"/>Lecture de la valeur actuelle…</p>}

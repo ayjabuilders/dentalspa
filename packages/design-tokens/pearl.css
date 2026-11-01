@@ -1,0 +1,23 @@
+/* Pearl candidate 0.1. Opt-in only; never redefine :root or existing theme tokens. */
+[data-ds="pearl"] {
+  --ds-canvas:#f5f6f8; --ds-surface:#fff; --ds-ink:#232330; --ds-muted:#685d74;
+  --ds-primary:#6942cb; --ds-primary-hover:#5530af; --ds-on-primary:#fff; --ds-on-danger:#fff; --ds-soft:#eee5fa;
+  --ds-mint:#ddf3eb; --ds-success:#246457; --ds-warning:#795a20; --ds-warning-bg:#fbf2df;
+  --ds-danger:#a02d49; --ds-danger-bg:#fff0f3; --ds-border:#8e7ba4; --ds-line:#e5ddeb;
+  --ds-focus:#6942cb; --ds-radius-sm:10px; --ds-radius-md:16px; --ds-radius-lg:24px;
+  --ds-space-1:4px; --ds-space-2:8px; --ds-space-3:12px; --ds-space-4:16px; --ds-space-5:24px; --ds-space-6:32px;
+  --ds-font:'DM Sans',system-ui,sans-serif; --ds-heading:Manrope,system-ui,sans-serif;
+  --ds-body:14px; --ds-label:12px; --ds-control-height:44px; --ds-cell-padding:14px;
+  --ds-shadow:0 8px 28px #4325640c; --ds-fast:160ms; --ds-enter:280ms; --ds-ease:cubic-bezier(.16,1,.3,1);
+  color-scheme:light;
+}
+[data-ds="pearl"][data-density="compact"] { --ds-cell-padding:8px; }
+[data-ds="pearl"][data-theme="dark"] {
+  --ds-canvas:#15151f;--ds-surface:#20202e;--ds-ink:#f4effa;--ds-muted:#bcb1cb;
+  --ds-primary:#b89aef;--ds-primary-hover:#cdb4f8;--ds-on-primary:#20152f;--ds-on-danger:#20152f;--ds-soft:#302840;--ds-mint:#213c36;
+  --ds-success:#9bdfc9;--ds-warning:#e8c48b;--ds-warning-bg:#3f3420;
+  --ds-danger:#ff9cb4;--ds-danger-bg:#3b2330;--ds-border:#94839f;--ds-line:#40384a;--ds-focus:#c5a4ff;
+  color-scheme:dark;
+}
+[data-ds="pearl"][data-motion="reduced"] { --ds-fast:0ms; --ds-enter:0ms; }
+@media(prefers-reduced-motion:reduce){[data-ds="pearl"]{--ds-fast:0ms;--ds-enter:0ms}}

@@ -1,12 +1,14 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 set search_path=public,extensions;
-select plan(19);
+select plan(27);
 insert into public.clinics(id,name) values('b1000000-0000-4000-8000-000000000001','Synthetic Activity A'),('b1000000-0000-4000-8000-000000000002','Synthetic Activity B');
-insert into auth.users(id) values('b2000000-0000-4000-8000-000000000001');
-insert into public.profiles(user_id,display_name) values('b2000000-0000-4000-8000-000000000001','Synthetic Manager');
+insert into auth.users(id) values('b2000000-0000-4000-8000-000000000001'),('b2000000-0000-4000-8000-000000000002');
+insert into auth.sessions(id,user_id,not_after) values('b2000000-0000-4000-8000-000000000001','b2000000-0000-4000-8000-000000000001',now()+interval '1 hour');
+insert into public.profiles(user_id,display_name) values('b2000000-0000-4000-8000-000000000001','Synthetic Manager'),('b2000000-0000-4000-8000-000000000002','Synthetic Patient Private Name');
 insert into public.clinic_memberships(clinic_id,user_id,role,active) values('b1000000-0000-4000-8000-000000000001','b2000000-0000-4000-8000-000000000001','manager',true);
 select set_config('request.jwt.claim.sub','b2000000-0000-4000-8000-000000000001',true);
+select set_config('request.jwt.claims',jsonb_build_object('session_id',nullif(current_setting('request.jwt.claim.sub'),''))::text,true);
 select set_config('request.method','POST',true);
 select ok(not has_function_privilege('anon','public.team_activity(uuid)','EXECUTE'),'anonymous execution denied');
 set local role authenticated;
@@ -25,8 +27,10 @@ update public.clinic_memberships set role='manager',active=false where user_id='
 select throws_ok($$select public.team_activity('b1000000-0000-4000-8000-000000000001')$$,'42501',null,'inactive manager denied');
 update public.clinic_memberships set active=true where user_id='b2000000-0000-4000-8000-000000000001';
 select set_config('request.jwt.claim.sub','',true);
+select set_config('request.jwt.claims',jsonb_build_object('session_id',nullif(current_setting('request.jwt.claim.sub'),''))::text,true);
 select throws_ok($$select public.team_activity('b1000000-0000-4000-8000-000000000001')$$,'28000',null,'missing subject denied');
 select set_config('request.jwt.claim.sub','b2000000-0000-4000-8000-000000000001',true);
+select set_config('request.jwt.claims',jsonb_build_object('session_id',nullif(current_setting('request.jwt.claim.sub'),''))::text,true);
 insert into private.audit_events(id,clinic_id,actor_ref,action,aggregate_id,correlation_id,occurred_at)
 select ('b3000000-0000-4000-8000-'||lpad(n::text,12,'0'))::uuid,'b1000000-0000-4000-8000-000000000001','b2000000-0000-4000-8000-000000000001',case n when 1 then 'InquiryCreated' when 2 then 'SlotHoldCreated' else 'SlotHoldReleased' end,gen_random_uuid(),gen_random_uuid(),case n when 1 then '2026-10-26T19:00:00.000001Z'::timestamptz when 2 then '2026-10-26T20:00:00.000002+01:00'::timestamptz else '2026-10-26T19:00:00.000002Z'::timestamptz end from generate_series(1,3)n;
 insert into private.audit_events(clinic_id,actor_ref,action,aggregate_id,correlation_id) values('b1000000-0000-4000-8000-000000000001','b2000000-0000-4000-8000-000000000001','UnknownFutureAction',gen_random_uuid(),gen_random_uuid()),('b1000000-0000-4000-8000-000000000002','b2000000-0000-4000-8000-000000000001','InquiryCreated',gen_random_uuid(),gen_random_uuid());
@@ -36,11 +40,38 @@ select is(public.team_activity('b1000000-0000-4000-8000-000000000001')->'items'-
 select is((select count(*)::int from jsonb_object_keys(public.team_activity('b1000000-0000-4000-8000-000000000001')->'items'->0)),3,'minimal public fields');
 delete from public.profiles where user_id='b2000000-0000-4000-8000-000000000001';
 select is(public.team_activity('b1000000-0000-4000-8000-000000000001')->'items'->0->'actor_display_name','null'::jsonb,'missing profile uses null not UUID');
-insert into private.audit_events(clinic_id,actor_ref,action,aggregate_id,correlation_id) select 'b1000000-0000-4000-8000-000000000001','b2000000-0000-4000-8000-000000000001','InquiryFollowUpRecorded',gen_random_uuid(),gen_random_uuid() from generate_series(1,47);
+insert into private.audit_events(clinic_id,actor_ref,action,aggregate_id,correlation_id)
+values('b1000000-0000-4000-8000-000000000001','b2000000-0000-4000-8000-000000000002','PatientProfileViewed','b4000000-0000-4000-8000-000000000001',gen_random_uuid());
+select is(public.team_activity('b1000000-0000-4000-8000-000000000001')->'items'->0->>'kind','patient_profile_viewed','self-profile read is included');
+select is(public.team_activity('b1000000-0000-4000-8000-000000000001')->'items'->0->'actor_display_name','null'::jsonb,'patient actor name is never disclosed');
+select ok(public.team_activity('b1000000-0000-4000-8000-000000000001')::text !~ 'b2000000-0000-4000-8000-000000000002','patient actor identifier is never disclosed');
+insert into private.audit_events(clinic_id,actor_ref,action,aggregate_id,correlation_id)
+values
+ ('b1000000-0000-4000-8000-000000000001','b2000000-0000-4000-8000-000000000001','InquiryFollowUpScheduleChanged','b5000000-0000-4000-8000-000000000001',gen_random_uuid()),
+ ('b1000000-0000-4000-8000-000000000001','b2000000-0000-4000-8000-000000000001','InquiryPlannedActionChanged','b5000000-0000-4000-8000-000000000002',gen_random_uuid()),
+ ('b1000000-0000-4000-8000-000000000001','b2000000-0000-4000-8000-000000000001','InquiryOwnerReassigned','b5000000-0000-4000-8000-000000000003',gen_random_uuid());
+select ok(public.team_activity('b1000000-0000-4000-8000-000000000001')->'items' @> '[{"kind":"inquiry_follow_up_schedule_changed"},{"kind":"inquiry_planned_action_changed"},{"kind":"inquiry_owner_reassigned"}]'::jsonb,'administrative inquiry actions are included');
+select ok(public.team_activity('b1000000-0000-4000-8000-000000000001')::text !~ 'b5000000-0000-4000-8000-000000000001','inquiry identifier is never disclosed');
+insert into private.audit_events(clinic_id,actor_ref,action,aggregate_id,correlation_id) select 'b1000000-0000-4000-8000-000000000001','b2000000-0000-4000-8000-000000000001','InquiryFollowUpRecorded',gen_random_uuid(),gen_random_uuid() from generate_series(1,43);
 select is((public.team_activity('b1000000-0000-4000-8000-000000000001')->>'truncated')::boolean,false,'50 supported events complete');
 insert into private.audit_events(clinic_id,actor_ref,action,aggregate_id,correlation_id) values('b1000000-0000-4000-8000-000000000001','b2000000-0000-4000-8000-000000000001','InquiryCreated',gen_random_uuid(),gen_random_uuid());
 select is(jsonb_array_length(public.team_activity('b1000000-0000-4000-8000-000000000001')->'items'),50,'51 supported events return50');
 select is((public.team_activity('b1000000-0000-4000-8000-000000000001')->>'truncated')::boolean,true,'51 supported events explicitly partial');
 select is((select count(*)::int from private.outbox_events where clinic_id='b1000000-0000-4000-8000-000000000001'),0,'no emitted event');
+reset role;
+select set_config('request.jwt.claim.sub','b2000000-0000-4000-8000-000000000001',true);
+select set_config('request.jwt.claims','{}',true);
+set local role authenticated;
+select throws_ok($$select public.team_activity('b1000000-0000-4000-8000-000000000001')$$,'28000',null,'missing session claim denied');
+reset role;
+select set_config('request.jwt.claims','{"session_id":"b2000000-0000-4000-8000-000000000001"}',true);
+update auth.sessions set not_after=now()-interval '1 second' where id='b2000000-0000-4000-8000-000000000001';
+set local role authenticated;
+select throws_ok($$select public.team_activity('b1000000-0000-4000-8000-000000000001')$$,'28000',null,'expired session denied');
+reset role;
+delete from auth.sessions where id='b2000000-0000-4000-8000-000000000001';
+set local role authenticated;
+select throws_ok($$select public.team_activity('b1000000-0000-4000-8000-000000000001')$$,'28000',null,'revoked session denied');
+reset role;
 select * from finish();
 rollback;

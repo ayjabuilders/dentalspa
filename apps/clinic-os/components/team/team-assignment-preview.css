@@ -1,0 +1,40 @@
+.team-assignment-preview{margin-top:22px;padding:24px;min-width:0}
+.team-assignment-heading{display:flex;align-items:center;gap:12px}
+.team-assignment-heading h2{margin:5px 0 0;font-size:18px}
+.team-assignment-icon{display:grid;place-items:center;width:42px;height:42px;border:1px solid var(--line);border-radius:13px;background:var(--soft);color:var(--team-accent);flex:none}
+.team-assignment-explainer{margin:16px 0;color:var(--muted);font-size:13px;line-height:1.65}
+.team-assignment-caveat{padding:12px 14px;border:1px solid color-mix(in srgb,var(--warning) 42%,var(--line));border-radius:10px;background:color-mix(in srgb,var(--warning) 8%,var(--raised));color:var(--ink);font-size:12px;line-height:1.6}
+.team-assignment-form{display:grid;grid-template-columns:minmax(180px,1fr) minmax(100px,.55fr) minmax(230px,1.2fr) auto;align-items:end;gap:12px;margin-top:18px}
+.team-assignment-form label{display:grid;gap:7px;min-width:0;color:var(--muted);font-size:12px;font-weight:650}
+.team-assignment-form select{width:100%;min-width:0;min-height:46px;padding:10px 34px 10px 12px;border:1px solid var(--boundary);border-radius:10px;background:var(--raised);color:var(--ink);font:inherit;font-size:13px}
+.team-assignment-form select:focus-visible,.team-assignment-preview button:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+.team-assignment-form .button{min-height:46px;white-space:nowrap}
+.team-assignment-context{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0;padding:0}
+.team-assignment-context>div{min-width:0;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--raised)}
+.team-assignment-context dt{color:var(--muted);font-size:11px;line-height:1.5}
+.team-assignment-context dd{margin:4px 0 0;color:var(--ink);font-size:12px;font-weight:650;line-height:1.5}
+.team-assignment-candidates{margin-top:18px}
+.team-assignment-candidates h3{margin:0 0 8px;font-size:13px}
+.team-assignment-candidates ul{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.team-assignment-candidates li{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px solid var(--line)}
+.team-assignment-candidates li>div{display:grid;gap:4px;min-width:0}
+.team-assignment-candidates li strong{font-size:12px}
+.team-assignment-candidates li>div span,.team-assignment-match,.team-assignment-no-match{font-size:11px;line-height:1.55}
+.team-assignment-candidates li>div span{color:var(--muted)}
+.team-assignment-match{color:var(--success);text-align:right}
+.team-assignment-no-match{color:var(--muted);text-align:right}
+.team-assignment-candidates>p{margin:10px 0;color:var(--warning);font-size:12px;line-height:1.6}
+.team-assignment-list{margin-top:20px;border-top:1px solid var(--line)}
+.team-assignment-empty{padding:12px 0 0;margin:0;color:var(--muted);font-size:12px}
+.team-assignment-list-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0 8px}
+.team-assignment-list-heading h3{margin:0;font-size:13px}
+.team-assignment-list-heading .button{min-height:40px}
+.team-assignment-list ul{list-style:none;padding:0;margin:0}
+.team-assignment-list li{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 0;border-top:1px solid var(--line)}
+.team-assignment-list li>div{display:grid;gap:5px;min-width:0}
+.team-assignment-list li strong{font-size:13px;line-height:1.5}
+.team-assignment-list li>div span{font-size:12px;color:var(--muted)}
+.team-assignment-status{flex:none;padding:5px 8px;border-radius:8px;background:var(--soft);color:var(--muted);font-size:11px}
+@media(max-width:1050px){.team-assignment-form{grid-template-columns:minmax(0,1fr) minmax(100px,.55fr)}.team-assignment-form .button{grid-column:1/-1;justify-self:start}}
+@media(max-width:700px){.team-assignment-context{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:560px){.team-assignment-preview{padding:18px 16px}.team-assignment-form{grid-template-columns:minmax(0,1fr)}.team-assignment-form .button{width:100%}.team-assignment-list li,.team-assignment-candidates li{align-items:flex-start;flex-direction:column;gap:8px}.team-assignment-match,.team-assignment-no-match{text-align:left}}

@@ -5,6 +5,10 @@ export const TeamActivityKindSchema = z.enum([
   'inquiry_follow_up_recorded',
   'slot_hold_created',
   'slot_hold_released',
+  'patient_profile_viewed',
+  'inquiry_follow_up_schedule_changed',
+  'inquiry_planned_action_changed',
+  'inquiry_owner_reassigned',
 ]);
 export type TeamActivityKind = z.infer<typeof TeamActivityKindSchema>;
 

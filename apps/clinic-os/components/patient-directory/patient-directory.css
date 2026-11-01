@@ -1,0 +1,106 @@
+/* Patients composition: one working directory, an explicit dossier, and contextual actions. */
+.patient-directory{color:var(--ink);width:100%;min-width:0;padding:4px 0 24px;font-family:var(--font)}
+.patient-directory button{font:inherit;cursor:pointer}
+.patient-directory button:disabled{cursor:not-allowed;opacity:.55}
+.patient-directory :is(button,input,select,summary):focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+.patient-directory .patient-directory-heading{display:flex;align-items:center;justify-content:space-between;gap:20px;margin:0 0 22px;padding:0;background:none;border:0;min-height:0}
+.patient-directory-heading>div{min-width:0;flex:1}
+.patient-directory-heading .eyebrow{font-size:10px;letter-spacing:.16em;margin:0 0 8px;color:var(--muted)}
+.patient-directory-heading h1{font:800 30px/1.2 var(--heading);letter-spacing:-1px;margin:0 0 8px}
+.patient-directory-heading p:last-child{margin:0;color:var(--muted);font-size:14px;line-height:1.5}
+.patient-directory-heading>.button{width:auto;flex:none;min-height:44px;gap:8px;margin:0}
+.patient-directory-dashboard{display:grid;grid-template-columns:1fr 1fr 1.15fr;gap:16px;margin-bottom:24px}
+.patient-directory-stat{display:flex;align-items:center;gap:16px;text-align:start;padding:22px;border:1px solid var(--line);border-radius:22px;background:linear-gradient(135deg,var(--surface),var(--soft));color:var(--ink);min-width:0;transition:box-shadow 160ms,border-color 160ms}
+.patient-directory-stat:nth-child(2){background:linear-gradient(135deg,var(--surface),#e7f5ef)}
+.patient-directory-stat:hover:not(:disabled){border-color:var(--primary);box-shadow:0 8px 24px #6942cb12}
+.directory-stat-icon{display:grid;place-items:center;width:46px;height:46px;border-radius:15px;flex:none;background:var(--surface);color:var(--primary)}
+.patient-directory-stat:nth-child(2) .directory-stat-icon{color:#246457}
+.patient-directory-stat>span:last-child{min-width:0;flex:1}
+.patient-directory-stat small{display:block;color:var(--muted);font-size:12px;font-weight:650}
+.patient-directory-stat strong{display:block;font:800 32px/1.4 var(--heading);letter-spacing:-1px}
+.patient-directory-stat>span>span{display:flex;align-items:center;gap:6px;color:var(--primary);font-size:11px;font-weight:650}
+.patient-directory-context{display:flex;align-items:center;gap:14px;border-radius:22px;padding:20px;border:1px dashed var(--line);color:var(--muted)}
+.patient-directory-context>svg{flex:none;color:#246457}.patient-directory-context strong{font-size:13px;color:var(--ink)}.patient-directory-context p{font-size:12px;line-height:1.6;margin:7px 0 0}
+.patient-directory-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:22px;align-items:start}
+.patient-directory-layout[data-shortcuts=true]:not([data-profile=true]){grid-template-columns:minmax(0,1fr) 270px}
+.patient-directory-list{min-width:0;border:1px solid var(--line);border-radius:24px;background:var(--surface);overflow:hidden;box-shadow:0 8px 28px #43256408}
+.patient-directory-list>header{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:20px 22px}
+.patient-directory-list h2{font:800 18px/1.35 var(--heading);margin:0;letter-spacing:-.4px}.patient-directory-list>header>div>span{display:block;font-size:12px;color:var(--muted);margin-top:4px}
+.patient-directory-view{display:flex;gap:3px;background:var(--soft);padding:4px;border-radius:11px;flex:none}
+.patient-directory-view button{display:flex;align-items:center;justify-content:center;gap:6px;min-height:40px;border:0;border-radius:8px;padding:8px 10px;color:var(--muted);background:transparent;font-size:12px;font-weight:700}
+.patient-directory-view [aria-pressed=true]{background:var(--surface);box-shadow:0 2px 8px #43256415;color:var(--primary)}
+.patient-directory .patient-directory-search{display:grid;gap:10px;margin:0;padding:0 22px 18px;max-width:none}
+.directory-search-field{display:flex;align-items:center;gap:10px;border:1px solid var(--boundary);border-radius:12px;background:var(--surface);padding:0 12px;color:var(--muted);min-width:0}
+.directory-search-field:focus-within{outline:3px solid var(--focus);outline-offset:2px}
+.patient-directory .directory-search-field>input{min-height:46px;min-width:0;flex:1;width:100%;border:0;border-radius:0;box-shadow:none;padding:8px 0;background:transparent;font:inherit;font-size:14px;outline:none}
+.directory-search-field>button{display:grid;place-items:center;min-height:44px;width:32px;border:0;background:transparent;color:var(--muted)}
+.directory-search-tools{display:flex;align-items:center;flex-wrap:wrap;gap:8px}.patient-directory .directory-search-tools select{min-width:0;max-width:100%;width:auto;flex:1;min-height:42px;border:1px solid var(--line);background:var(--soft);border-radius:10px;color:var(--ink);font:inherit;font-size:12px;padding:8px 10px}.directory-search-tools>.button{width:auto;flex:none}
+.directory-active-filter{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 22px 16px;font-size:12px;color:var(--muted)}.directory-active-filter>span{overflow-wrap:anywhere}.directory-active-filter>button{display:flex;align-items:center;gap:5px;background:transparent;border:0;color:var(--primary);min-height:32px;font-size:12px;flex:none}
+.directory-column-labels{display:grid;grid-template-columns:minmax(0,1fr) 170px 32px;gap:12px;padding:12px 22px;background:var(--raised);border-block:1px solid var(--line);color:var(--muted);font-size:11px;font-weight:650}
+.directory-records{list-style:none;margin:0;padding:0}.directory-records>li{margin:0;padding:0;border-bottom:1px solid var(--line)}.directory-records>li:last-child{border-bottom:0}
+.directory-record{display:grid;grid-template-columns:44px minmax(0,1fr) 170px 32px;align-items:center;gap:12px;width:100%;padding:16px 22px;border:0;background:transparent;text-align:start;color:var(--ink);transition:background 160ms,box-shadow 160ms}
+.directory-record:hover:not(:disabled){background:var(--soft)}.directory-record:focus-visible{outline-offset:-4px!important}
+.patient-directory-avatar{display:grid;place-items:center;width:44px;height:44px;border-radius:14px;background:var(--soft);color:var(--primary);font:750 14px var(--heading)}
+.directory-records li:nth-child(even) .patient-directory-avatar{background:#ddf3eb;color:#246457}
+.directory-record-name{min-width:0}.directory-record-name strong{display:block;font-size:14px;font-weight:750;overflow-wrap:anywhere}.directory-record-name small{display:block;color:var(--muted);font-size:11px;margin-top:4px}.directory-record-reference{font-size:12px;color:var(--muted);overflow-wrap:anywhere}.directory-record-open{display:flex;align-items:center;justify-content:center;gap:8px;color:var(--primary)}.directory-record-open>span{display:none}
+.patient-directory-list[data-view=cards] .directory-records{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));padding:0 18px 18px;gap:12px}
+.patient-directory-list[data-view=cards] .directory-records>li{border:0;min-width:0}
+.patient-directory-list[data-view=cards] .directory-record{grid-template-columns:44px minmax(0,1fr);align-content:start;align-items:center;padding:20px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(140deg,var(--surface),#faf7ff);height:100%}
+.patient-directory-list[data-view=cards] .directory-record-reference{grid-column:1/-1}.patient-directory-list[data-view=cards] .directory-record-open{grid-column:1/-1;justify-content:space-between;border-top:1px solid var(--line);padding-top:14px;font-size:12px;font-weight:700}.patient-directory-list[data-view=cards] .directory-record-open>span{display:inline}
+.patient-directory-pagination{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}.patient-directory-pagination>span:first-child{margin-inline-end:auto}.patient-directory-pagination>.button{width:38px;min-height:40px;padding:8px}
+.directory-workflow{padding:22px;border:1px solid var(--line);border-radius:24px;background:linear-gradient(155deg,var(--surface),#f5effc);min-width:0}.directory-workflow>.eyebrow{font-size:9px;letter-spacing:.15em;color:var(--primary)}.directory-workflow h2{font:800 21px/1.3 var(--heading);margin:12px 0}.directory-workflow>p{font-size:13px;color:var(--muted);line-height:1.6;margin:0 0 22px}.directory-workflow nav{display:grid;gap:12px}.directory-workflow nav>button{display:flex;align-items:center;gap:12px;width:100%;border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--ink);padding:14px 12px;text-align:start;transition:border-color 160ms,box-shadow 160ms}.directory-workflow nav>button:hover:not(:disabled){border-color:var(--primary);box-shadow:0 4px 14px #6942cb12}.directory-workflow nav>button>span:nth-child(2){flex:1;min-width:0}.directory-workflow nav strong{display:block;font-size:14px}.directory-workflow nav small{display:block;font-size:11px;line-height:1.5;color:var(--muted);margin-top:5px}.directory-workflow nav svg{flex:none;color:var(--primary)}.directory-workflow-icon{display:grid;place-items:center;background:var(--soft);border-radius:12px;width:38px;height:42px;flex:none}
+.patient-directory-help{margin-top:22px;color:var(--muted);font-size:11px;line-height:1.6}.patient-directory-help summary{display:flex;align-items:center;gap:7px;cursor:pointer;min-height:36px}.patient-directory-help p{margin:8px 0 0}
+.patient-directory-profile{min-width:0;grid-column:1/-1;width:100%}.patient-record-path{display:flex;align-items:center;gap:6px;margin:0 0 18px;min-height:44px}.patient-record-path>span{margin-inline-start:auto;color:var(--muted);font-size:12px}.patient-record-path>.button{width:40px;min-height:40px;padding:8px;border-color:transparent;background:transparent}.directory-back{display:flex;align-items:center;gap:8px;border:0;background:transparent;color:var(--primary);font-size:13px!important;font-weight:700!important;min-height:44px;padding:0 10px 0 0}
+.patient-directory-state,.patient-directory-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:44px 24px;color:var(--muted);text-align:center;min-height:200px;background:var(--surface);border-radius:20px}.patient-directory-empty h3{font:750 16px var(--heading);color:var(--ink);margin:0}.patient-directory-empty p,.patient-directory-state p{font-size:13px;line-height:1.65;max-width:440px;margin:0}.patient-directory-error{color:var(--danger)}.patient-directory-search-notice{font-size:13px;color:var(--muted);padding:0 22px}.patient-directory-spin{animation:patient-directory-spin 1s linear infinite}.directory-minimal-profile{padding:24px;border-radius:20px;background:var(--surface)}
+@keyframes patient-directory-spin{to{transform:rotate(360deg)}}
+@media(max-width:1180px){.patient-directory-layout[data-shortcuts=true]:not([data-profile=true]){grid-template-columns:minmax(0,1fr)}.directory-workflow{display:grid;grid-template-columns:1fr 1fr;gap:0 22px}.directory-workflow>.eyebrow,.directory-workflow>h2,.directory-workflow>p{grid-column:1}.directory-workflow nav{grid-column:2;grid-row:1/5}.directory-workflow .patient-directory-help{grid-column:1;margin-top:0}.patient-directory-context{display:none}.patient-directory-dashboard{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.patient-directory .patient-directory-heading{gap:12px;align-items:flex-start;margin-bottom:18px}.patient-directory-heading h1{font-size:27px}.patient-directory-heading p:last-child{font-size:13px}.patient-directory-heading>.button{font-size:12px;padding:8px 10px}.patient-directory-dashboard{gap:10px}.patient-directory-stat{padding:16px;display:grid;gap:10px}.directory-stat-icon{width:38px;height:38px}.patient-directory-stat>span>span{font-size:10px}.patient-directory-stat strong{font-size:28px}.patient-directory-list>header{padding:18px 16px;flex-wrap:wrap}.patient-directory .patient-directory-search{padding:0 16px 16px}.directory-search-tools{display:grid;grid-template-columns:1fr}.patient-directory .directory-search-tools select{width:100%;min-height:44px}.patient-directory-view button{min-height:44px}.directory-column-labels{display:none}.directory-record{grid-template-columns:42px minmax(0,1fr) 24px;padding:16px;gap:5px 10px}.directory-record .patient-directory-avatar{grid-row:1/3;width:42px;height:42px}.directory-record-reference{grid-column:2;grid-row:2}.directory-record-name small{display:none}.directory-record-open{grid-column:3;grid-row:1/3}.patient-directory-list[data-view=cards] .directory-records{grid-template-columns:minmax(0,1fr);padding:0 14px 14px}.patient-directory-list[data-view=cards] .directory-record{grid-template-columns:44px minmax(0,1fr);gap:12px}.patient-directory-list[data-view=cards] .directory-record .patient-directory-avatar{grid-row:1}.patient-directory-list[data-view=cards] .directory-record-reference{grid-row:2}.patient-directory-list[data-view=cards] .directory-record-open{grid-row:3}.directory-workflow{display:block;padding:20px}.directory-workflow .patient-directory-help{margin-top:16px}.patient-directory-pagination{padding:12px}.patient-directory-pagination>.button,.patient-record-path>.button{min-height:44px;min-width:44px}.directory-active-filter{padding:0 16px 14px}.directory-record-name strong{font-size:13px}}
+@media(prefers-reduced-motion:reduce){.patient-directory *{transition:none!important;animation:none!important}}
+/* Mobile cabinet uses one search row and full-card targets; filters share the accessible sheet. */
+.directory-filter-toggle,.directory-mobile-scope,.directory-mobile-search-submit{display:none}
+.directory-filter-sheet>p{font-size:14px;line-height:1.65;color:var(--muted);margin:0 0 20px}
+.directory-filter-sheet .directory-search-tools{display:grid;gap:14px}
+.directory-filter-sheet select{width:100%;min-height:48px;padding:12px;border:1px solid var(--boundary);border-radius:12px;background:var(--surface);color:var(--ink);font:inherit;font-size:16px}
+.directory-filter-sheet>.button{width:100%;margin-top:22px;min-height:48px}
+@media(max-width:700px){
+  .patient-directory{padding:4px 0 20px}
+  .patient-directory-dashboard,.patient-directory-heading .eyebrow,.patient-directory-heading p:last-child,.patient-directory-list>header,.directory-column-labels{display:none}
+  .patient-directory .patient-directory-heading{margin-bottom:20px;align-items:center;gap:12px}
+  .patient-directory-heading h1{font-size:28px;margin:0}
+  .patient-directory-heading>.button{min-height:44px;min-width:44px;padding:10px;border-radius:14px}
+  .patient-directory-heading>.button>span{display:none}
+  .patient-directory-list{border:0;border-radius:0;box-shadow:none;background:transparent;overflow:visible}
+  .patient-directory .patient-directory-search{padding:0;display:grid;grid-template-columns:minmax(0,1fr) 52px;gap:10px}
+  .directory-search-field{border-radius:18px;background:var(--surface);padding-inline:14px;box-shadow:0 3px 14px color-mix(in srgb,var(--ink) 4%,transparent)}
+  .patient-directory .directory-search-field>input{font-size:16px;min-height:52px}
+  .directory-search-field>button{min-width:44px}
+  .directory-filter-toggle{display:flex;align-items:center;justify-content:center;min-height:52px;width:52px;border:1px solid var(--boundary);border-radius:18px;background:var(--surface);color:var(--primary)}
+  .patient-directory-search>.directory-search-tools{display:none}
+  .directory-mobile-search-submit{display:flex;grid-column:1/-1}
+  .directory-mobile-scope{display:block;margin:14px 0 16px;font-size:12px;line-height:1.5;color:var(--muted)}
+  .patient-directory-list .directory-records,.patient-directory-list[data-view=cards] .directory-records{display:grid;grid-template-columns:minmax(0,1fr);padding:0;gap:12px}
+  .patient-directory-list .directory-records>li{border:0}
+  .patient-directory-list .directory-record,.patient-directory-list[data-view=cards] .directory-record{display:grid;grid-template-columns:48px minmax(0,1fr) 18px;gap:6px 12px;padding:18px 16px;border:1px solid var(--line);border-radius:24px;min-height:96px;background:linear-gradient(125deg,var(--surface),var(--ds-soft));box-shadow:0 5px 16px color-mix(in srgb,var(--ink) 5%,transparent);text-align:start}
+  .patient-directory-list .directory-record .patient-directory-avatar,.patient-directory-list[data-view=cards] .directory-record .patient-directory-avatar{grid-column:1;grid-row:1/3;width:48px;height:48px;border-radius:16px}
+  .patient-directory-list .directory-record-name{grid-column:2;grid-row:1}
+  .patient-directory-list .directory-record-name strong{font-size:15px;line-height:1.45;overflow-wrap:anywhere}
+  .patient-directory-list .directory-record-name small{display:none}
+  .patient-directory-list .directory-record-reference,.patient-directory-list[data-view=cards] .directory-record-reference{grid-column:2;grid-row:2;font-size:13px;padding:0;overflow-wrap:anywhere}
+  .patient-directory-list .directory-record-open,.patient-directory-list[data-view=cards] .directory-record-open{grid-column:3;grid-row:1/3;border:0;padding:0}
+  .patient-directory-list .directory-record-open>span{display:none}
+  .patient-directory-pagination{padding:16px 0;gap:6px;font-size:12px;border:0}
+  .patient-directory-pagination>.button,.patient-record-path>.button{min-height:44px;min-width:44px}
+  .directory-active-filter{padding:0 0 12px;flex-wrap:wrap}
+  .directory-active-filter>button{min-height:44px}
+  .directory-workflow{display:none}
+  .directory-workflow>.eyebrow,.directory-workflow>h2,.directory-workflow>p{display:none}
+  .directory-workflow nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .directory-workflow nav>button{min-height:54px;padding:14px;gap:10px}
+  .directory-workflow nav small,.directory-workflow nav>button>svg,.directory-workflow-icon{display:none}
+  .directory-workflow nav strong{font-size:13px}
+  .patient-directory-help{margin-top:8px}
+  .patient-directory-help summary{min-height:44px}
+  .patient-record-path{gap:2px;margin-bottom:12px;flex-wrap:wrap}
+  .directory-back{padding-inline-end:4px;font-size:12px!important}
+  .patient-record-path>span{font-size:11px}
+}

@@ -1,5 +1,11 @@
 node_modules/
 .next/
+.next-*/
+.codex-attachments/
+# Local runtime logs and screenshot evidence are not application source.
+qa/*.log
+qa/logs/
+qa/*.png
 .build-status/
 dist/
 .turbo/

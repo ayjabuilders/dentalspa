@@ -1,6 +1,6 @@
 # Patient selection decision packet
 
-Status: product/clinic decision required. This document presents bounded choices; it is not an approved identity policy and does not authorize implementation, patient creation, appointment confirmation or Patient Pass linkage.
+Status: partial product-owner decision recorded. D1 is approved as a reviewed, explicitly unverified possible match. D2–D8 remain undecided, and this partial decision does not authorize association writes, patient creation, appointment confirmation or Patient Pass linkage.
 
 ## Why a decision is required
 
@@ -16,6 +16,8 @@ The smallest future write should be a separate, inquiry-specific **reviewed cand
 - **B — Verified patient selection:** staff completes a clinic-approved, versioned identity-check procedure.
 
 Recommended first development boundary: **A**, synthetic-only, with no booking or account entitlement. Option B remains blocked until the clinic defines and approves the evidence procedure.
+
+**Decision recorded:** Product owner approved **A** in the task thread on 2026-10-29: a saved result means only “possible match”; identity is not verified. This records D1 only. It does not authorize saving a real inquiry-to-patient association.
 
 ### D2 — Selection and correction authority
 
@@ -84,7 +86,7 @@ Accessibility requirements remain 44px mobile targets, visible focus, announced 
 
 The accountable clinic/product owner must record:
 
-- chosen option for D1–D8;
+- chosen option for D2–D8 (D1 is recorded above);
 - approved roles/capabilities and exceptions;
 - the actual identity evidence procedure if D1-B is chosen;
 - structured correction/override reasons, audit readership and retention;

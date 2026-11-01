@@ -21,6 +21,7 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm publication:check
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
@@ -32,6 +33,31 @@ jobs:
         with:
           name: browser-evidence
           path: test-results/
+  hosted-build:
+    name: Hosted build (${{ matrix.application }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        application: [clinic-os, patient-pass, public-booking]
+    env:
+      # Compile hosted branches without production credentials or network fixtures.
+      # This checks packaging, not connectivity or release acceptance.
+      VERCEL: '1'
+      NEXT_PUBLIC_API_URL: https://api.example.com
+      NEXT_PUBLIC_SUPABASE_URL: https://ci-fixture.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: sb_publishable_ci_placeholder
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: node scripts/pwa.mjs
+      - run: pnpm exec turbo run build --filter=@dental/${{ matrix.application }}
   database:
     runs-on: ubuntu-latest
     steps:

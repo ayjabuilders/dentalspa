@@ -4,12 +4,15 @@ set search_path=public,extensions;
 select plan(23);
 insert into public.clinics(id,name) values('81000000-0000-4000-8000-000000000001','Synthetic follow-up A'),('81000000-0000-4000-8000-000000000002','Synthetic follow-up B');
 insert into auth.users(id) values('82000000-0000-4000-8000-000000000001'),('82000000-0000-4000-8000-000000000002');
+-- Authenticated fixtures include a live session; all rows roll back with this test.
+insert into auth.sessions(id,user_id,not_after) values('82000000-0000-4000-8000-000000000001','82000000-0000-4000-8000-000000000001',now()+interval '1 hour'),('82000000-0000-4000-8000-000000000002','82000000-0000-4000-8000-000000000002',now()+interval '1 hour');
 insert into public.clinic_memberships(clinic_id,user_id,role,active) values('81000000-0000-4000-8000-000000000001','82000000-0000-4000-8000-000000000001','reception',true),('81000000-0000-4000-8000-000000000001','82000000-0000-4000-8000-000000000002','manager',true);
 insert into public.inquiries(id,clinic_id,owner_user_id,display_name,contact_email,source,follow_up_at) values('83000000-0000-4000-8000-000000000001','81000000-0000-4000-8000-000000000001','82000000-0000-4000-8000-000000000001','Synthetic Owner','synthetic@example.test','phone','2030-01-01T00:00:00Z'),('83000000-0000-4000-8000-000000000002','81000000-0000-4000-8000-000000000002','82000000-0000-4000-8000-000000000001','Synthetic Foreign',null,'phone',null);
 select is((select enabled from private.intake_command_settings),false,'commands default off');
 select ok(not has_table_privilege('authenticated','private.inquiry_follow_ups','INSERT'),'no direct client writes');
 select ok(not has_function_privilege('anon','public.record_inquiry_follow_up(uuid,uuid,uuid,jsonb,uuid)','EXECUTE'),'anonymous cannot execute command');
 select set_config('request.jwt.claim.sub','82000000-0000-4000-8000-000000000001',true);
+select set_config('request.jwt.claims',jsonb_build_object('session_id',nullif(current_setting('request.jwt.claim.sub'),''))::text,true);
 select set_config('request.method','POST',true);
 set local role authenticated;
 select throws_ok($$select public.record_inquiry_follow_up('81000000-0000-4000-8000-000000000001','83000000-0000-4000-8000-000000000001','84000000-0000-4000-8000-000000000001','{"kind":"contact_attempt","channel":"phone"}','85000000-0000-4000-8000-000000000001')$$,'PT503',null,'DB gate enforced');
@@ -24,10 +27,12 @@ select is(public.record_inquiry_follow_up('81000000-0000-4000-8000-000000000001'
 select throws_ok($$select public.record_inquiry_follow_up('81000000-0000-4000-8000-000000000001','83000000-0000-4000-8000-000000000001','84000000-0000-4000-8000-000000000001','{"kind":"contact_attempt","channel":"email"}','85000000-0000-4000-8000-000000000001')$$,'PT409',null,'changed payload conflicts');
 select throws_ok($$select public.list_inquiry_follow_ups('81000000-0000-4000-8000-000000000001','83000000-0000-4000-8000-000000000002')$$,'PT404',null,'foreign inquiry concealed');
 select set_config('request.jwt.claim.sub','82000000-0000-4000-8000-000000000002',true);
+select set_config('request.jwt.claims',jsonb_build_object('session_id',nullif(current_setting('request.jwt.claim.sub'),''))::text,true);
 select throws_ok($$select public.list_inquiry_follow_ups('81000000-0000-4000-8000-000000000001','83000000-0000-4000-8000-000000000001')$$,'42501',null,'another active manager is not owner');
 reset role;
 update public.inquiries set owner_user_id='82000000-0000-4000-8000-000000000002' where id='83000000-0000-4000-8000-000000000001';
 select set_config('request.jwt.claim.sub','82000000-0000-4000-8000-000000000001',true);
+select set_config('request.jwt.claims',jsonb_build_object('session_id',nullif(current_setting('request.jwt.claim.sub'),''))::text,true);
 set local role authenticated;
 select throws_ok($$select public.record_inquiry_follow_up('81000000-0000-4000-8000-000000000001','83000000-0000-4000-8000-000000000001','84000000-0000-4000-8000-000000000001','{"kind":"contact_attempt","channel":"phone"}','85000000-0000-4000-8000-000000000001')$$,'42501',null,'former owner cannot replay even while active');
 reset role;

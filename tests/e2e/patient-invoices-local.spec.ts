@@ -1,0 +1,74 @@
+import {test,expect} from '@playwright/test';
+test('native patient invoices prepare issue recover and survive fresh login',async({page})=>{
+  test.setTimeout(90000);
+  const email=process.env.LOCAL_INVOICE_EMAIL,password=process.env.LOCAL_INVOICE_PASSWORD,api=process.env.LOCAL_INVOICE_API,quote=process.env.LOCAL_INVOICE_QUOTE,number=process.env.LOCAL_INVOICE_NUMBER;
+  test.skip(!email||!password||!api||!quote||!number,'Use check-local-invoice-api.mjs --browser.');
+  const prepares:Array<{key:string|undefined;body:unknown}>=[],issues:Array<{key:string|undefined;body:unknown}>=[];
+  // Proxy to the real ephemeral Nest API; no synthetic responses or database mocks.
+  await page.route('**/api/v1/**',async route=>{
+    const req=route.request(),url=new URL(req.url());
+    const response=await route.fetch({url:api+url.pathname+url.search});
+    if(req.method()==='POST'&&url.pathname.includes('/invoices')){
+      const commands=url.pathname.endsWith('/issue')?issues:prepares;
+      commands.push({key:req.headers()['idempotency-key'],body:req.postDataJSON()});expect(response.status()).toBe(201);
+      if(commands.length===1)return route.abort('failed');
+    }
+    return route.fulfill({response});
+  });
+  const open=async()=>{
+    await page.goto('http://localhost:4204/connection?view=patients');
+    await page.getByLabel('Adresse e-mail',{exact:true}).fill(email!);await page.getByLabel('Mot de passe',{exact:true}).fill(password!);
+    await page.getByRole('button',{name:'Se connecter',exact:true}).click();
+    await page.getByRole('button',{name:'Ouvrir la fiche de Salma Alaoui (FICTIF)',exact:true}).click();
+    await page.getByRole('tab',{name:'Factures',exact:true}).click();
+  };
+  await open();
+  const invoices=page.getByRole('region',{name:'Factures du patient'});
+  await invoices.getByRole('button',{name:'Nouvelle facture',exact:true}).click();
+  const preparation=page.getByRole('dialog',{name:'Préparer une facture',exact:true});
+  await expect(preparation).toHaveAttribute('data-ds','pearl');
+  await expect(preparation.getByLabel('Devis source',{exact:true})).toBeFocused();
+  await preparation.getByLabel('Devis source',{exact:true}).selectOption(quote!);
+  await preparation.getByRole('button',{name:'Préparer la facture',exact:true}).click();
+  await expect(preparation.getByRole('alert')).toContainText('Résultat à vérifier');
+  await expect(page.getByRole('tab',{name:'Devis',exact:true,includeHidden:true})).toBeDisabled();
+  await expect(preparation.getByLabel('Devis source')).toBeDisabled();
+  await page.keyboard.press('Escape');await expect(preparation).toBeVisible();
+  await expect(preparation.getByRole('button',{name:'Fermer',exact:true})).toBeDisabled();
+  await preparation.getByRole('button',{name:'Réessayer la même commande',exact:true}).click();
+  await expect(preparation).toHaveCount(0);
+  await expect(invoices.getByRole('heading',{name:'Facture brouillon',exact:true})).toBeVisible();
+  expect(prepares).toHaveLength(2);expect(prepares[0]!.key).toBeTruthy();expect(prepares[0]).toEqual(prepares[1]);
+  const draft=invoices.locator('article').filter({has:page.getByRole('heading',{name:'Facture brouillon',exact:true})});
+  await draft.getByRole('button',{name:'Émettre la facture',exact:true}).click();
+  await draft.getByRole('button',{name:'Confirmer l’émission',exact:true}).click();
+  await expect(invoices.getByRole('alert')).toContainText('Résultat à vérifier');
+  await expect(draft.getByRole('button',{name:'Retour',exact:true})).toBeDisabled();
+  await invoices.getByRole('button',{name:'Réessayer la même commande',exact:true}).click();
+  await expect(invoices.getByRole('heading',{name:number!,exact:true})).toBeVisible();
+  expect(issues).toHaveLength(2);expect(issues[0]!.key).toBeTruthy();expect(issues[0]).toEqual(issues[1]);
+  await page.getByRole('button',{name:'Compte et cabinet',exact:true}).click();
+  await page.getByRole('button',{name:'Se déconnecter',exact:true}).click();
+  await expect(page.getByLabel('Adresse e-mail',{exact:true})).toBeVisible();
+  await open();await expect(invoices.getByRole('heading',{name:number!,exact:true})).toBeVisible();
+  const issued=invoices.locator('article').filter({has:page.getByRole('heading',{name:number!,exact:true})});
+  await issued.getByText('Voir les lignes',{exact:true}).click();await expect(issued.getByText('Facture HTTP FICTIF',{exact:true})).toBeVisible();
+  await expect(issued.locator('.invoice-total')).toContainText('376');
+  await invoices.screenshot({path:'.local/qa/patient-invoices-desktop.png'});
+  await page.setViewportSize({width:390,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await invoices.screenshot({path:'.local/qa/patient-invoices-mobile.png'});
+  const openDocument=issued.getByRole('button',{name:'Afficher le document',exact:true});await openDocument.click();
+  const documentDialog=page.getByRole('dialog');await expect(documentDialog.getByRole('heading',{name:'Facture '+number,exact:true})).toBeVisible();
+  await expect(documentDialog.getByText('Salma Alaoui (FICTIF)',{exact:true})).toBeVisible();
+  await expect(documentDialog.getByText('Cabinet Factures QA (FICTIF)',{exact:true})).toBeVisible();
+  expect(await documentDialog.evaluate(element=>element.scrollWidth<=element.clientWidth)).toBe(true);
+  await documentDialog.screenshot({path:'.local/qa/invoice-document-mobile.png'});
+  await page.evaluate(()=>{window.print=()=>{document.body.dataset.printRequested='true';};});
+  await documentDialog.getByRole('button',{name:'Imprimer / PDF',exact:true}).click();
+  await expect(page.locator('body')).toHaveAttribute('data-print-requested','true');
+  await page.setViewportSize({width:794,height:1123});await page.emulateMedia({media:'print'});
+  await expect(documentDialog.getByRole('button',{name:'Imprimer / PDF',exact:true})).toBeHidden();
+  await expect(page.locator('main')).toBeHidden();await expect(documentDialog.getByRole('table')).toBeVisible();
+  await page.screenshot({path:'.local/qa/invoice-document-print.png',fullPage:true});
+  await page.emulateMedia({media:'screen'});await page.keyboard.press('Escape');await expect(documentDialog).toHaveCount(0);await expect(openDocument).toBeFocused();
+});

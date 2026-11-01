@@ -1,4 +1,5 @@
 'use client';
+import { createRequestKey } from '../../lib/request-key';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Button, Modal } from '@dental/ui-clinic';
 import { CalendarClock, LoaderCircle, ShieldCheck } from 'lucide-react';
@@ -45,7 +46,7 @@ export function InquirySchedule({ inquiry, transport, onFresh }: { inquiry: Inqu
       if (!undated && (!date || !Number.isFinite(date.getTime()))) { setMessage('Choisissez une date et une heure valides, ou Sans date.'); return; }
       const parsed = SetInquiryScheduleSchema.safeParse({ expected_follow_up_at: fresh.follow_up_at, follow_up_at: !edited ? fresh.follow_up_at : undated ? null : date!.toISOString() });
       if (!parsed.success) { setMessage('Cette date dépasse la plage prise en charge.'); return; }
-      command = { id: fresh.id, displayName: fresh.display_name, body: parsed.data, key: crypto.randomUUID() }; transport.pendingSchedule.current = command; setPending(command);
+      command = { id: fresh.id, displayName: fresh.display_name, body: parsed.data, key: createRequestKey() }; transport.pendingSchedule.current = command; setPending(command);
     }
     busy.current = true; setSaving(true); setMessage(''); request.current?.abort(); const controller = new AbortController(); request.current = controller;
     let received = false;
@@ -67,7 +68,7 @@ export function InquirySchedule({ inquiry, transport, onFresh }: { inquiry: Inqu
   }
   return <section className="inquiry-schedule" aria-label="Replanification administrative">
     {(inquiry?.owner_user_id === transport.currentUserId || pending) && <Button onClick={() => void start()} disabled={!online || saving}><CalendarClock size={17}/>{pending ? 'Vérifier la replanification' : 'Replanifier le suivi'}</Button>}
-    <Modal open={open} onOpenChange={next => { if (!busy.current && !next) close(); }} title="Replanifier le suivi" description="Une échéance administrative uniquement. Aucun message ni rendez-vous n’est créé.">
+    <Modal mobilePresentation="sheet" open={open} onOpenChange={next => { if (!busy.current && !next) close(); }} title="Replanifier le suivi" description="Une échéance administrative uniquement. Aucun message ni rendez-vous n’est créé.">
       <form className="inquiry-schedule-form" onSubmit={submit} aria-busy={loading || saving}>
         <div className="inquiry-schedule-context"><ShieldCheck size={22}/><div><strong>{fresh?.display_name ?? (pending ? `Vérification : ${pending.displayName ?? 'demande initiale'}` : 'Vérification du détail actuel')}</strong><p>Responsable actuel uniquement · {transport.mode === 'demo' ? 'démonstration synthétique' : 'cabinet vérifié'}</p></div></div>
         {loading && <p role="status"><LoaderCircle size={18} className="intake-spin"/>Lecture de l’échéance actuelle…</p>}

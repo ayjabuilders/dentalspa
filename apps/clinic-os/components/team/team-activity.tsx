@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Button } from '@dental/ui-clinic';
-import { ArrowDownLeft, CalendarClock, FilePlus2, History, LoaderCircle, LockKeyhole, MessageSquareText, RefreshCw, ShieldCheck } from 'lucide-react';
+import { ArrowDownLeft, CalendarClock, Eye, FilePlus2, History, LoaderCircle, LockKeyhole, MessageSquareText, RefreshCw, ShieldCheck, UserRound, ListTodo } from 'lucide-react';
 import type { TeamActivity, TeamActivityKind } from '@dental/contracts';
 import { TeamError, type TeamFailure, type TeamTransport } from './transport';
 import './team-activity.css';
@@ -11,10 +11,14 @@ const actions: Record<TeamActivityKind, { title: string; icon: typeof History; n
   inquiry_follow_up_recorded: { title: 'Suivi consigné', icon: MessageSquareText, note: 'Ne prouve pas un contact réussi' },
   slot_hold_created: { title: 'Option temporaire créée', icon: CalendarClock, note: 'Aucune réservation confirmée' },
   slot_hold_released: { title: 'Option temporaire libérée', icon: ArrowDownLeft, note: 'Action de libération enregistrée' },
+  patient_profile_viewed: { title: 'Profil propre consulté', icon: Eye, note: 'Le compte patient a ouvert son profil · aucun dossier n’est affiché ici' },
+  inquiry_follow_up_schedule_changed: { title: 'Échéance de suivi replanifiée', icon: CalendarClock, note: 'Planification administrative modifiée · aucun contact effectué' },
+  inquiry_planned_action_changed: { title: 'Prochaine action notée', icon: ListTodo, note: 'Intention enregistrée · aucune action exécutée' },
+  inquiry_owner_reassigned: { title: 'Responsable réattribué', icon: UserRound, note: 'Changement de responsable enregistré' },
 };
 const failures: Record<TeamFailure, { title: string; detail: string }> = {
-  denied: { title: 'Activité non autorisée', detail: 'Un rôle Gestionnaire actif dans ce cabinet est nécessaire. Les événements précédents ont été effacés.' },
-  expired: { title: 'Session d’activité expirée', detail: 'Les événements ont été effacés. Connectez-vous à nouveau.' },
+  denied: { title: 'Activité non autorisée', detail: 'Un rôle Gestionnaire actif dans ce cabinet est nécessaire. L’historique n’est plus affiché.' },
+  expired: { title: 'Session d’activité expirée', detail: 'Connectez-vous à nouveau pour consulter l’historique.' },
   offline: { title: 'Activité hors connexion', detail: 'Les événements ont été retirés. Retrouvez le réseau puis réessayez.' },
   unavailable: { title: 'Activité indisponible', detail: 'La réponse n’a pas pu être vérifiée. Aucun événement antérieur n’est conservé à l’écran.' },
 };
@@ -69,7 +73,7 @@ export function TeamActivityPanel({ transport, onSessionExpired, rosterAuthority
   return <section className="team-activity work-panel" aria-labelledby="team-activity-title">
     <div className="team-activity-top"><span className="team-activity-emblem"><History size={24}/></span><span className="team-activity-access"><ShieldCheck size={14}/>Gestionnaire uniquement</span></div>
     <div className="team-activity-heading"><div><p className="eyebrow">LE FIL DES ACTIONS</p><h2 id="team-activity-title" ref={heading} tabIndex={-1}>Activité récente</h2></div>{(visibleData || visibleLoading || visibleError) && <Button aria-label="Actualiser l’activité" disabled={visibleLoading || !online || disposed.current || rosterAuthorityDenied} onClick={() => void load()}><RefreshCw size={17} className={visibleLoading ? 'team-activity-spin' : ''}/></Button>}</div>
-    <p className="team-activity-intro">Un aperçu non exhaustif des demandes, suivis et options temporaires. Ni mesure de présence, ni bilan de performance.</p>
+    <p className="team-activity-intro">Un aperçu non exhaustif des demandes, échéances, prochaines intentions, changements de responsable, options temporaires et accès au profil propre. Ni mesure de présence, ni bilan de performance.</p>
     <p className="team-activity-mode">{transport.mode === 'demo' ? 'Événements et noms synthétiques · mémoire temporaire' : 'Lecture seule · cabinet de la session vérifiée'}</p>
     {!visibleData && !visibleLoading && !visibleError && <div className="team-activity-state"><LockKeyhole size={25}/><p>Les événements ne sont chargés qu’à votre demande, après vérification de l’accès Gestionnaire.</p><Button onClick={loadFromState} disabled={!online || disposed.current || rosterAuthorityDenied}>Afficher l’activité récente</Button></div>}
     {visibleLoading && <div className="team-activity-state" role="status"><LoaderCircle size={25} className="team-activity-spin"/><h3>Lecture de l’activité…</h3><p>Vérification des actions accessibles dans ce cabinet.</p></div>}
@@ -77,11 +81,11 @@ export function TeamActivityPanel({ transport, onSessionExpired, rosterAuthority
     {visibleData && <>
       <div className="team-activity-count" role="status"><strong>{visibleData.truncated ? '50+' : visibleData.items.length}</strong><span>{visibleData.truncated ? 'actions · aperçu partiel' : `${visibleData.items.length > 1 ? 'actions retournées' : 'action retournée'}`}</span></div>
       {visibleData.truncated && <p className="team-activity-partial">Les 50 dernières actions prises en charge sont affichées. Au moins une autre existe ; le total exact n’est pas disponible.</p>}
-      {!visibleData.items.length ? <div className="team-activity-state" role="status"><History size={25}/><h3>Aucune action retournée</h3><p>Cela ne signifie pas qu’aucune activité n’a eu lieu : seules quatre catégories sont couvertes.</p></div> : <div className="team-activity-scroll" role="region" aria-label="Actions récentes, des plus récentes aux plus anciennes" tabIndex={0}><ol className="team-activity-timeline">{visibleData.items.map((item, index) => {
+      {!visibleData.items.length ? <div className="team-activity-state" role="status"><History size={25}/><h3>Aucune action retournée</h3><p>Cela ne signifie pas qu’aucune activité n’a eu lieu : seules huit catégories sont couvertes.</p></div> : <div className="team-activity-scroll" role="region" aria-label="Actions récentes, des plus récentes aux plus anciennes" tabIndex={0}><ol className="team-activity-timeline">{visibleData.items.map((item, index) => {
         const action = actions[item.kind]; const Icon = action.icon;
         return <li key={`${visibleData.observed_at}-${index}`} style={{ '--activity-delay': `${Math.min(index, 5) * 45}ms` } as CSSProperties}>
           <span className={`team-activity-action-icon team-activity-${item.kind}`} aria-hidden="true"><Icon size={19}/></span>
-          <div><h3>{action.title}</h3><p className="team-activity-actor">{item.actor_display_name ?? 'Membre non affiché'}</p><time dateTime={item.occurred_at}>{date(item.occurred_at)}</time><p className="team-activity-action-note">{action.note}</p></div>
+          <div><h3>{action.title}</h3><p className="team-activity-actor">{item.kind === 'patient_profile_viewed' ? 'Compte patient' : item.actor_display_name ?? 'Membre non affiché'}</p><time dateTime={item.occurred_at}>{date(item.occurred_at)}</time><p className="team-activity-action-note">{action.note}</p></div>
         </li>;
       })}</ol></div>}
       <p className="team-activity-observed">Observé le <time dateTime={visibleData.observed_at}>{date(visibleData.observed_at)}</time><span>Horaires : {zone}</span></p>

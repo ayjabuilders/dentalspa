@@ -3,9 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "pnpm build && concurrently -k \"tsc --watch\" \"node --watch --env-file-if-exists=.env dist/main.js\"",
+    "dev": "pnpm build && concurrently -k \"tsc --watch\" \"node --watch --env-file-if-exists=.env --env-file-if-exists=.env.local dist/main.js\"",
     "build": "tsc",
-    "start": "node --env-file-if-exists=.env dist/main.js",
+    "start": "node --env-file-if-exists=.env --env-file-if-exists=.env.local dist/main.js",
+    "hosted:preflight": "node --env-file-if-exists=.env.hosted.local scripts/verify-hosted-public.mjs",
+    "hosted:verify": "pnpm build && node --env-file-if-exists=.env.hosted.local scripts/verify-hosted-dev.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

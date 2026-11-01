@@ -4,8 +4,8 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "build": "next build --webpack",
-    "start": "next start -p 4201",
-    "dev": "next dev --webpack -p 4201"
+    "start": "next start -p 4205",
+    "dev": "next dev --webpack -p 4205"
   },
   "dependencies": {
     "react": "^19.2.0",

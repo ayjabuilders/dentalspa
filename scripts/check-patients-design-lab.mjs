@@ -1,0 +1,44 @@
+/* global document, innerWidth */
+import { chromium } from '@playwright/test';
+
+const browser=await chromium.launch({headless:true});
+const page=await browser.newPage({viewport:{width:1440,height:1050}});
+const errors=[];page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});page.on('pageerror',e=>errors.push(e.message));
+await page.goto('http://127.0.0.1:4206/design-lab/patients');
+await page.locator('[data-ready=true]').waitFor();
+await page.screenshot({path:'qa/patients-design-lab-desktop.png',caret:'initial',fullPage:true,animations:'disabled'});
+console.log('rendered',await page.title(), 'overflow',await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth));
+await page.getByRole('button',{name:'Page suivante'}).click();
+await page.getByRole('button',{name:'Inès Chraïbi',exact:false}).first().click();
+await page.getByRole('tab',{name:'Documents',exact:true}).click();
+await page.getByRole('button',{name:'Aperçu',exact:true}).click();
+await page.getByRole('dialog').waitFor();await page.keyboard.press('Escape');
+await page.getByRole('tab',{name:'Historique',exact:true}).click();
+await page.getByText('Fil du dossier').waitFor();
+await page.getByRole('tab',{name:'Finances',exact:true}).click();await page.getByText('Situation illustrative').waitFor();
+await page.getByRole('tab',{name:'Aperçu',exact:true}).click();
+await page.screenshot({path:'qa/patients-design-lab-dossier.png',caret:'initial',fullPage:true,animations:'disabled'});
+await page.getByRole('button',{name:'Simuler un rendez-vous',exact:true}).click();
+await page.getByLabel('Date illustrative').fill('2026-11-05');
+await page.getByRole('button',{name:'Ajouter en mémoire'}).click();
+await page.getByText('05 nov. 2026 · 10:00').waitFor();
+await page.getByRole('button',{name:'Retour aux patients'}).click();
+if(!await page.getByText('7–12 sur 14',{exact:true}).count())throw Error('pagination lost');
+await page.getByRole('textbox',{name:'Rechercher un patient'}).fill('zzzz');await page.getByRole('heading',{name:'Aucun patient trouvé'}).waitFor();
+await page.getByRole('button',{name:'Réinitialiser les filtres'}).click();
+await page.getByLabel('Filtrer les dossiers').selectOption('À compléter');
+await page.getByRole('button',{name:'Salma Bennani',exact:false}).first().click();await page.getByRole('button',{name:'Retour aux patients'}).click();
+if(await page.getByLabel('Filtrer les dossiers').inputValue()!=='À compléter')throw Error('filter lost');
+await page.getByRole('button',{name:'Nouveau patient',exact:true}).click();
+await page.getByLabel('Nom complet fictif').fill('Yasmine Démo');
+await page.screenshot({path:'qa/patients-design-lab-modal.png',caret:'initial',fullPage:true,animations:'disabled'});
+await page.getByRole('button',{name:'Ajouter en mémoire'}).click();await page.getByRole('button',{name:'Yasmine Démo',exact:false}).first().waitFor();
+await page.reload();await page.locator('[data-ready=true]').waitFor();
+if(await page.getByRole('button',{name:'Yasmine Démo',exact:false}).count())throw Error('unexpected persistence');
+for(const width of [1280,768,390]){await page.setViewportSize({width,height:900});await page.screenshot({path:`qa/patients-design-lab-${width}.png`,caret:'initial',fullPage:true,animations:'disabled'});if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('overflow '+width);}
+await page.getByRole('button',{name:'Salma Bennani',exact:false}).first().click();await page.screenshot({path:'qa/patients-design-lab-mobile-dossier.png',caret:'initial',fullPage:true,animations:'disabled'});
+await page.emulateMedia({reducedMotion:'reduce'});
+await page.getByRole('tab',{name:'Aperçu',exact:true}).focus();await page.keyboard.press('ArrowRight');if(await page.getByRole('tab',{name:'Rendez-vous',exact:true}).getAttribute('aria-selected')!=='true')throw Error('keyboard tabs');
+await page.getByRole('button',{name:'Simuler un rendez-vous',exact:true}).click();await page.keyboard.press('Escape');
+if(!await page.getByRole('button',{name:'Simuler un rendez-vous',exact:true}).evaluate(e=>e===document.activeElement))throw Error('focus restore');
+console.log('PASS search, empty, filters, pagination, return state, five tabs, document, appointment, patient add, reload reset, responsive, keyboard, focus, reduced-motion');console.log({errors});const issue=page.getByRole('button',{name:/issue/i});if(await issue.count()){await issue.first().click();console.log((await page.locator('body').innerText()).slice(-5000));}await browser.close();if(errors.length)process.exitCode=1;

@@ -1,0 +1,35 @@
+.team-delegation-preview{margin-top:22px;padding:24px;min-width:0}
+.team-delegation-heading{display:flex;align-items:center;gap:12px}
+.team-delegation-heading h2{margin:5px 0 0;font-size:18px}
+.team-delegation-icon{display:grid;place-items:center;width:42px;height:42px;border:1px solid var(--line);border-radius:13px;background:var(--soft);color:var(--team-accent);flex:none}
+.team-delegation-intro{margin:16px 0;color:var(--muted);font-size:13px;line-height:1.65}
+.team-delegation-caveat{padding:12px 14px;border:1px solid color-mix(in srgb,var(--warning) 42%,var(--line));border-radius:10px;background:color-mix(in srgb,var(--warning) 8%,var(--raised));color:var(--ink);font-size:12px;line-height:1.6}
+.team-delegation-form{display:grid;grid-template-columns:minmax(180px,1fr) minmax(100px,.5fr) minmax(230px,1.2fr) auto;align-items:end;gap:12px;margin-top:18px}
+.team-delegation-form label{display:grid;gap:7px;min-width:0;color:var(--muted);font-size:12px;font-weight:650}
+.team-delegation-form select{width:100%;min-width:0;min-height:46px;padding:10px 34px 10px 12px;border:1px solid var(--boundary);border-radius:10px;background:var(--raised);color:var(--ink);font:inherit;font-size:13px}
+.team-delegation-form button,.team-delegation-preview button:focus-visible{outline-offset:3px}
+.team-delegation-form .button{min-height:46px;white-space:nowrap}
+.team-delegation-form select:focus-visible,.team-delegation-preview button:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+.team-delegation-summary{margin-top:15px;padding:12px 14px;border-radius:10px;background:var(--raised);border:1px solid var(--line)}
+.team-delegation-summary p{margin:4px 0;color:var(--muted);font-size:12px;line-height:1.55}
+.team-delegation-summary strong{color:var(--ink)}
+.team-delegation-summary [role=status]{color:var(--warning)}
+.team-delegation-candidates{margin-top:18px}
+.team-delegation-candidates h3{margin:0 0 8px;font-size:13px}
+.team-delegation-candidates ul{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.team-delegation-candidates li{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px solid var(--line)}
+.team-delegation-candidates strong{font-size:12px}
+.team-delegation-match,.team-delegation-no-match{font-size:11px;line-height:1.55;text-align:right}
+.team-delegation-match{color:var(--success)}
+.team-delegation-no-match{color:var(--muted)}
+.team-delegation-result{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
+.team-delegation-result>p{margin:0;color:var(--muted);font-size:12px}
+.team-delegation-result>div{display:grid;gap:8px}
+.team-delegation-result>div>strong{font-size:13px}
+.team-delegation-result>div>span{font-size:12px;color:var(--muted)}
+.team-delegation-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.team-delegation-actions .button,.team-delegation-reset{min-height:44px;font-size:12px}
+.team-delegation-reset{justify-self:start}
+@media(max-width:1050px){.team-delegation-form{grid-template-columns:minmax(0,1fr) minmax(100px,.5fr)}.team-delegation-form .button{grid-column:1/-1;justify-self:start}}
+@media(max-width:700px){.team-delegation-form{grid-template-columns:minmax(0,1fr)}.team-delegation-form .button{width:100%}}
+@media(max-width:560px){.team-delegation-preview{padding:18px 16px}.team-delegation-candidates li{align-items:flex-start;flex-direction:column;gap:6px}.team-delegation-match,.team-delegation-no-match{text-align:left}.team-delegation-actions{display:grid;grid-template-columns:minmax(0,1fr)}.team-delegation-actions .button{width:100%}}

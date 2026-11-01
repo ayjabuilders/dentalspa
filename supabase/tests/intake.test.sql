@@ -4,6 +4,7 @@ set search_path=public,extensions;
 select plan(23);
 insert into public.clinics(id,name) values('a1000000-0000-4000-8000-000000000001','Synthetic intake A'),('a1000000-0000-4000-8000-000000000002','Synthetic intake B');
 insert into auth.users(id) values('a2000000-0000-4000-8000-000000000001'),('a2000000-0000-4000-8000-000000000002'),('a2000000-0000-4000-8000-000000000003'),('a2000000-0000-4000-8000-000000000004');
+insert into auth.sessions(id,user_id,not_after) select id,id,now()+interval '1 hour' from auth.users where id::text like 'a2000000-0000-4000-8000-%';
 insert into public.clinic_memberships(clinic_id,user_id,role,active) values
  ('a1000000-0000-4000-8000-000000000001','a2000000-0000-4000-8000-000000000001','reception',true),
  ('a1000000-0000-4000-8000-000000000001','a2000000-0000-4000-8000-000000000002','assistant',true),
@@ -11,6 +12,7 @@ insert into public.clinic_memberships(clinic_id,user_id,role,active) values
 select is((select enabled from private.intake_command_settings where singleton),false,'commands disabled after migration');
 set local role authenticated;
 select set_config('request.jwt.claim.sub','a2000000-0000-4000-8000-000000000001',true);
+select set_config('request.jwt.claims',jsonb_build_object('session_id',nullif(current_setting('request.jwt.claim.sub'),''))::text,true);
 select throws_ok($$select public.create_inquiry('a1000000-0000-4000-8000-000000000001','a3000000-0000-4000-8000-000000000001','{"display_name":"Synthetic","contact_email":null,"contact_phone":null,"source":"phone","follow_up_at":null}', 'a3000000-0000-4000-8000-000000000003')$$,'PT503',null,'direct RPC cannot bypass disabled commands');
 select throws_ok($$update private.intake_command_settings set enabled=true$$,'42501',null,'browser cannot enable commands');
 reset role;
@@ -26,13 +28,17 @@ select throws_ok($$update public.inquiries set status='new'$$,'42501',null,'dire
 select throws_ok($$select public.list_inquiries('a1000000-0000-4000-8000-000000000002')$$,'42501',null,'foreign list RPC denied');
 select throws_ok($$select public.create_inquiry('a1000000-0000-4000-8000-000000000002','a3000000-0000-4000-8000-000000000001','{"display_name":"Synthetic","contact_email":null,"contact_phone":null,"source":"phone","follow_up_at":null}', 'a3000000-0000-4000-8000-000000000003')$$,'42501',null,'foreign create RPC denied');
 select set_config('request.jwt.claim.sub','a2000000-0000-4000-8000-000000000002',true);
+select set_config('request.jwt.claims',jsonb_build_object('session_id',nullif(current_setting('request.jwt.claim.sub'),''))::text,true);
 select is((select count(*)::integer from public.inquiries),0,'assistant RLS denies enumeration');
 select throws_ok($$select public.list_inquiries('a1000000-0000-4000-8000-000000000001')$$,'42501',null,'assistant RPC denied');
 select set_config('request.jwt.claim.sub','a2000000-0000-4000-8000-000000000003',true);
+select set_config('request.jwt.claims',jsonb_build_object('session_id',nullif(current_setting('request.jwt.claim.sub'),''))::text,true);
 select throws_ok($$select public.list_inquiries('a1000000-0000-4000-8000-000000000001')$$,'42501',null,'inactive manager denied');
 select set_config('request.jwt.claim.sub','a2000000-0000-4000-8000-000000000004',true);
+select set_config('request.jwt.claims',jsonb_build_object('session_id',nullif(current_setting('request.jwt.claim.sub'),''))::text,true);
 select is((select count(*)::integer from public.inquiries),0,'patient/no membership cannot enumerate');
 select set_config('request.jwt.claim.sub','',true);
+select set_config('request.jwt.claims',jsonb_build_object('session_id',nullif(current_setting('request.jwt.claim.sub'),''))::text,true);
 select throws_ok($$select public.list_inquiries('a1000000-0000-4000-8000-000000000001')$$,'28000',null,'missing subject denied');
 set local role anon;
 select throws_ok($$select public.list_inquiries('a1000000-0000-4000-8000-000000000001')$$,'42501',null,'anonymous RPC denied');
@@ -43,6 +49,7 @@ select is((select count(*)::integer from private.intake_idempotency),1,'only com
 update public.clinic_memberships set active=false where user_id='a2000000-0000-4000-8000-000000000001';
 set local role authenticated;
 select set_config('request.jwt.claim.sub','a2000000-0000-4000-8000-000000000001',true);
+select set_config('request.jwt.claims',jsonb_build_object('session_id',nullif(current_setting('request.jwt.claim.sub'),''))::text,true);
 select is((select count(*)::integer from public.inquiries),0,'revocation immediately removes read access');
 select throws_ok($$select public.list_inquiries('a1000000-0000-4000-8000-000000000001')$$,'42501',null,'revocation immediately removes RPC access');
 reset role;
