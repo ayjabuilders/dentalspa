@@ -1,0 +1,4 @@
+.booking-request-notice{display:flex;justify-content:flex-end;padding:0 12px 8px;min-height:44px}
+.booking-request-notice button{display:flex;align-items:center;gap:8px;min-height:44px;padding:8px 14px;border:1px solid var(--pearl-border,#e4dcf0);border-radius:999px;background:var(--pearl-surface,#fff);color:var(--pearl-text,#251c37);font:inherit;font-size:13px;cursor:pointer}
+.booking-request-notice button:hover{background:#f0e9ff}.booking-request-notice button:focus-visible{outline:2px solid #6b40cb;outline-offset:3px}.booking-request-notice button:disabled{opacity:.6;cursor:default}
+@media(max-width:760px){.booking-request-notice{justify-content:flex-start;padding:0 16px 8px}.booking-request-notice button{max-width:100%}}

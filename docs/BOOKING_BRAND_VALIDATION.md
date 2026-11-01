@@ -51,8 +51,19 @@ catalogue/slot reads passed; all ten-screen browser interactions passed at
 320/390/1440 with mocked writes. Separately, actual mobile admin browser login,
 the persisted synthetic request, phone detail and return to the inbox passed.
 Evidence: `.local/qa/deployed-booking-admin-phone.png` and the ignored browser
-verification scripts. Automatic new-request notifications remain incomplete.
+ verification scripts. Automatic new-request notifications remain incomplete.
 Real-contact activation remains incomplete; synthetic restrictions are retained.
+
+Admin notice follow-up: clinic deployment `dpl_GACaBgYhePYSePQ1FDYtiC1jfinb`
+is Ready. Manager/reception header shows pending bookings from the existing
+authorized endpoint, polling every 30 seconds only while visible/online and on
+focus. Clicking opens/refetches the inbox, without interrupting locked actions.
+Read failures clear the count and explicitly report unavailability. Requests are
+aborted on unmount/workspace change; no patient details are stored by the notice.
+Actual deployed mobile browser verified count, navigation, action lock, simulated
+read failure and real recovery. Evidence `.local/qa/check-booking-notice.mjs` and
+`.local/qa/deployed-booking-notice.png`. This is in-app pending-work awareness,
+not a durable unread-notification inbox, push delivery or external email.
 
 The release remains a validation environment with synthetic booking data. The
 design is an implementation of the reference direction, not owner visual sign-off.
