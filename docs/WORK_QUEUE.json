@@ -3,6 +3,15 @@
   "max_agents": 3,
   "tasks": [
     {
+      "id": "BOOKING-FIRST-LIVE-PIPELINE",
+      "state": "in_progress",
+      "owner": "coordinator",
+      "depends_on": [],
+      "acceptance": "Current user priority: deployed public booking ready for the first real patient-to-admin pipeline. Complete branded mobile flow with contact name, phone and email; persist a request in the correct clinic; show it to authorized administrators with discoverable new-request feedback; allow authorized processing; show accurate pending/confirmed/cancelled status; prevent constrained-resource double booking; preserve retry idempotency and audit history; verify deployed UI/API/database end to end including role and cross-tenant denial. Remove synthetic-only restrictions only with the corresponding real-use activation, never as a cosmetic change. No claim of email/SMS delivery without verified delivery.",
+      "evidence": "2026-11-01: API, clinic and ten-screen booking deployed; phone migration 20261101083949 applied. Hosted synthetic request with phone persisted and replayed without duplication; owner API returned it, anonymous/foreign clinic denied. Actual mobile admin browser opened that request and phone detail. Three-width browser flow tests passed with mocked writes. See docs/BOOKING_BRAND_VALIDATION.md. Automatic notification, real-contact activation and complete first-real-booking acceptance remain incomplete. Overall MVP goal remains unfinished.",
+      "release_gate": "open"
+    },
+    {
       "id": "FOUNDATION-REVIEW",
       "state": "done",
       "owner": "auth_verification + coordinator",

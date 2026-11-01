@@ -22,3 +22,5 @@ supabase/.branches/
 # Original clinic source documents stay local; executable requirements are in docs/.
 sources/*.pdf
 sources/*.docx
+.vercel
+.env*

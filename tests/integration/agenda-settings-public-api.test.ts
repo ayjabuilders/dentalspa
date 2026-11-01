@@ -97,6 +97,22 @@ describe('configured public agenda HTTP projection', () => {
     vi.stubEnv('ENABLE_LOCAL_CONFIGURED_BOOKING_REQUESTS','true');rpc.mockReset().mockResolvedValue({data:{...received,replayed:true},error:null});
     await submit().send(payload).expect(201);expect(rpc).toHaveBeenCalledTimes(1);
   });
+  it('passes the international contact phone to private persistence without exposing it in the receipt',async()=>{
+    newRequest();
+    const body={...payload,contact_phone:'+212600000001'};
+    const response=await submit().send(body).expect(201);
+    expect(rpc).toHaveBeenLastCalledWith('create_local_configured_booking_request',{p_clinic_id:A,p_request_key:P2,p_payload:body,p_validated_snapshot:snapshot(),p_gate_key:'test-public-gate'});
+    expect(response.body).toEqual(received);
+    expect(JSON.stringify(response.body)).not.toContain(body.contact_phone);
+  });
+  it('rejects malformed phone values before persistence',async()=>{
+    vi.stubEnv('ENABLE_LOCAL_CONFIGURED_BOOKING_REQUESTS','true');
+    rpc.mockReset();
+    for(const contact_phone of ['0600000001','+212abc','+123','+0123456789','+1234567890123456',null,{}]){
+      await submit().send({...payload,contact_phone}).expect(400);
+    }
+    expect(rpc).not.toHaveBeenCalled();
+  });
   it('rejects old revision, occupied/private/non-grid slots before new persistence',async()=>{
     for(const body of [{...payload,configuration_revision:2},{...payload,starts_at:'2026-11-02T09:00:00.000Z',ends_at:'2026-11-02T09:30:00.000Z'},{...payload,visit_type_id:P2},{...payload,starts_at:'2026-11-02T09:31:00.000Z',ends_at:'2026-11-02T10:01:00.000Z'}]){
       newRequest();await submit().send(body).expect(409);expect(rpc).toHaveBeenCalledTimes(2);

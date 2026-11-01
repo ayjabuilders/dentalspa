@@ -82,6 +82,7 @@ export const ConfiguredBookingRequestSchema=z.object({
   starts_at:z.iso.datetime(),ends_at:z.iso.datetime(),
   contact_name:z.string().trim().min(1).max(100),
   contact_email:z.string().trim().toLowerCase().max(254).regex(/^[^\s@]+@example\.test$/),
+  contact_phone:z.string().trim().regex(/^\+[1-9][0-9]{7,14}$/).optional(),
   administrative_consent_version:z.literal('local-demo-v1'),
 }).strict().refine(value=>Date.parse(value.starts_at)<Date.parse(value.ends_at));
 export const ConfiguredBookingReceiptSchema=z.discriminatedUnion('status',[
@@ -94,7 +95,7 @@ export const ConfiguredBookingConfirmationSchema=z.object({
   starts_at:z.iso.datetime(),ends_at:z.iso.datetime(),replayed:z.boolean(),
 }).strict().refine(value=>Date.parse(value.starts_at)<Date.parse(value.ends_at));
 export const ConfiguredBookingListSchema=z.object({items:z.array(z.object({
-  id:z.uuid(),contact_name:z.string().min(1).max(100),contact_email:z.string().max(254),visit_name:z.string().min(1).max(80),
+  id:z.uuid(),contact_name:z.string().min(1).max(100),contact_email:z.string().max(254),contact_phone:z.string().regex(/^\+[1-9][0-9]{7,14}$/).nullable().optional(),visit_name:z.string().min(1).max(80),
   starts_at:z.iso.datetime(),ends_at:z.iso.datetime(),created_at:z.iso.datetime(),status:z.enum(['request_received','confirmed','cancelled']),configuration_revision:z.number().int().positive(),
   appointment:z.object({id:z.uuid(),status:z.enum(['confirmed','cancelled']),version:z.number().int().positive()}).strict().nullable().optional(),
 }).strict().refine(row=>row.status==='request_received'?!row.appointment:row.appointment?.status===row.status)).max(100),truncated:z.boolean(),current_revision:z.number().int().positive().nullable().optional(),confirmation_enabled:z.boolean().optional()}).strict();

@@ -3,6 +3,8 @@ import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, CalendarDays, Check, ChevronLeft, ChevronRight, Clock3, RefreshCw, Sparkles } from 'lucide-react';
 import { PublicAgendaAvailabilitySchema } from '@dental/contracts';
 import './configured-availability.css';
+import { BookingStory } from './booking-story';
+import { BookingCalendar } from './booking-calendar';
 import { ConfiguredBookingForm, type BookingContact } from './configured-booking-form';
 
 type Availability = ReturnType<typeof PublicAgendaAvailabilitySchema.parse>;
@@ -10,7 +12,7 @@ const time = (value: string) => new Intl.DateTimeFormat('fr-MA', { timeZone: 'Af
 const dateLabel = (value: string) => new Intl.DateTimeFormat('fr-MA', { timeZone: 'Africa/Casablanca', weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(value + 'T12:00:00Z'));
 function addDays(value: string, amount: number) { const next = new Date(value + 'T12:00:00Z'); next.setUTCDate(next.getUTCDate() + amount); return next.toISOString().slice(0, 10); }
 
-export function ConfiguredAvailability() {
+export function ConfiguredAvailability({ onReturn }: { onReturn?: () => void } = {}) {
   const stageHeading = useRef<HTMLHeadingElement>(null);
   const [today, setToday] = useState('');
   const [date, setDate] = useState('');
@@ -22,7 +24,7 @@ export function ConfiguredAvailability() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [retry, setRetry] = useState(0);
-  const [contact, setContact] = useState<BookingContact>({ name: '', email: '', consent: false });
+  const [contact, setContact] = useState<BookingContact>({ name: '', email: '', phone: '', consent: false });
   useEffect(() => { if (!slot) { stageHeading.current?.focus({ preventScroll: true }); if (phase > 0 && window.matchMedia('(max-width: 760px)').matches) document.getElementById('availability')?.scrollIntoView({block:'start'}); } }, [phase, slot]);
   const api = (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:4300').replace(/\/$/, '');
   useEffect(() => { const current = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Africa/Casablanca', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()); setToday(current); setDate(current); }, []);
@@ -49,16 +51,20 @@ export function ConfiguredAvailability() {
   const selected = result?.visit_types.find(type => type.id === visit);
   const chooseDate = (value: string) => { setResult(null); setError(''); setDate(value); };
   const backToSlots = () => { setSlot(null); setPhase(1); setRetry(value => value + 1); };
+  const story = phase === 5 ? 'cabinet' : phase === 6 ? 'smiles' : phase === 7 ? 'care' : phase === 8 ? 'contact' : null;
   return <section id="availability" className="configured-availability" data-phase={phase} aria-labelledby="configured-availability-title">
-    <header className="booking-flow-heading"><div><span className="booking-eyebrow">RÉSERVATION EN LIGNE</span><h2 id="configured-availability-title">Votre prochaine visite</h2></div><span className="booking-flow-mark"><Sparkles size={20}/></span></header>
+    {phase === 0 && onReturn && <button type="button" className="booking-text-button" onClick={onReturn}><ArrowLeft size={16}/>Accueil</button>}
+    {!story && <><header className="booking-flow-heading"><div><span className="booking-eyebrow">RÉSERVATION EN LIGNE</span><h2 id="configured-availability-title">Votre prochaine visite</h2></div><span className="booking-flow-mark"><Sparkles size={20}/></span></header>
     <p className="booking-mobile-progress" aria-hidden="true"><span>{phase===4?'Parcours terminé':`Étape ${phase+1} sur 4`}</span><strong>{['Votre visite','Votre créneau','Vos coordonnées','Vérification','Récapitulatif'][phase]}</strong></p>
-    <ol className="booking-steps" aria-label="Étapes de réservation">{['Visite', 'Créneau', 'Coordonnées', 'Vérification'].map((label, index) => <li key={label} aria-label={`Étape ${index+1} : ${label}`} aria-current={phase === index ? 'step' : undefined} data-complete={phase > index}><span className="booking-step-number">{phase > index ? <Check size={14}/> : index + 1}</span><span className="booking-step-label">{label}</span></li>)}</ol>
-    {!slot && <div className="booking-stage">
+    <ol className="booking-steps" aria-label="Étapes de réservation">{['Visite', 'Créneau', 'Coordonnées', 'Vérification'].map((label, index) => <li key={label} aria-label={`Étape ${index+1} : ${label}`} aria-current={phase === index ? 'step' : undefined} data-complete={phase > index}><span className="booking-step-number">{phase > index ? <Check size={14}/> : index + 1}</span><span className="booking-step-label">{label}</span></li>)}</ol></>}
+    {story && <BookingStory screen={story} onBack={() => setPhase(phase === 5 ? 0 : phase === 6 ? 5 : phase === 7 ? 4 : 7)} onNext={() => setPhase(phase === 5 ? 6 : phase === 6 ? 1 : phase === 7 ? 8 : 4)}/>}
+    {!story && !slot && <div className="booking-stage">
       {phase === 0 ? <><div className="booking-stage-title"><h3 ref={stageHeading} tabIndex={-1}>Quelle visite souhaitez-vous ?</h3><p>Les visites proposées par le cabinet, avec leur durée.</p></div>
-        <div className="booking-service-grid" aria-busy={busy}>{types.map((type, index) => <button key={type.id} className="booking-service" data-tone={index % 3} disabled={busy || !!error} onClick={() => { setVisit(type.id); setResult(null); setRetry(value => value + 1); setPhase(1); }}><span className="booking-service-icon"><CalendarDays size={22}/></span><strong>{type.name}</strong><span><Clock3 size={14}/>{type.duration_minutes} min<ArrowRight size={16}/></span></button>)}</div>
+        <div className="booking-service-grid" aria-busy={busy}>{types.map((type, index) => <button key={type.id} className="booking-service" data-tone={index % 3} disabled={busy || !!error} onClick={() => { setVisit(type.id); setResult(null); setRetry(value => value + 1); setPhase(5); }}><span className="booking-service-icon">{/esthétique|sourire/i.test(type.name) ? <img src="/assets/smile.jpg" alt="" width="64" height="64"/> : <CalendarDays size={22}/>}</span><strong>{type.name}</strong><span><Clock3 size={14}/>{type.duration_minutes} min<ArrowRight size={16}/></span></button>)}</div>
         {result && !types.length && <div className="booking-empty"><CalendarDays/><h3>Aucune visite en ligne</h3><p>Le cabinet n’a pas encore ouvert de type de visite à la réservation.</p></div>}
       </> : <><button className="booking-text-button" onClick={() => setPhase(0)}><ArrowLeft size={16}/>Changer de visite</button><div className="booking-stage-title"><h3 ref={stageHeading} tabIndex={-1}>{types.find(type => type.id === visit)?.name || 'Choisissez un créneau'}</h3><p>Horaires du cabinet · Casablanca</p></div>
         <div className="booking-date-toolbar"><button aria-label="Jour précédent" className="booking-icon-button" disabled={!date || date <= today} onClick={() => chooseDate(addDays(date, -1))}><ChevronLeft size={18}/></button><label><span>Date de visite</span><input type="date" required min={today || undefined} value={date} onChange={event => chooseDate(event.target.value)}/></label><button className="booking-icon-button" aria-label="Jour suivant" disabled={!date} onClick={() => chooseDate(addDays(date, 1))}><ChevronRight size={18}/></button></div>
+        <BookingCalendar date={date} today={today} onChange={chooseDate}/>
         <div className="availability-results" aria-live="polite" aria-busy={busy}>
           {!date && <p>Choisissez une date pour voir les horaires.</p>}
           {result && selected && <><div className="availability-result-heading"><h4>{dateLabel(date)}</h4><span>{result.slots.length} créneaux · {selected.duration_minutes} min</span></div>
@@ -69,7 +75,8 @@ export function ConfiguredAvailability() {
       {busy && <div className="booking-loading" role="status"><RefreshCw size={17}/>Recherche des disponibilités…<div className="booking-skeletons" aria-hidden="true"><span/><span/><span/></div></div>}
       {error && <div className="booking-error" role="alert"><p>{error}</p><button className="booking-secondary" onClick={() => setRetry(value => value + 1)}><RefreshCw size={16}/>Réessayer</button></div>}
     </div>}
-    {slot && result && selected && <ConfiguredBookingForm mode={result.confirmation_mode} api={api} visitId={selected.id} visitName={selected.name} revision={result.revision} slot={slot} contact={contact} onContactChange={setContact} onStageChange={setPhase} onClose={backToSlots}/>}
+    {slot && result && selected && <div hidden={!!story}><ConfiguredBookingForm mode={result.confirmation_mode} api={api} visitId={selected.id} visitName={selected.name} revision={result.revision} slot={slot} contact={contact} onContactChange={setContact} onStageChange={setPhase} onClose={backToSlots}/></div>}
+    {phase === 4 && <button type="button" className="booking-primary booking-story-next" onClick={() => setPhase(7)}>Découvrir notre accompagnement<ArrowRight size={17}/></button>}
     {phase<4&&<p className="availability-boundary">{result?.request_enabled ? (result.confirmation_mode === 'automatic' ? 'Le créneau sera confirmé après vérification de sa disponibilité.' : 'L’équipe du cabinet validera votre demande avant confirmation.') : result ? 'La réservation en ligne n’est pas ouverte pour le moment.' : 'Les disponibilités sont vérifiées auprès du cabinet.'}</p>}
   </section>;
 }
