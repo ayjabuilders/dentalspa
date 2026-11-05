@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "reviewedAt": "2026-10-26",
+  "reviewedAt": "2026-11-05",
   "method": "Six capacités PRD de poids égal par module. Livré=1, partiel=0.5, prévu=0. Une preuve et ses tâches liées terminées sont requises pour créditer des points. Mesure de couverture fonctionnelle, pas de temps écoulé ni d’acceptation pour usage réel.",
   "modules": [
     {
@@ -62,7 +62,7 @@
             "INQUIRY-PLANNED-ACTION-HISTORY-INTEGRATE",
             "INQUIRY-OWNER-OVERDUE-PAGE-INTEGRATE"
           ],
-          "evidence": "PR #9–10, #15–17, #21, #23 et #25 : propriétaire initial, recherche serveur de ses anciennes demandes, échéance, historique append-only, vue des échéances, commande bornée du propriétaire actuel, journaux personnels non exhaustifs, prochaine intention administrative sans exécution, liste privée de ces intentions et historique personnel de leurs commandes; réattribution et cycle complet des résultats restent à construire. The overdue list now supports bounded continuation with clear partial results; real PostgreSQL validation is pending and the criterion remains partial."
+          "evidence": "PR #9–10, #15–17, #21, #23 et #25 : propriétaire initial, recherche serveur de ses anciennes demandes, échéance, historique append-only, vue des échéances, commande bornée du propriétaire actuel, journaux personnels non exhaustifs, prochaine intention administrative sans exécution, liste privée de ces intentions et historique personnel de leurs commandes; réattribution et cycle complet des résultats restent à construire. The overdue list now supports bounded continuation with clear partial results; GitHub CI #64 applied the validation migration and passed all 19 pgTAP assertions. The dedicated pagination browser scenario is still pending, so the criterion remains partial."
         },
         {
           "id": "M01-6",

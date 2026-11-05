@@ -14,7 +14,7 @@ const preview = (href: string, label: string): TestLink => ({ href, label, kind:
 
 export const productModules: ProductModule[] = [
   { id: 'M01', title: 'Growth & Acquisition CRM', tier: 'P0', state: 'partial', sourcePage: 21,
-    built: 'Saisie manuelle, API cloisonnée, recherche patient en lecture seule, recherche serveur des demandes du responsable, préférences de contact, langue et fuseau explicitement déclarées, prochaine intention administrative sans exécution, liste privée et historique personnel de ses commandes, suivi manuel, échéances, replanification compare-and-set et journal personnel, sans envoi.',
+    built: 'Saisie manuelle, API cloisonnée, recherche patient en lecture seule, recherche serveur des demandes du responsable, pagination bornée des échéances avec continuation testée sur PostgreSQL, préférences de contact, langue et fuseau explicitement déclarées, prochaine intention administrative sans exécution, liste privée et historique personnel de ses commandes, suivi manuel, replanification compare-and-set et journal personnel, sans envoi.',
     remaining: ['Qualification, réattribution du responsable et cycle complet des résultats', 'Rapprochement, sélection et conversion patient sans doublon', 'Parcours jusqu’au rendez-vous et connecteurs validés'],
     gate: 'Politique d’identité D1–D8 puis règles de conversion et de communication.', links: [intakeTest, connectionTest] },
   { id: 'M02', title: 'Smart Booking & Capacity', tier: 'P0', state: 'partial', sourcePage: 22,
