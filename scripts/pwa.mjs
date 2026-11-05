@@ -1,10 +1,13 @@
 import { readFile, writeFile, readdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { resolve } from 'node:path';
-for (const [app, name, shortName, color] of [['clinic-os','Dental Spa Clinic OS','Clinic OS','#162d43'],['patient-pass','Dental Spa Patient Pass','Patient Pass','#234c43']]) {
+for (const [app, name, shortName, color] of [['clinic-os','Dental Spa Clinic OS','Clinic OS','#162d43'],['patient-pass','Dental Spa Patient Pass','Patient Pass','#234c43'],['public-booking','Dental Spa · Réservation','Dental Spa','#162d43']]) {
   const base = resolve('apps', app, 'public');
   const assets = (await readdir(resolve(base, 'assets'))).filter(name => /\.(png|webp|ttf|svg)$/.test(name)).map(name => `/assets/${name}`);
-  const offline = `<!doctype html><html lang="fr"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="${color}"><title>${name} · Hors connexion</title><style>body{font:16px/1.7 system-ui;background:#f0f3f6;color:#162d43;margin:0;min-height:100vh;display:grid;place-items:center}main{padding:30px;max-width:430px;text-align:center}img{margin:auto}h1{font-size:28px}a{display:inline-block;padding:12px 24px;background:${color};color:white;border-radius:12px;text-decoration:none}</style><main><img src="/assets/icon-192.png" width="70" height="70" alt=""><h1>Retrouvons-nous bientôt.</h1><p>Vous êtes hors connexion. Aucun dossier patient ni donnée personnelle n’est enregistré sur cet appareil.</p><p>Reconnectez-vous pour accéder à votre espace.</p><a href="/">Réessayer</a></main></html>`;
+  const offlineMessage = app === 'public-booking'
+    ? '<p>Vous êtes hors connexion. La réservation n’est pas disponible dans cet aperçu.</p><p>Aucune demande ni donnée personnelle n’est enregistrée sur cet appareil.</p>'
+    : '<p>Vous êtes hors connexion. Aucun dossier patient ni donnée personnelle n’est enregistré sur cet appareil.</p><p>Reconnectez-vous pour accéder à votre espace.</p>';
+  const offline = `<!doctype html><html lang="fr"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="${color}"><title>${name} · Hors connexion</title><style>body{font:16px/1.7 system-ui;background:#f0f3f6;color:#162d43;margin:0;min-height:100vh;display:grid;place-items:center}main{padding:30px;max-width:430px;text-align:center}img{margin:auto}h1{font-size:28px}a{display:inline-block;padding:12px 24px;background:${color};color:white;border-radius:12px;text-decoration:none}</style><main><img src="/assets/icon-192.png" width="70" height="70" alt=""><h1>Retrouvons-nous bientôt.</h1>${offlineMessage}<a href="/">Réessayer</a></main></html>`;
   await writeFile(resolve(base,'offline.html'), offline);
   const files = ['/offline.html', ...assets];
   const hash = createHash('sha256');

@@ -15,7 +15,7 @@ function worker(app = 'clinic-os') {
 }
 function requestEvent(request: Request) { return { request, respondWith: vi.fn<(promise: Promise<unknown>) => void>() }; }
 describe('generated service worker runtime privacy and update behavior', () => {
-  for (const app of ['clinic-os', 'patient-pass']) {
+  for (const app of ['clinic-os', 'patient-pass', 'public-booking']) {
     it(`${app} installs only the public allowlist and waits for explicit activation`, async () => {
       const w = worker(app);
       let done = Promise.resolve<unknown>(undefined);

@@ -2,7 +2,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 describe('public PWA and fixture boundaries', () => {
-  for (const app of ['clinic-os','patient-pass']) it(`${app} has an installable manifest and no sensitive cache scope`, () => {
+  for (const app of ['clinic-os','patient-pass','public-booking']) it(`${app} has an installable manifest and no sensitive cache scope`, () => {
     const base = resolve('apps',app,'public');
     const manifest = JSON.parse(readFileSync(resolve(base,'manifest.webmanifest'),'utf8'));
     expect(manifest.display).toBe('standalone'); expect(manifest.lang).toBe('fr'); expect(manifest.id).toBe(`/${app}`);
@@ -14,6 +14,10 @@ describe('public PWA and fixture boundaries', () => {
     expect(worker).not.toContain('cache.put');
     expect(worker).not.toContain('/api/');
     expect(worker).toContain('ACTIVATE_UPDATE');
+    if (app === 'public-booking') {
+      expect(readFileSync(resolve(base,'offline.html'),'utf8')).toContain('La réservation n’est pas disponible');
+      expect(readFileSync(resolve(base,'offline.html'),'utf8')).toContain('Aucune demande ni donnée personnelle');
+    }
   });
   it('keeps font licenses and only synthetic UI fixtures', () => {
     const files = readdirSync('apps/clinic-os/public/assets');
