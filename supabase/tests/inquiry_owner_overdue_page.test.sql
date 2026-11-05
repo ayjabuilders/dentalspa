@@ -1,7 +1,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 set search_path=public,extensions;
-select plan(17);
+select plan(19);
 insert into public.clinics(id,name) values
  ('e1000000-0000-4000-8000-000000000001','Synthetic Overdue A'),
  ('e1000000-0000-4000-8000-000000000002','Synthetic Overdue B');
@@ -21,7 +21,9 @@ set local role authenticated;
 select is(jsonb_array_length(pg_temp.overdue(null)->'items'),0,'empty page works');
 select throws_ok($$select public.inquiry_owner_overdue_page('e1000000-0000-4000-8000-000000000002','{"after":null}')$$,'42501',null,'cross-clinic access denied');
 select throws_ok($$select public.inquiry_owner_overdue_page('e1000000-0000-4000-8000-000000000001','{}')$$,'22023',null,'missing cursor rejected');
+select throws_ok($$select public.inquiry_owner_overdue_page('e1000000-0000-4000-8000-000000000001','{"after":null,"extra":true}')$$,'22023',null,'extra page field rejected');
 select throws_ok($$select public.inquiry_owner_overdue_page('e1000000-0000-4000-8000-000000000001','{"after":{"follow_up_at":"2026-01-01T00:00:00Z"}}')$$,'22023',null,'incomplete cursor rejected');
+select throws_ok($$select public.inquiry_owner_overdue_page('e1000000-0000-4000-8000-000000000001','{"after":{"follow_up_at":"2026-01-01T00:00:00Z","inquiry_id":"e4000000-0000-4000-8000-000000000001","extra":true}}')$$,'22023',null,'extra cursor field rejected');
 reset role;
 insert into public.inquiries(id,clinic_id,owner_user_id,display_name,source,follow_up_at)
  select ('e4000000-0000-4000-8000-'||lpad(n::text,12,'0'))::uuid,
