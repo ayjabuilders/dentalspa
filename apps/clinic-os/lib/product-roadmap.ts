@@ -18,7 +18,7 @@ export const productModules: ProductModule[] = [
     remaining: ['Qualification, réattribution du responsable et cycle complet des résultats', 'Rapprochement, sélection et conversion patient sans doublon', 'Parcours jusqu’au rendez-vous et connecteurs validés'],
     gate: 'Politique d’identité D1–D8 puis règles de conversion et de communication.', links: [intakeTest, connectionTest] },
   { id: 'M02', title: 'Smart Booking & Capacity', tier: 'P0', state: 'partial', sourcePage: 22,
-    built: 'Disponibilité indicative, options temporaires praticien/fauteuil, libération et tests de concurrence PostgreSQL. PR #4–5.',
+    built: 'Disponibilité indicative, options temporaires praticien/fauteuil, libération et tests de concurrence PostgreSQL. Aperçu public installable, sans soumission de demande. PR #4–5.',
     remaining: ['Confirmation avec patient, annulation et déplacement', 'Horaires, durées, marges, jours fermés et liste d’attente', 'Réservation publique, rappels et vue patient autorisée'],
     gate: 'Sélection patient et règles de ressources approuvées; contrat de confirmation atomique.', links: [schedulingTest, connectionTest, { href: 'http://localhost:4202', label: 'Voir la réservation publique locale', kind: 'preview', instruction: 'Serveur local distinct, port 4202. Page publique de présentation uniquement; aucune disponibilité vérifiée ni réservation confirmée.' }] },
   { id: 'M03', title: 'Patient Pass & Intake', tier: 'P0', state: 'preview', sourcePage: 23,

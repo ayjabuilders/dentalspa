@@ -1208,6 +1208,23 @@
       "acceptance": "Complete current-owner overdue inquiries page in API/database and Clinic intake UI, with reviewed authority, explicit partial counts and responsive behavior.",
       "branch": "codex/m01-owner-overdue-page",
       "evidence": "Local integration completed in 81bb67d with generated OpenAPI/types. Contracts build, API build, Clinic OS typecheck and existing owner-worklist Playwright suite pass. Real PostgreSQL migration tests and dedicated new pagination browser scenarios remain outstanding; feature is not release-verified. Follow-up: contract unit tests pass (7); dedicated browser test could not pass login fixture; PostgreSQL unavailable because Docker is not installed."
+    },
+    {
+      "id": "PUBLIC-BOOKING-PRESENTATION",
+      "state": "done",
+      "owner": "booking_ui_review + coordinator",
+      "depends_on": [],
+      "branch": "codex/public-booking-polish",
+      "worktree": "C:/Users/platf/Documents/DentalSpa-worktrees/public-booking-polish",
+      "base": "0d0dc65",
+      "allowed_files": [
+        "apps/public-booking/**",
+        "scripts/pwa.mjs",
+        "tests/unit/assets.test.ts",
+        "tests/unit/pwa-runtime.test.ts"
+      ],
+      "acceptance": "Polish the mobile-first public booking preview as an installable standalone PWA with calm accessible motion, truthful offline messaging and visually strong factual content, without claiming services, testimonials, availability or booking submission that lack approved sources.",
+      "evidence": "Integrated locally at e8e6b35. Public booking typecheck and production build passed; focused PWA/assets tests passed (16); diff check passed. Static cache allowlist only; preview, manifest, service worker and offline endpoints returned HTTP 200. Live screenshot/install-device review remains pending because the connected browser was unavailable. No deployment."
     }
   ]
 }
